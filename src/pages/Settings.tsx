@@ -46,15 +46,16 @@ export default function SettingsPage() {
         <div className="flex flex-wrap gap-2">
           {BIBLE_VERSIONS.map(v => (
             <button
-              key={v}
-              onClick={() => setVersion(v)}
+              key={v.id}
+              onClick={() => setVersion(v.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                version === v
+                version === v.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
               }`}
             >
-              {v}
+              <span className="font-bold">{v.name}</span>
+              <span className="text-xs opacity-70 ml-1 hidden sm:inline">({v.full})</span>
             </button>
           ))}
         </div>

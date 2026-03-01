@@ -1,110 +1,161 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Plus, X, Send } from 'lucide-react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Heart, MessageCircle, Plus, X, Send, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface Comment {
   id: string;
-  author: string;
-  text: string;
-  createdAt: number;
+  author_name: string;
+  content: string;
+  created_at: string;
 }
 
 interface Post {
   id: string;
-  author: string;
+  author_name: string;
   title: string;
   content: string;
   likes: number;
-  liked: boolean;
-  comments: Comment[];
-  createdAt: number;
+  created_at: string;
+  comments?: Comment[];
 }
 
-const SEED_POSTS: Post[] = [
-  {
-    id: 'seed-1',
-    author: 'Grace W.',
-    title: 'The Power of Morning Devotion',
-    content: 'Starting each day with scripture has transformed my life. I\'ve been reading Proverbs every morning and the wisdom is incredible. Who else does morning devotions?',
-    likes: 12,
-    liked: false,
-    comments: [
-      { id: 'c1', author: 'David K.', text: 'I do! Psalms in the morning is my favorite.', createdAt: Date.now() - 86400000 }
-    ],
-    createdAt: Date.now() - 172800000,
-  },
-  {
-    id: 'seed-2',
-    author: 'James M.',
-    title: 'Understanding Romans 8:28',
-    content: 'This verse has been my anchor during difficult times. All things truly work together for good. How has this verse impacted your life?',
-    likes: 8,
-    liked: false,
-    comments: [],
-    createdAt: Date.now() - 345600000,
-  },
-];
-
 export default function Community() {
-  const [posts, setPosts] = useLocalStorage<Post[]>('hw-posts', SEED_POSTS);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<string | null>(null);
+  const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('hw-liked-posts');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
-  const createPost = () => {
+  useEffect(() => {
+    loadPosts();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('community')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const loadPosts = async () => {
+    const { data, error } = await supabase
+      .from('community_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading posts:', error);
+    } else {
+      setPosts(data || []);
+    }
+    setLoading(false);
+  };
+
+  const loadComments = async (postId: string) => {
+    const { data } = await supabase
+      .from('community_comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+    
+    if (data) {
+      setComments(prev => ({ ...prev, [postId]: data }));
+    }
+  };
+
+  const createPost = async () => {
     if (!title.trim() || !content.trim() || !author.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
-    const post: Post = {
-      id: Date.now().toString(),
-      author: author.trim(),
+
+    const { error } = await supabase.from('community_posts').insert({
+      author_name: author.trim(),
       title: title.trim(),
       content: content.trim(),
-      likes: 0,
-      liked: false,
-      comments: [],
-      createdAt: Date.now(),
-    };
-    setPosts(prev => [post, ...prev]);
-    setTitle('');
-    setContent('');
-    setShowForm(false);
-    toast.success('Idea published!');
+    });
+
+    if (error) {
+      toast.error('Failed to publish');
+    } else {
+      setTitle('');
+      setContent('');
+      setShowForm(false);
+      toast.success('Idea published!');
+    }
   };
 
-  const toggleLike = (id: string) => {
-    setPosts(prev => prev.map(p =>
-      p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p
-    ));
+  const toggleLike = async (post: Post) => {
+    const isLiked = likedPosts.has(post.id);
+    const newLikes = isLiked ? post.likes - 1 : post.likes + 1;
+    
+    const newLikedPosts = new Set(likedPosts);
+    if (isLiked) newLikedPosts.delete(post.id);
+    else newLikedPosts.add(post.id);
+    setLikedPosts(newLikedPosts);
+    localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
+
+    await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
+    loadPosts();
   };
 
-  const addComment = (postId: string) => {
+  const addComment = async (postId: string) => {
     const text = commentText[postId]?.trim();
     if (!text) return;
-    setPosts(prev => prev.map(p =>
-      p.id === postId ? {
-        ...p,
-        comments: [...p.comments, { id: Date.now().toString(), author: 'You', text, createdAt: Date.now() }]
-      } : p
-    ));
-    setCommentText(prev => ({ ...prev, [postId]: '' }));
-    toast.success('Comment added');
+
+    const { error } = await supabase.from('community_comments').insert({
+      post_id: postId,
+      author_name: 'Anonymous',
+      content: text,
+    });
+
+    if (error) {
+      toast.error('Failed to add comment');
+    } else {
+      setCommentText(prev => ({ ...prev, [postId]: '' }));
+      toast.success('Comment added');
+      loadComments(postId);
+    }
   };
 
-  const timeAgo = (ts: number) => {
-    const diff = Date.now() - ts;
+  const handleShowComments = (postId: string) => {
+    if (showComments === postId) {
+      setShowComments(null);
+    } else {
+      setShowComments(postId);
+      loadComments(postId);
+    }
+  };
+
+  const timeAgo = (ts: string) => {
+    const diff = Date.now() - new Date(ts).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in">
@@ -159,15 +210,18 @@ export default function Community() {
 
       {/* Posts */}
       <div className="space-y-3">
+        {posts.length === 0 && (
+          <p className="text-center text-muted-foreground py-8 text-sm">No posts yet. Be the first to share!</p>
+        )}
         {posts.map(post => (
           <div key={post.id} className="rounded-xl bg-card border border-border p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
-                {post.author[0]}
+                {post.author_name[0]}
               </div>
               <div>
-                <p className="text-sm font-medium text-card-foreground">{post.author}</p>
-                <p className="text-[10px] text-muted-foreground">{timeAgo(post.createdAt)}</p>
+                <p className="text-sm font-medium text-card-foreground">{post.author_name}</p>
+                <p className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</p>
               </div>
             </div>
             <h3 className="font-display font-bold text-card-foreground mb-1">{post.title}</h3>
@@ -175,20 +229,20 @@ export default function Community() {
 
             <div className="flex items-center gap-4 border-t border-border pt-2">
               <button
-                onClick={() => toggleLike(post.id)}
+                onClick={() => toggleLike(post)}
                 className={`flex items-center gap-1.5 text-sm transition-colors ${
-                  post.liked ? 'text-destructive' : 'text-muted-foreground hover:text-foreground'
+                  likedPosts.has(post.id) ? 'text-destructive' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Heart size={16} fill={post.liked ? 'currentColor' : 'none'} />
+                <Heart size={16} fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                 {post.likes}
               </button>
               <button
-                onClick={() => setShowComments(showComments === post.id ? null : post.id)}
+                onClick={() => handleShowComments(post.id)}
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <MessageCircle size={16} />
-                {post.comments.length}
+                {(comments[post.id] || []).length}
               </button>
             </div>
 
@@ -199,10 +253,10 @@ export default function Community() {
                 animate={{ opacity: 1 }}
                 className="mt-3 border-t border-border pt-3 space-y-2"
               >
-                {post.comments.map(c => (
+                {(comments[post.id] || []).map(c => (
                   <div key={c.id} className="rounded-lg bg-background p-2">
-                    <p className="text-xs font-medium text-foreground">{c.author}</p>
-                    <p className="text-xs text-muted-foreground">{c.text}</p>
+                    <p className="text-xs font-medium text-foreground">{c.author_name}</p>
+                    <p className="text-xs text-muted-foreground">{c.content}</p>
                   </div>
                 ))}
                 <div className="flex gap-2">
