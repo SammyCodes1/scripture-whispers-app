@@ -27,7 +27,7 @@ export default function Index() {
         <blockquote className="font-display text-xl leading-relaxed font-semibold mb-3">
           "{dailyVerse.text}"
         </blockquote>
-        <p className="text-sm opacity-80 font-body">— {dailyVerse.ref} (KJV)</p>
+        <p className="text-sm opacity-80 font-body">— {dailyVerse.ref}</p>
       </motion.section>
 
       {/* Daily Topic */}

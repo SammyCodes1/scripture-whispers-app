@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { DAILY_VERSES } from '@/data/bibleData';
-import { TOPICS } from '@/data/topicsData';
+import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
+import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 
 interface SearchResult {
   ref: string;
@@ -9,48 +9,42 @@ interface SearchResult {
 }
 
 export default function SearchPage() {
+  const { version } = useTheme();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
     setSearched(true);
 
-    // Search through local data
-    const q = query.toLowerCase();
-    const found: SearchResult[] = [];
-
-    // Search daily verses
-    DAILY_VERSES.forEach(v => {
-      if (v.ref.toLowerCase().includes(q) || v.text.toLowerCase().includes(q)) {
-        found.push({ ref: v.ref, text: v.text });
-      }
-    });
-
-    // Search topic verses
-    TOPICS.forEach(topic => {
-      topic.verses.forEach(v => {
-        if (
-          (v.ref.toLowerCase().includes(q) || v.text.toLowerCase().includes(q)) &&
-          !found.some(f => f.ref === v.ref)
-        ) {
-          found.push({ ref: v.ref, text: v.text });
-        }
-      });
-    });
-
-    setResults(found);
-    setLoading(false);
+    try {
+      const data = await searchBible(query.trim(), version, 50);
+      const mapped = (data.results || []).map((r: ApiSearchResult) => ({
+        ref: r.reference || `${r.book_name} ${r.chapter}:${r.verse}`,
+        text: r.text,
+      }));
+      setResults(mapped);
+      setTotalCount(data.count || mapped.length);
+    } catch (err) {
+      console.error('Search error:', err);
+      setResults([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const versionName = BIBLE_VERSIONS.find(v => v.id === version)?.name || version.toUpperCase();
 
   return (
     <div className="fade-in">
       <h2 className="font-display text-xl font-bold text-foreground mb-4">Search Bible Verses</h2>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-2">
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -69,6 +63,8 @@ export default function SearchPage() {
           {loading ? <Loader2 size={16} className="animate-spin" /> : 'Search'}
         </button>
       </div>
+
+      <p className="text-xs text-muted-foreground mb-4">Searching in {versionName}</p>
 
       {/* Popular searches */}
       {!searched && (
@@ -92,7 +88,7 @@ export default function SearchPage() {
       {searched && (
         <div>
           <p className="text-xs text-muted-foreground mb-3">
-            {results.length} result{results.length !== 1 ? 's' : ''} found
+            Showing {results.length} of {totalCount} result{totalCount !== 1 ? 's' : ''}
           </p>
           <div className="space-y-2">
             {results.map((r, i) => (
@@ -101,7 +97,7 @@ export default function SearchPage() {
                 <p className="verse-text text-sm">{r.text}</p>
               </div>
             ))}
-            {results.length === 0 && (
+            {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8">
                 No verses found. Try a different keyword.
               </p>

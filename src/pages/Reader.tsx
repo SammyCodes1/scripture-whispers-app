@@ -1,21 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2 } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
-
-// Simple mock content generator
-function generateVerses(book: string, chapter: number): string[] {
-  const seed = `${book}${chapter}`;
-  const count = 15 + (seed.length % 20);
-  return Array.from({ length: count }, (_, i) =>
-    `This is verse ${i + 1} of ${book} chapter ${chapter}. The full text will be available with Bible API integration.`
-  );
-}
 
 export interface SavedVerse {
   id: string;
@@ -33,13 +25,42 @@ export default function Reader() {
   const [selectedChapter, setSelectedChapter] = useState(0);
   const [testament, setTestament] = useState<'OT' | 'NT'>('OT');
   const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>('hw-saved-verses', []);
+  const [verses, setVerses] = useState<BibleVerse[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
-  const verses = selectedBook && selectedChapter ? generateVerses(selectedBook, selectedChapter) : [];
+
+  // Fetch real verses when book/chapter/version changes
+  useEffect(() => {
+    if (!selectedBook || !selectedChapter || view !== 'reading') return;
+    
+    let cancelled = false;
+    setLoading(true);
+    
+    fetchChapter(selectedBook, selectedChapter, version)
+      .then(data => {
+        if (!cancelled && data.verses) {
+          setVerses(data.verses);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          console.error('Bible API error:', err);
+          toast.error('Could not load verses. Please try again.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [selectedBook, selectedChapter, version, view]);
 
   const saveVerse = (index: number, type: 'bookmark' | 'highlight') => {
-    const ref = `${selectedBook} ${selectedChapter}:${index + 1}`;
+    const verse = verses[index];
+    if (!verse) return;
+    const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
     const exists = savedVerses.some(v => v.ref === ref && v.type === type);
     if (exists) {
       setSavedVerses(prev => prev.filter(v => !(v.ref === ref && v.type === type)));
@@ -48,7 +69,7 @@ export default function Reader() {
       const newVerse: SavedVerse = {
         id: `${ref}-${type}-${Date.now()}`,
         ref,
-        text: verses[index],
+        text: verse.text,
         type,
         color: type === 'highlight' ? 'yellow' : undefined,
         createdAt: Date.now(),
@@ -59,9 +80,13 @@ export default function Reader() {
   };
 
   const isVerseSaved = (index: number, type: 'bookmark' | 'highlight') => {
-    const ref = `${selectedBook} ${selectedChapter}:${index + 1}`;
+    const verse = verses[index];
+    if (!verse) return false;
+    const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
     return savedVerses.some(v => v.ref === ref && v.type === type);
   };
+
+  const versionLabel = version.toUpperCase();
 
   return (
     <div className="fade-in">
@@ -69,7 +94,7 @@ export default function Reader() {
       <div className="flex items-center gap-2 mb-4">
         {view !== 'books' && (
           <button
-            onClick={() => setView(view === 'reading' ? 'chapters' : 'books')}
+            onClick={() => { setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
             className="p-2 rounded-lg hover:bg-secondary text-foreground"
           >
             <ChevronLeft size={20} />
@@ -81,7 +106,7 @@ export default function Reader() {
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
         <span className="ml-auto text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-          {version}
+          {versionLabel}
         </span>
       </div>
 
@@ -137,33 +162,42 @@ export default function Reader() {
         {/* Reading view */}
         {view === 'reading' && (
           <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="space-y-1">
-              {verses.map((text, i) => (
-                <div
-                  key={i}
-                  className={`group flex gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors ${
-                    isVerseSaved(i, 'highlight') ? 'bg-accent/20' : ''
-                  }`}
-                >
-                  <span className="text-xs font-bold text-primary mt-1 min-w-[24px]">{i + 1}</span>
-                  <p className="verse-text text-sm flex-1">{text}</p>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => saveVerse(i, 'bookmark')}
-                      className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
-                    </button>
-                    <button
-                      onClick={() => saveVerse(i, 'highlight')}
-                      className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
-                    >
-                      <Highlighter size={14} />
-                    </button>
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-primary" size={32} />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {verses.map((verse, i) => (
+                  <div
+                    key={i}
+                    className={`group flex gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors ${
+                      isVerseSaved(i, 'highlight') ? 'bg-accent/20' : ''
+                    }`}
+                  >
+                    <span className="text-xs font-bold text-primary mt-1 min-w-[24px]">{verse.verse}</span>
+                    <p className="verse-text text-sm flex-1">{verse.text}</p>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => saveVerse(i, 'bookmark')}
+                        className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
+                      >
+                        <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
+                      </button>
+                      <button
+                        onClick={() => saveVerse(i, 'highlight')}
+                        className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
+                      >
+                        <Highlighter size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+                {verses.length === 0 && !loading && (
+                  <p className="text-center text-muted-foreground py-8 text-sm">No verses found for this chapter.</p>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
