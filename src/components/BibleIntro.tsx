@@ -33,8 +33,7 @@ export default function BibleIntro({ onComplete }: { onComplete: () => void }) {
 
     if (currentPage >= TOTAL_FLIPS) {
       setPhase('landed');
-      const t = setTimeout(() => setPhase('fading'), 1200);
-      return () => clearTimeout(t);
+      return;
     }
 
     const delay = currentPage < 4
@@ -46,6 +45,13 @@ export default function BibleIntro({ onComplete }: { onComplete: () => void }) {
     const t = setTimeout(() => setCurrentPage(p => p + 1), delay);
     return () => clearTimeout(t);
   }, [currentPage, phase]);
+
+  useEffect(() => {
+    if (phase === 'landed') {
+      const t = setTimeout(() => setPhase('fading'), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase === 'fading') {
