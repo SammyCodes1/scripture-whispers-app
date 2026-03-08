@@ -39,6 +39,17 @@ export default function Reader() {
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
   const { recordReading } = useReadingStreak();
 
+  // Close version picker on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (versionRef.current && !versionRef.current.contains(e.target as Node)) {
+        setShowVersionPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
     let cancelled = false;
