@@ -1,12 +1,28 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { BibleVerse } from './useBibleApi';
+import { useLocalStorage } from './useLocalStorage';
+
+export interface VoiceOption {
+  name: string;
+  lang: string;
+  voiceURI: string;
+}
+
+export const VOICE_STORAGE_KEY = 'hw-selected-voice';
 
 export function useChapterAudio(verses: BibleVerse[]) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(-1);
+  const [selectedVoice] = useLocalStorage<string>(VOICE_STORAGE_KEY, '');
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
+
+  const getVoice = useCallback(() => {
+    if (!selectedVoice) return null;
+    const voices = speechSynthesis.getVoices();
+    return voices.find(v => v.voiceURI === selectedVoice) || null;
+  }, [selectedVoice]);
 
   const stop = useCallback(() => {
     cancelledRef.current = true;
@@ -28,6 +44,10 @@ export function useChapterAudio(verses: BibleVerse[]) {
     const utt = new SpeechSynthesisUtterance(verses[index].text);
     utt.rate = 0.9;
     utt.pitch = 1;
+
+    const voice = getVoice();
+    if (voice) utt.voice = voice;
+
     utt.onend = () => {
       if (!cancelledRef.current) {
         speakVerse(index + 1);
@@ -40,13 +60,12 @@ export function useChapterAudio(verses: BibleVerse[]) {
     };
     utteranceRef.current = utt;
     speechSynthesis.speak(utt);
-  }, [verses]);
+  }, [verses, getVoice]);
 
   const play = useCallback((startIndex = 0) => {
     stop();
     cancelledRef.current = false;
     setIsPlaying(true);
-    // Small delay to let cancel finish
     setTimeout(() => speakVerse(startIndex), 100);
   }, [stop, speakVerse]);
 
@@ -58,7 +77,6 @@ export function useChapterAudio(verses: BibleVerse[]) {
     }
   }, [isPlaying, stop, play]);
 
-  // Cleanup on unmount or verses change
   useEffect(() => {
     return () => {
       cancelledRef.current = true;
