@@ -41,6 +41,7 @@ export default function Reader() {
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
   const { recordReading } = useReadingStreak();
+  const { recordChapter, isChapterRead } = useReadingHistory();
 
   // Close version picker on click outside
   useEffect(() => {
