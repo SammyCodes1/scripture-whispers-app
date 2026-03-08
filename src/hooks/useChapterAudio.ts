@@ -19,6 +19,12 @@ export function useChapterAudio(verses: BibleVerse[]) {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
+  const speedRef = useRef(speed);
+
+  // Keep speedRef in sync so the closure always reads the latest value
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
 
   const getVoice = useCallback(() => {
     if (!selectedVoice) return null;
@@ -44,7 +50,7 @@ export function useChapterAudio(verses: BibleVerse[]) {
     indexRef.current = index;
 
     const utt = new SpeechSynthesisUtterance(verses[index].text);
-    utt.rate = speed;
+    utt.rate = speedRef.current;
     utt.pitch = 1;
 
     const voice = getVoice();
