@@ -49,13 +49,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h1 className="font-display text-xl font-bold text-foreground">HolyWord</h1>
           </Link>
           <div className="flex items-center gap-1">
-            <Link
-              to="/install"
-              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
-              title="Install App"
-            >
-              <Download size={20} />
-            </Link>
+            {dlState.active && (
+              <Link
+                to="/install"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium animate-pulse"
+                title="Downloading Bible…"
+              >
+                <Download size={14} className="animate-bounce" />
+                <span>{dlPct}%</span>
+              </Link>
+            )}
+            {!dlState.active && (
+              <Link
+                to="/install"
+                className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                title="Install App"
+              >
+                <Download size={20} />
+              </Link>
+            )}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 rounded-lg hover:bg-secondary text-foreground transition-colors"
