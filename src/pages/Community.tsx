@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
+import { useAvatars } from '@/hooks/useAvatars';
 
 interface Comment {
   id: string;
@@ -47,6 +48,7 @@ export default function Community() {
     } catch { return new Set(); }
   });
   const [profileAuthor, setProfileAuthor] = useState<string | null>(null);
+  const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
     loadPosts();
@@ -351,9 +353,13 @@ export default function Community() {
                 onClick={() => setProfileAuthor(post.author_name)}
                 className="flex items-center gap-2 group/author"
               >
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold group-hover/author:ring-2 group-hover/author:ring-primary transition-all">
-                  {post.author_name[0]}
-                </div>
+                {avatars[post.author_name] ? (
+                  <img src={avatars[post.author_name]} alt={post.author_name} className="w-8 h-8 rounded-full object-cover group-hover/author:ring-2 group-hover/author:ring-primary transition-all" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold group-hover/author:ring-2 group-hover/author:ring-primary transition-all">
+                    {post.author_name[0]}
+                  </div>
+                )}
                 <div className="text-left">
                   <p className="text-sm font-medium text-card-foreground group-hover/author:text-primary transition-colors">{post.author_name}</p>
                   <p className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</p>
@@ -460,6 +466,8 @@ export default function Community() {
         open={!!profileAuthor}
         onClose={() => setProfileAuthor(null)}
         isSelf={!!author.trim() && profileAuthor === author.trim()}
+        avatarUrl={profileAuthor ? avatars[profileAuthor] : undefined}
+        onAvatarChange={refreshAvatars}
       />
     </div>
   );
