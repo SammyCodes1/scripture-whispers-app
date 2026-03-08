@@ -151,6 +151,9 @@ export default function Reader() {
         </h2>
         <div className="ml-auto flex items-center gap-2">
           {view === 'reading' && verses.length > 0 && (
+            <SpeedControl />
+          )}
+          {view === 'reading' && verses.length > 0 && (
             <button
               onClick={toggle}
               className={`p-2 rounded-lg transition-colors ${isPlaying ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
