@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Reader from "./pages/Reader";
+import ReadingPlans from "./pages/ReadingPlans";
 import Topics from "./pages/Topics";
 import Community from "./pages/Community";
 import BookmarksPage from "./pages/Bookmarks";
