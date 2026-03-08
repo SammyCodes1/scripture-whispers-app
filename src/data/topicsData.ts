@@ -378,8 +378,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Proverbs 24:14', text: 'So shall the knowledge of wisdom be unto thy soul: when thou hast found it, then there shall be a reward, and thy expectation shall not be cut off.', testament: 'OT' },
       { ref: '1 Corinthians 2:7', text: 'But we speak the wisdom of God in a mystery, even the hidden wisdom, which God ordained before the world unto our glory.', testament: 'NT' },
       { ref: 'Proverbs 8:11', text: 'For wisdom is better than rubies; and all the things that may be desired are not to be compared to it.', testament: 'OT' },
-      { ref: 'Proverbs 3:21-22', text: 'My son, let not them depart from thine eyes: keep sound wisdom and discretion: So shall they be life unto thy soul, and grace to thy neck.', testament: 'OT' },
-    ]
+       { ref: 'Proverbs 3:21-22', text: 'My son, let not them depart from thine eyes: keep sound wisdom and discretion: So shall they be life unto thy soul, and grace to thy neck.', testament: 'OT' },
+       { ref: 'Proverbs 14:33', text: 'Wisdom resteth in the heart of him that hath understanding: but that which is in the midst of fools is made known.', testament: 'OT' },
+       { ref: 'Daniel 2:21', text: 'And he changeth the times and the seasons: he removeth kings, and setteth up kings: he giveth wisdom unto the wise, and knowledge to them that know understanding.', testament: 'OT' },
+       { ref: 'Proverbs 18:15', text: 'The heart of the prudent getteth knowledge; and the ear of the wise seeketh knowledge.', testament: 'OT' },
+       { ref: '1 Corinthians 3:19', text: 'For the wisdom of this world is foolishness with God.', testament: 'NT' },
+       { ref: 'Proverbs 11:2', text: 'When pride cometh, then cometh shame: but with the lowly is wisdom.', testament: 'OT' },
+       { ref: 'Proverbs 15:33', text: 'The fear of the Lord is the instruction of wisdom; and before honour is humility.', testament: 'OT' },
+       { ref: 'Job 28:28', text: 'And unto man he said, Behold, the fear of the Lord, that is wisdom; and to depart from evil is understanding.', testament: 'OT' },
+       { ref: 'Ecclesiastes 2:26', text: 'For God giveth to a man that is good in his sight wisdom, and knowledge, and joy.', testament: 'OT' },
+       { ref: 'Proverbs 23:23', text: 'Buy the truth, and sell it not; also wisdom, and instruction, and understanding.', testament: 'OT' },
+       { ref: 'Romans 11:33', text: 'O the depth of the riches both of the wisdom and knowledge of God! how unsearchable are his judgments, and his ways past finding out!', testament: 'NT' },
+     ]
   },
   {
     id: 'healing',
