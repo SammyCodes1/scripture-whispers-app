@@ -6,6 +6,7 @@ import DailyReminderSettings from '@/components/DailyReminderSettings';
 import VoiceSettings from '@/components/VoiceSettings';
 import AudioSpeedSettings from '@/components/AudioSpeedSettings';
 import OfflineDownload from '@/components/OfflineDownload';
+import AdminAnnouncementPanel from '@/components/AdminAnnouncementPanel';
 
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
