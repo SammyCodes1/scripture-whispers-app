@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const BIBLE_BOOKS_PREVIEW = [
   'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
