@@ -13,6 +13,7 @@ serve(async (req) => {
   }
 
   const API_BIBLE_KEY = Deno.env.get('API_BIBLE_KEY');
+  console.log(`API_BIBLE_KEY present: ${!!API_BIBLE_KEY}, length: ${API_BIBLE_KEY?.length}, first3: ${API_BIBLE_KEY?.substring(0, 3)}`);
   if (!API_BIBLE_KEY) {
     return new Response(JSON.stringify({ error: 'API_BIBLE_KEY not configured' }), {
       status: 500,
