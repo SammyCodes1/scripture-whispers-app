@@ -39,6 +39,16 @@ export const TOPICS: Topic[] = [
       { ref: 'Psalm 56:3', text: 'What time I am afraid, I will trust in thee.', testament: 'OT' },
       { ref: 'Ephesians 2:8', text: 'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God.', testament: 'NT' },
       { ref: 'Isaiah 7:9', text: 'If ye will not believe, surely ye shall not be established.', testament: 'OT' },
+      { ref: 'Romans 4:20-21', text: 'He staggered not at the promise of God through unbelief; but was strong in faith, giving glory to God; And being fully persuaded that, what he had promised, he was able also to perform.', testament: 'NT' },
+      { ref: 'Mark 9:23', text: 'Jesus said unto him, If thou canst believe, all things are possible to him that believeth.', testament: 'NT' },
+      { ref: 'Hebrews 11:11', text: 'Through faith also Sara herself received strength to conceive seed, and was delivered of a child when she was past age, because she judged him faithful who had promised.', testament: 'NT' },
+      { ref: 'Psalm 119:30', text: 'I have chosen the way of truth: thy judgments have I laid before me.', testament: 'OT' },
+      { ref: 'Romans 14:23', text: 'And he that doubteth is damned if he eat, because he eateth not of faith: for whatsoever is not of faith is sin.', testament: 'NT' },
+      { ref: 'Hebrews 12:2', text: 'Looking unto Jesus the author and finisher of our faith; who for the joy that was set before him endured the cross, despising the shame, and is set down at the right hand of the throne of God.', testament: 'NT' },
+      { ref: 'Psalm 18:30', text: 'As for God, his way is perfect: the word of the Lord is tried: he is a buckler to all those that trust in him.', testament: 'OT' },
+      { ref: 'James 1:6', text: 'But let him ask in faith, nothing wavering. For he that wavereth is like a wave of the sea driven with the wind and tossed.', testament: 'NT' },
+      { ref: 'Isaiah 26:4', text: 'Trust ye in the Lord for ever: for in the Lord Jehovah is everlasting strength.', testament: 'OT' },
+      { ref: 'Galatians 5:6', text: 'For in Jesus Christ neither circumcision availeth any thing, nor uncircumcision; but faith which worketh by love.', testament: 'NT' },
     ]
   },
   {
