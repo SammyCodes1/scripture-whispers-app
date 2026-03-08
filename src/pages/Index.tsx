@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Lightbulb, MessageSquare, Search } from 'lucide-react';
+import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
 import { getDailyConfession, getDailyPrayer } from '@/data/confessionsData';
 import { Flame } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
 import StreakCard from '@/components/StreakCard';
 import GlossarySection from '@/components/GlossarySection';
+import { useLastRead } from '@/hooks/useLastRead';
+import { formatDistanceToNow } from 'date-fns';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture' },
@@ -21,6 +22,7 @@ export default function Index() {
   const dailyTopic = getDailyTopic();
   const dailyConfession = getDailyConfession();
   const dailyPrayer = getDailyPrayer();
+  const { lastRead } = useLastRead();
 
   return (
     <div className="space-y-6 fade-in">
@@ -36,6 +38,34 @@ export default function Index() {
         </blockquote>
         <p className="text-sm opacity-80 font-body">— {dailyVerse.ref}</p>
       </motion.section>
+
+      {/* Continue Reading */}
+      {lastRead && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+        >
+          <Link
+            to={`/read?book=${encodeURIComponent(lastRead.book)}&chapter=${lastRead.chapter}`}
+            className="flex items-center gap-4 rounded-xl bg-card border border-border p-4 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+          >
+            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              <PlayCircle size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5">Continue Reading</p>
+              <p className="font-display font-bold text-card-foreground truncate">
+                {lastRead.book} {lastRead.chapter}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDistanceToNow(lastRead.timestamp, { addSuffix: true })}
+              </p>
+            </div>
+            <BookOpen size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+          </Link>
+        </motion.section>
+      )}
 
       {/* Reading Streak */}
       <motion.section

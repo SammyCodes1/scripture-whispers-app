@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
@@ -8,6 +9,7 @@ import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import { useReadingHistory } from '@/hooks/useReadingHistory';
+import { useLastRead } from '@/hooks/useLastRead';
 import VerseShareCard from '@/components/VerseShareCard';
 import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
@@ -26,6 +28,7 @@ export interface SavedVerse {
 
 export default function Reader() {
   const { version, setVersion } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [view, setView] = useState<View>('books');
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const versionRef = useRef<HTMLDivElement>(null);
@@ -36,12 +39,34 @@ export default function Reader() {
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
+  const hasRestoredRef = useRef(false);
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
   const { recordReading } = useReadingStreak();
   const { recordChapter, isChapterRead, bookStats } = useReadingHistory();
+  const { savePosition } = useLastRead();
+
+  // Restore from URL params (deep link / "Continue Reading")
+  useEffect(() => {
+    if (hasRestoredRef.current) return;
+    const bookParam = searchParams.get('book');
+    const chapterParam = searchParams.get('chapter');
+    if (bookParam && chapterParam) {
+      const bookExists = BIBLE_BOOKS.find(b => b.name === bookParam);
+      const ch = parseInt(chapterParam, 10);
+      if (bookExists && ch > 0 && ch <= bookExists.chapters) {
+        setSelectedBook(bookParam);
+        setSelectedChapter(ch);
+        setTestament(bookExists.testament);
+        setView('reading');
+        // Clean URL params
+        setSearchParams({}, { replace: true });
+      }
+    }
+    hasRestoredRef.current = true;
+  }, [searchParams, setSearchParams]);
 
   // Close version picker on click outside
   useEffect(() => {
@@ -59,7 +84,14 @@ export default function Reader() {
     let cancelled = false;
     setLoading(true);
     fetchChapterCached(selectedBook, selectedChapter, version)
-      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); recordChapter(selectedBook, selectedChapter); } })
+      .then(data => {
+        if (!cancelled && data.verses) {
+          setVerses(data.verses);
+          recordReading();
+          recordChapter(selectedBook, selectedChapter);
+          savePosition(selectedBook, selectedChapter);
+        }
+      })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
