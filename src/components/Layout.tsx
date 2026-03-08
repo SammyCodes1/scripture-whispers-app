@@ -12,6 +12,7 @@ const NAV_ITEMS = [
 ];
 
 const MENU_ITEMS = [
+  { path: '/confessions', icon: Flame, label: 'Confessions & Prayers' },
   { path: '/plans', icon: CalendarDays, label: 'Reading Plans' },
   { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks & Highlights' },
   { path: '/settings', icon: Settings, label: 'Settings' },
