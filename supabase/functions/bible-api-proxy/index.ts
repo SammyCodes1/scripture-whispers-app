@@ -12,10 +12,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const API_BIBLE_KEY = Deno.env.get('API_BIBLE_KEY');
-  console.log(`API_BIBLE_KEY present: ${!!API_BIBLE_KEY}, length: ${API_BIBLE_KEY?.length}, first3: ${API_BIBLE_KEY?.substring(0, 3)}`);
+  const rawApiKey = Deno.env.get('API_BIBLE_KEY');
+  const API_BIBLE_KEY = rawApiKey?.trim().replace(/^['\"]|['\"]$/g, '');
+
   if (!API_BIBLE_KEY) {
     return new Response(JSON.stringify({ error: 'API_BIBLE_KEY not configured' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (API_BIBLE_KEY.length < 30) {
+    return new Response(JSON.stringify({ error: 'API_BIBLE_KEY appears invalid (too short). Re-save the full key from API.Bible.' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -33,13 +41,10 @@ serve(async (req) => {
     let apiUrl = '';
 
     if (action === 'chapter' && chapterId) {
-      // Get chapter content
       apiUrl = `${API_BIBLE_BASE}/bibles/${bibleId}/chapters/${chapterId}?content-type=text&include-verse-numbers=false`;
     } else if (action === 'verses' && chapterId) {
-      // Get all verses in a chapter
       apiUrl = `${API_BIBLE_BASE}/bibles/${bibleId}/chapters/${chapterId}/verses`;
     } else if (action === 'verse' && verseId) {
-      // Get single verse content
       apiUrl = `${API_BIBLE_BASE}/bibles/${bibleId}/verses/${verseId}?content-type=text&include-verse-numbers=false`;
     } else if (action === 'search' && query) {
       apiUrl = `${API_BIBLE_BASE}/bibles/${bibleId}/search?query=${encodeURIComponent(query)}&limit=50`;
@@ -55,12 +60,19 @@ serve(async (req) => {
     }
 
     const response = await fetch(apiUrl, {
-      headers: { 'api-key': API_BIBLE_KEY },
+      headers: {
+        'api-key': API_BIBLE_KEY,
+        'x-api-key': API_BIBLE_KEY,
+        'Accept': 'application/json',
+      },
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API.Bible call failed [${response.status}]: ${errorText}`);
+      const authHint = response.status === 401
+        ? ' Unauthorized key. Re-save API_BIBLE_KEY from API.Bible dashboard (full key, no quotes/spaces).'
+        : '';
+      throw new Error(`API.Bible call failed [${response.status}]: ${errorText}${authHint}`);
     }
 
     const data = await response.json();
