@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 
 interface Comment {
@@ -18,6 +19,7 @@ interface Post {
   content: string;
   likes: number;
   image_url: string | null;
+  device_id: string | null;
   created_at: string;
   comments?: Comment[];
 }
@@ -142,7 +144,8 @@ export default function Community() {
       title: title.trim(),
       content: content.trim(),
       image_url: imageUrl,
-    });
+      device_id: getDeviceId(),
+    } as any);
 
     if (error) {
       toast.error('Failed to publish');
@@ -165,6 +168,18 @@ export default function Community() {
     setLikedPosts(newLikedPosts);
     localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
     await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
+
+    // Notify post author on new like (not on unlike, not on own post)
+    if (!isLiked && post.device_id && post.device_id !== getDeviceId()) {
+      await supabase.from('notifications').insert({
+        device_id: post.device_id,
+        post_id: post.id,
+        type: 'like',
+        actor_name: 'Someone',
+        message: `Someone liked your post "${post.title}"`,
+      } as any);
+    }
+
     loadPosts();
   };
 
@@ -181,6 +196,18 @@ export default function Community() {
       setCommentText(prev => ({ ...prev, [postId]: '' }));
       toast.success('Comment added');
       loadComments(postId);
+
+      // Notify the post author
+      const post = posts.find(p => p.id === postId);
+      if (post?.device_id && post.device_id !== getDeviceId()) {
+        await supabase.from('notifications').insert({
+          device_id: post.device_id,
+          post_id: postId,
+          type: 'comment',
+          actor_name: 'Someone',
+          message: `Someone commented on your post "${post.title}"`,
+        } as any);
+      }
     }
   };
 

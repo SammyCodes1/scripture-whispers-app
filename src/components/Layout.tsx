@@ -3,6 +3,7 @@ import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Sen
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDownloadState, subscribeDownload } from '@/hooks/useDownloadManager';
+import NotificationBell from '@/components/NotificationBell';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
@@ -49,6 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h1 className="font-display text-xl font-bold text-foreground">HolyWord</h1>
           </Link>
           <div className="flex items-center gap-1">
+            <NotificationBell />
             {dlState.active && (
               <Link
                 to="/install"
