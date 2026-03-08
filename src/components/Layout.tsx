@@ -3,6 +3,7 @@ import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Sen
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDownloadState, subscribeDownload } from '@/hooks/useDownloadManager';
+import NotificationBell from '@/components/NotificationBell';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
