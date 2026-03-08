@@ -424,6 +424,13 @@ export default function Community() {
           </div>
         ))}
       </div>
+
+      {/* Author Profile Popup */}
+      <AuthorProfile
+        authorName={profileAuthor || ''}
+        open={!!profileAuthor}
+        onClose={() => setProfileAuthor(null)}
+      />
     </div>
   );
 }
