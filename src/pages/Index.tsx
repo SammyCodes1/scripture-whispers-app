@@ -22,6 +22,7 @@ export default function Index() {
   const dailyTopic = getDailyTopic();
   const dailyConfession = getDailyConfession();
   const dailyPrayer = getDailyPrayer();
+  const { lastRead } = useLastRead();
 
   return (
     <div className="space-y-6 fade-in">
