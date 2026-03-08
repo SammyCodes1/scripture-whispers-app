@@ -7,7 +7,9 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
+import { useReadingHistory } from '@/hooks/useReadingHistory';
 import VerseShareCard from '@/components/VerseShareCard';
+import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
 import { toast } from 'sonner';
 
@@ -39,6 +41,7 @@ export default function Reader() {
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
   const { recordReading } = useReadingStreak();
+  const { recordChapter, isChapterRead, bookStats } = useReadingHistory();
 
   // Close version picker on click outside
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function Reader() {
     let cancelled = false;
     setLoading(true);
     fetchChapterCached(selectedBook, selectedChapter, version)
-      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); } })
+      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); recordChapter(selectedBook, selectedChapter); } })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -163,6 +166,7 @@ export default function Reader() {
       <AnimatePresence mode="wait">
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ReadingStats />
             <div className="flex gap-2 mb-4">
               {(['OT', 'NT'] as const).map(t => (
                 <button key={t} onClick={() => setTestament(t)}
@@ -173,14 +177,31 @@ export default function Reader() {
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {books.map(book => (
-                <button key={book.name} onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
-                  className="text-left rounded-lg bg-card border border-border p-3 hover:shadow-md transition-all hover:-translate-y-0.5"
-                >
-                  <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
-                  <p className="text-xs text-muted-foreground">{book.chapters} chapters</p>
-                </button>
-              ))}
+              {books.map(book => {
+                const stats = bookStats[book.name];
+                const readCount = stats?.read || 0;
+                const isComplete = readCount === book.chapters;
+                return (
+                  <button key={book.name} onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
+                    className={`text-left rounded-lg bg-card border p-3 hover:shadow-md transition-all hover:-translate-y-0.5 ${isComplete ? 'border-green-500/40' : 'border-border'}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
+                      {readCount > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isComplete ? 'bg-green-500/15 text-green-600' : 'bg-primary/10 text-primary'}`}>
+                          {readCount}/{book.chapters}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{book.chapters} chapters</p>
+                    {readCount > 0 && (
+                      <div className="mt-1.5 h-1 rounded-full bg-border overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${(readCount / book.chapters) * 100}%` }} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -188,13 +209,23 @@ export default function Reader() {
         {view === 'chapters' && currentBook && (
           <motion.div key="chapters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
-              {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => (
-                <button key={ch} onClick={() => { setSelectedChapter(ch); setView('reading'); }}
-                  className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center font-display font-bold text-card-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  {ch}
-                </button>
-              ))}
+              {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => {
+                const read = isChapterRead(selectedBook, ch);
+                return (
+                  <button key={ch} onClick={() => { setSelectedChapter(ch); setView('reading'); }}
+                    className={`aspect-square rounded-lg border flex items-center justify-center font-display font-bold transition-colors relative ${
+                      read
+                        ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
+                        : 'bg-card border-border text-card-foreground hover:bg-primary hover:text-primary-foreground'
+                    }`}
+                  >
+                    {ch}
+                    {read && (
+                      <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-green-500" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
