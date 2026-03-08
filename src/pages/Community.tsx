@@ -154,6 +154,7 @@ export default function Community() {
     if (error) {
       toast.error('Failed to publish');
     } else {
+      localStorage.setItem('hw-community-author', author.trim());
       setTitle('');
       setContent('');
       removeFile();
