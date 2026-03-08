@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download } from 'lucide-react';
+import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
 ];
 
 const MENU_ITEMS = [
+  { path: '/confessions', icon: Flame, label: 'Confessions & Prayers' },
   { path: '/plans', icon: CalendarDays, label: 'Reading Plans' },
   { path: '/bookmarks', icon: Bookmark, label: 'Bookmarks & Highlights' },
   { path: '/settings', icon: Settings, label: 'Settings' },

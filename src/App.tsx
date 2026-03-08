@@ -14,6 +14,7 @@ import SearchPage from "./pages/SearchPage";
 import SettingsPage from "./pages/Settings";
 import FeedbackPage from "./pages/Feedback";
 import InstallPage from "./pages/Install";
+import ConfessionsPage from "./pages/Confessions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/confessions" element={<ConfessionsPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/install" element={<InstallPage />} />
               <Route path="*" element={<NotFound />} />
