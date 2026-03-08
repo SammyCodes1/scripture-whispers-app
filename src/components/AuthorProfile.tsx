@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, UserCheck, Heart, MessageCircle, FileText } from 'lucide-react';
+import { X, UserPlus, UserCheck, Heart, MessageCircle, FileText, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
