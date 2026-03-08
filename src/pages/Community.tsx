@@ -444,6 +444,7 @@ export default function Community() {
         authorName={profileAuthor || ''}
         open={!!profileAuthor}
         onClose={() => setProfileAuthor(null)}
+        isSelf={!!author.trim() && profileAuthor === author.trim()}
       />
     </div>
   );
