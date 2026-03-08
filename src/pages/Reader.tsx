@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
-import { useTheme } from '@/contexts/ThemeContext';
+import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
@@ -22,8 +22,10 @@ export interface SavedVerse {
 }
 
 export default function Reader() {
-  const { version } = useTheme();
+  const { version, setVersion } = useTheme();
   const [view, setView] = useState<View>('books');
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
+  const versionRef = useRef<HTMLDivElement>(null);
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(0);
   const [testament, setTestament] = useState<'OT' | 'NT'>('OT');
@@ -36,6 +38,17 @@ export default function Reader() {
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
   const { recordReading } = useReadingStreak();
+
+  // Close version picker on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (versionRef.current && !versionRef.current.contains(e.target as Node)) {
+        setShowVersionPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
@@ -109,9 +122,40 @@ export default function Reader() {
               {isPlaying ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
           )}
-          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-            {version.toUpperCase()}
-          </span>
+          <div className="relative" ref={versionRef}>
+            <button
+              onClick={() => setShowVersionPicker(prev => !prev)}
+              className="flex items-center gap-1 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+            >
+              {version.toUpperCase()}
+              <ChevronDown size={12} />
+            </button>
+
+            <AnimatePresence>
+              {showVersionPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1 z-50 bg-card border border-border rounded-lg shadow-lg overflow-hidden min-w-[180px]"
+                >
+                  {BIBLE_VERSIONS.map(v => (
+                    <button
+                      key={v.id}
+                      onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                        version === v.id ? 'bg-primary/10 text-primary font-medium' : 'text-card-foreground'
+                      }`}
+                    >
+                      <span>{v.name}</span>
+                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
