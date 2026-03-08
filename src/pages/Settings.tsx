@@ -3,6 +3,7 @@ import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/c
 import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 import DailyReminderSettings from '@/components/DailyReminderSettings';
+import VoiceSettings from '@/components/VoiceSettings';
 
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
@@ -110,6 +111,9 @@ export default function SettingsPage() {
 
       {/* Daily Reminder */}
       <DailyReminderSettings />
+
+      {/* Voice Selection */}
+      <VoiceSettings />
 
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
