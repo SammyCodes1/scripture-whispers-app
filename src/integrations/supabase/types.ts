@@ -51,6 +51,7 @@ export type Database = {
           author_name: string
           content: string
           created_at: string
+          device_id: string | null
           id: string
           image_url: string | null
           likes: number
@@ -60,6 +61,7 @@ export type Database = {
           author_name?: string
           content: string
           created_at?: string
+          device_id?: string | null
           id?: string
           image_url?: string | null
           likes?: number
@@ -69,12 +71,54 @@ export type Database = {
           author_name?: string
           content?: string
           created_at?: string
+          device_id?: string | null
           id?: string
           image_url?: string | null
           likes?: number
           title?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_name: string
+          created_at: string
+          device_id: string
+          id: string
+          message: string
+          post_id: string
+          read: boolean
+          type: string
+        }
+        Insert: {
+          actor_name?: string
+          created_at?: string
+          device_id: string
+          id?: string
+          message: string
+          post_id: string
+          read?: boolean
+          type: string
+        }
+        Update: {
+          actor_name?: string
+          created_at?: string
+          device_id?: string
+          id?: string
+          message?: string
+          post_id?: string
+          read?: boolean
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_verses: {
         Row: {
