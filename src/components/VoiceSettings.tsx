@@ -33,7 +33,7 @@ export default function VoiceSettings() {
   const previewVoice = (voiceURI: string) => {
     speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance('The Lord is my shepherd; I shall not want.');
-    utt.rate = 0.9;
+    utt.rate = speed;
     const voice = speechSynthesis.getVoices().find(v => v.voiceURI === voiceURI);
     if (voice) utt.voice = voice;
     speechSynthesis.speak(utt);
