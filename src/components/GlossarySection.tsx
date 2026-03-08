@@ -1,12 +1,19 @@
-import { useState } from 'react';
-import { BookA, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { BookA, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { GLOSSARY } from '@/data/glossaryData';
 
 export default function GlossarySection() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [search, setSearch] = useState('');
 
-  const displayed = showAll ? GLOSSARY : GLOSSARY.slice(0, 8);
+  const filtered = useMemo(() => {
+    if (!search.trim()) return GLOSSARY;
+    const q = search.toLowerCase();
+    return GLOSSARY.filter(e => e.term.toLowerCase().includes(q) || e.definition.toLowerCase().includes(q));
+  }, [search]);
+
+  const displayed = search ? filtered : showAll ? GLOSSARY : GLOSSARY.slice(0, 8);
 
   return (
     <div>
