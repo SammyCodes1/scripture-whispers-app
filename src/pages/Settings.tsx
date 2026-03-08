@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { THEMES, BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
-import { Trash2, Check } from 'lucide-react';
+import { THEMES, BIBLE_VERSIONS, FONT_SIZES, useTheme } from '@/contexts/ThemeContext';
+import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { theme, setTheme, version, setVersion } = useTheme();
+  const { theme, setTheme, version, setVersion, fontSize, setFontSize } = useTheme();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = () => {
