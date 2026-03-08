@@ -12,12 +12,29 @@ interface Announcement {
   created_at: string;
 }
 
+const SEEN_KEY = 'hw-seen-announcement-ids';
+
+function getSeenIds(): Set<string> {
+  try {
+    const saved = localStorage.getItem(SEEN_KEY);
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveSeenIds(ids: Set<string>) {
+  localStorage.setItem(SEEN_KEY, JSON.stringify([...ids]));
+}
+
 export default function NotificationBell() {
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'notifications' | 'announcements'>('notifications');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [seenIds, setSeenIds] = useState<Set<string>>(getSeenIds);
   const ref = useRef<HTMLDivElement>(null);
+
+  const unreadAnnouncementCount = announcements.filter(a => !seenIds.has(a.id)).length;
+  const totalUnread = unreadCount + unreadAnnouncementCount;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -49,8 +66,22 @@ export default function NotificationBell() {
   }, []);
 
   const handleOpen = () => {
+    const wasOpen = open;
     setOpen(prev => !prev);
-    if (!open && unreadCount > 0) markAllRead();
+    if (!wasOpen && unreadCount > 0) markAllRead();
+  };
+
+  const handleTabSwitch = (t: 'notifications' | 'announcements') => {
+    setTab(t);
+    if (t === 'announcements' && unreadAnnouncementCount > 0) {
+      const updated = new Set(seenIds);
+      announcements.forEach(a => updated.add(a.id));
+      setSeenIds(updated);
+      saveSeenIds(updated);
+    }
+    if (t === 'notifications' && unreadCount > 0) {
+      markAllRead();
+    }
   };
 
   const timeAgo = (ts: string) => {
@@ -69,9 +100,9 @@ export default function NotificationBell() {
         className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors relative"
       >
         <Bell size={20} />
-        {unreadCount > 0 && (
+        {totalUnread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {totalUnread > 9 ? '9+' : totalUnread}
           </span>
         )}
       </button>
@@ -88,24 +119,34 @@ export default function NotificationBell() {
             {/* Tabs */}
             <div className="flex border-b border-border">
               <button
-                onClick={() => setTab('notifications')}
-                className={`flex-1 px-3 py-2.5 text-xs font-bold tracking-wide transition-colors ${
+                onClick={() => handleTabSwitch('notifications')}
+                className={`flex-1 px-3 py-2.5 text-xs font-bold tracking-wide transition-colors relative ${
                   tab === 'notifications'
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Notifications
+                {unreadCount > 0 && tab !== 'notifications' && (
+                  <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </button>
               <button
-                onClick={() => setTab('announcements')}
-                className={`flex-1 px-3 py-2.5 text-xs font-bold tracking-wide transition-colors ${
+                onClick={() => handleTabSwitch('announcements')}
+                className={`flex-1 px-3 py-2.5 text-xs font-bold tracking-wide transition-colors relative ${
                   tab === 'announcements'
                     ? 'text-primary border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Announcements
+                {unreadAnnouncementCount > 0 && tab !== 'announcements' && (
+                  <span className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold">
+                    {unreadAnnouncementCount > 9 ? '9+' : unreadAnnouncementCount}
+                  </span>
+                )}
               </button>
             </div>
 
@@ -150,7 +191,7 @@ export default function NotificationBell() {
                 ) : (
                   <div className="divide-y divide-border">
                     {announcements.map(a => (
-                      <div key={a.id} className="px-4 py-3 hover:bg-secondary/50 transition-colors">
+                      <div key={a.id} className={`px-4 py-3 hover:bg-secondary/50 transition-colors ${!seenIds.has(a.id) ? 'bg-primary/5' : ''}`}>
                         <div className="flex items-start gap-3">
                           <div className="mt-0.5 p-1.5 rounded-full bg-primary/10 text-primary shrink-0">
                             <Megaphone size={14} />
@@ -162,6 +203,9 @@ export default function NotificationBell() {
                               {new Date(a.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
+                          {!seenIds.has(a.id) && (
+                            <span className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+                          )}
                         </div>
                       </div>
                     ))}
