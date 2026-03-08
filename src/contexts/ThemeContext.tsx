@@ -21,6 +21,7 @@ export const BIBLE_VERSIONS = [
   { id: 'web', name: 'WEB', full: 'World English Bible' },
   { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
   { id: 'ampc', name: 'AMPC', full: 'Amplified Bible, Classic' },
+  { id: 'nlt', name: 'NLT', full: 'New Living Translation' },
 ] as const;
 
 export const FONT_SIZES = [
