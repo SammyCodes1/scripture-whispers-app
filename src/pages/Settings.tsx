@@ -61,6 +61,29 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Font Size */}
+      <section>
+        <h3 className="font-display text-base font-bold text-foreground mb-3 flex items-center gap-2">
+          <Type size={18} /> Font Size
+        </h3>
+        <div className="flex gap-2">
+          {FONT_SIZES.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFontSize(f.id)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                fontSize === f.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
+              }`}
+            >
+              {f.name}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Preview: <span style={{ fontSize: FONT_SIZES.find(f => f.id === fontSize)?.value }}>The Lord is my shepherd.</span></p>
+      </section>
+
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
         <h3 className="font-display text-base font-bold text-foreground mb-2">Danger Zone</h3>
