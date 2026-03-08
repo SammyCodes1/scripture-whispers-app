@@ -117,6 +117,9 @@ export default function SettingsPage() {
       {/* Voice Selection */}
       <VoiceSettings />
 
+      {/* Audio Speed */}
+      <AudioSpeedSettings />
+
       {/* Offline Download */}
       <OfflineDownload />
 
