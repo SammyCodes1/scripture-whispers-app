@@ -45,7 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 h-14 max-w-4xl mx-auto">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">📖</span>
+            <img src="/logo.png" alt="HolyWord" className="w-8 h-8 rounded-md object-cover" />
             <h1 className="font-display text-xl font-bold text-foreground">HolyWord</h1>
           </Link>
           <div className="flex items-center gap-1">
