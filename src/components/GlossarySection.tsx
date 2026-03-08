@@ -21,6 +21,16 @@ export default function GlossarySection() {
         <BookA size={18} className="text-primary" />
         <h2 className="font-display text-lg font-bold text-foreground">Glossary</h2>
       </div>
+      <div className="relative mb-3">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search terms..."
+          className="w-full pl-8 pr-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
       <div className="space-y-1.5">
         {displayed.map(entry => {
           const isOpen = expanded === entry.term;
