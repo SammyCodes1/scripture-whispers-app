@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
+import { useChapterAudio } from '@/hooks/useChapterAudio';
+import VerseShareCard from '@/components/VerseShareCard';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
@@ -27,33 +29,20 @@ export default function Reader() {
   const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>('hw-saved-verses', []);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
+  const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
+  const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
 
-  // Fetch real verses when book/chapter/version changes
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
-    
     let cancelled = false;
     setLoading(true);
-    
     fetchChapter(selectedBook, selectedChapter, version)
-      .then(data => {
-        if (!cancelled && data.verses) {
-          setVerses(data.verses);
-        }
-      })
-      .catch(err => {
-        if (!cancelled) {
-          console.error('Bible API error:', err);
-          toast.error('Could not load verses. Please try again.');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
+      .then(data => { if (!cancelled && data.verses) setVerses(data.verses); })
+      .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
+      .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [selectedBook, selectedChapter, version, view]);
 
@@ -66,15 +55,7 @@ export default function Reader() {
       setSavedVerses(prev => prev.filter(v => !(v.ref === ref && v.type === type)));
       toast.info(`${type === 'bookmark' ? 'Bookmark' : 'Highlight'} removed`);
     } else {
-      const newVerse: SavedVerse = {
-        id: `${ref}-${type}-${Date.now()}`,
-        ref,
-        text: verse.text,
-        type,
-        color: type === 'highlight' ? 'yellow' : undefined,
-        createdAt: Date.now(),
-      };
-      setSavedVerses(prev => [...prev, newVerse]);
+      setSavedVerses(prev => [...prev, { id: `${ref}-${type}-${Date.now()}`, ref, text: verse.text, type, color: type === 'highlight' ? 'yellow' : undefined, createdAt: Date.now() }]);
       toast.success(`${type === 'bookmark' ? 'Bookmarked' : 'Highlighted'} ${ref}`);
     }
   };
@@ -89,13 +70,15 @@ export default function Reader() {
   const copyVerse = (index: number) => {
     const verse = verses[index];
     if (!verse) return;
-    const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
-    const verseText = `${ref}\n${verse.text}`;
-    navigator.clipboard.writeText(verseText);
+    navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse}\n${verse.text}`);
     toast.success('Verse copied to clipboard');
   };
 
-  const versionLabel = version.toUpperCase();
+  const openShare = (index: number) => {
+    const verse = verses[index];
+    if (!verse) return;
+    setShareVerse({ ref: `${verse.book_name} ${verse.chapter}:${verse.verse}`, text: verse.text });
+  };
 
   return (
     <div className="fade-in">
@@ -103,7 +86,7 @@ export default function Reader() {
       <div className="flex items-center gap-2 mb-4">
         {view !== 'books' && (
           <button
-            onClick={() => { setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
+            onClick={() => { stop(); setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
             className="p-2 rounded-lg hover:bg-secondary text-foreground"
           >
             <ChevronLeft size={20} />
@@ -114,23 +97,29 @@ export default function Reader() {
           {view === 'chapters' && selectedBook}
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
-        <span className="ml-auto text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-          {versionLabel}
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          {view === 'reading' && verses.length > 0 && (
+            <button
+              onClick={toggle}
+              className={`p-2 rounded-lg transition-colors ${isPlaying ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary text-muted-foreground'}`}
+              title={isPlaying ? 'Stop reading' : 'Read chapter aloud'}
+            >
+              {isPlaying ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          )}
+          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
+            {version.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
-        {/* Books view */}
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="flex gap-2 mb-4">
               {(['OT', 'NT'] as const).map(t => (
-                <button
-                  key={t}
-                  onClick={() => setTestament(t)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    testament === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-                  }`}
+                <button key={t} onClick={() => setTestament(t)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${testament === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
                 >
                   {t === 'OT' ? 'Old Testament' : 'New Testament'}
                 </button>
@@ -138,9 +127,7 @@ export default function Reader() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {books.map(book => (
-                <button
-                  key={book.name}
-                  onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
+                <button key={book.name} onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
                   className="text-left rounded-lg bg-card border border-border p-3 hover:shadow-md transition-all hover:-translate-y-0.5"
                 >
                   <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
@@ -151,14 +138,11 @@ export default function Reader() {
           </motion.div>
         )}
 
-        {/* Chapters view */}
         {view === 'chapters' && currentBook && (
           <motion.div key="chapters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
               {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => (
-                <button
-                  key={ch}
-                  onClick={() => { setSelectedChapter(ch); setView('reading'); }}
+                <button key={ch} onClick={() => { setSelectedChapter(ch); setView('reading'); }}
                   className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center font-display font-bold text-card-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   {ch}
@@ -168,7 +152,6 @@ export default function Reader() {
           </motion.div>
         )}
 
-        {/* Reading view */}
         {view === 'reading' && (
           <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {loading ? (
@@ -182,30 +165,24 @@ export default function Reader() {
                     key={i}
                     className={`group flex gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/20' : ''
-                    }`}
+                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px]">{verse.verse}</span>
-                     <p className="verse-text text-sm flex-1">{verse.text}</p>
-                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button
-                         onClick={() => copyVerse(i)}
-                         className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
-                       >
-                         <Copy size={14} />
-                       </button>
-                       <button
-                         onClick={() => saveVerse(i, 'bookmark')}
-                         className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
-                       >
-                         <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
-                       </button>
-                       <button
-                         onClick={() => saveVerse(i, 'highlight')}
-                         className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
-                       >
-                         <Highlighter size={14} />
-                       </button>
-                     </div>
+                    <p className="verse-text text-sm flex-1">{verse.text}</p>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openShare(i)} className="p-1 rounded text-muted-foreground hover:text-primary transition-colors" title="Share as image">
+                        <Share2 size={14} />
+                      </button>
+                      <button onClick={() => copyVerse(i)} className="p-1 rounded text-muted-foreground hover:text-primary transition-colors" title="Copy">
+                        <Copy size={14} />
+                      </button>
+                      <button onClick={() => saveVerse(i, 'bookmark')} className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}>
+                        <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
+                      </button>
+                      <button onClick={() => saveVerse(i, 'highlight')} className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}>
+                        <Highlighter size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {verses.length === 0 && !loading && (
@@ -216,6 +193,10 @@ export default function Reader() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {shareVerse && (
+        <VerseShareCard reference={shareVerse.ref} text={shareVerse.text} version={version} onClose={() => setShareVerse(null)} />
+      )}
     </div>
   );
 }
