@@ -1,41 +1,62 @@
-import { useState, useEffect, useRef } from 'react';
-import { Download, Loader2, CheckCircle2, Trash2, WifiOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Download, CheckCircle2, Trash2, WifiOff } from 'lucide-react';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
-import { downloadAllChapters, getCachedCount, getTotalChapters, clearCache, type DownloadProgress } from '@/hooks/useBibleCache';
+import { getCachedCount, getTotalChapters, clearCache } from '@/hooks/useBibleCache';
+import { getDownloadState, subscribeDownload, startGlobalDownload, cancelGlobalDownload } from '@/hooks/useDownloadManager';
 import { toast } from 'sonner';
 
 export default function OfflineDownload() {
   const { version } = useTheme();
-  const [selectedTranslation, setSelectedTranslation] = useState(version);
+  type BibleVersion = typeof BIBLE_VERSIONS[number]['id'];
+  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(version);
   const [cachedCount, setCachedCount] = useState(0);
-  const [downloading, setDownloading] = useState(false);
-  const [progress, setProgress] = useState<DownloadProgress | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+  const [dlState, setDlState] = useState(getDownloadState);
   const total = getTotalChapters();
+
+  // Subscribe to global download state
+  useEffect(() => {
+    setDlState(getDownloadState());
+    return subscribeDownload(() => {
+      const s = getDownloadState();
+      setDlState(s);
+      // When download finishes, refresh cached count and show toast
+      if (!s.active && s.progress === null) {
+        getCachedCount(selectedTranslation).then(setCachedCount);
+      }
+    });
+  }, [selectedTranslation]);
+
+  // If a download is active for a different translation, sync the selector
+  useEffect(() => {
+    if (dlState.active && dlState.translation) {
+      setSelectedTranslation(dlState.translation as BibleVersion);
+    }
+  }, [dlState.active, dlState.translation]);
 
   useEffect(() => {
     getCachedCount(selectedTranslation).then(setCachedCount);
-  }, [selectedTranslation, downloading]);
+  }, [selectedTranslation]);
 
-  const startDownload = async () => {
-    setDownloading(true);
-    abortRef.current = new AbortController();
-    try {
-      await downloadAllChapters(selectedTranslation, setProgress, abortRef.current.signal);
+  // Detect completion
+  useEffect(() => {
+    if (dlState.progress?.done) {
       toast.success('Bible downloaded for offline use!');
       getCachedCount(selectedTranslation).then(setCachedCount);
-    } catch {
-      toast.error('Download interrupted');
-    } finally {
-      setDownloading(false);
-      setProgress(null);
     }
+  }, [dlState.progress?.done]);
+
+  const downloading = dlState.active;
+  const progress = dlState.progress;
+  const pct = progress ? Math.round((progress.downloaded / progress.total) * 100) : 0;
+  const isFullyCached = cachedCount >= total;
+
+  const handleStart = () => {
+    startGlobalDownload(selectedTranslation);
   };
 
-  const cancelDownload = () => {
-    abortRef.current?.abort();
-    setDownloading(false);
-    setProgress(null);
+  const handleCancel = () => {
+    cancelGlobalDownload();
+    toast('Download cancelled');
   };
 
   const handleClear = async () => {
@@ -44,16 +65,13 @@ export default function OfflineDownload() {
     toast.success('Offline data cleared');
   };
 
-  const pct = progress ? Math.round((progress.downloaded / progress.total) * 100) : 0;
-  const isFullyCached = cachedCount >= total;
-
   return (
     <section>
       <h3 className="font-display text-base font-bold text-foreground mb-1 flex items-center gap-2">
         <WifiOff size={18} /> Offline Bible
       </h3>
       <p className="text-xs text-muted-foreground mb-3">
-        Download the full Bible for offline reading — no internet needed.
+        Download the full Bible for offline reading — no internet needed. The download continues even if you leave this page.
       </p>
 
       {/* Translation picker */}
@@ -111,7 +129,7 @@ export default function OfflineDownload() {
             <>
               {!isFullyCached && (
                 <button
-                  onClick={startDownload}
+                  onClick={handleStart}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
                 >
                   <Download size={16} />
@@ -130,7 +148,7 @@ export default function OfflineDownload() {
             </>
           ) : (
             <button
-              onClick={cancelDownload}
+              onClick={handleCancel}
               className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-destructive/10 transition"
             >
               Cancel
