@@ -30,8 +30,22 @@ export default function Topics() {
         Explore verses from both Old and New Testament organized by topic.
       </p>
 
+      <div className="mb-6 flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+        <Search size={18} className="text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search topics, verses, or references..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground text-foreground"
+        />
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="text-center text-muted-foreground py-8">No topics found matching your search.</p>
+      ) : (
       <div className="space-y-3">
-        {TOPICS.map(topic => {
+        {filtered.map(topic => {
           const isExpanded = expandedId === topic.id;
           return (
             <div key={topic.id} className="rounded-xl bg-card border border-border overflow-hidden">
