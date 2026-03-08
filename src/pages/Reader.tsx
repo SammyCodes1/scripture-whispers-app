@@ -42,7 +42,7 @@ export default function Reader() {
     let cancelled = false;
     setLoading(true);
     fetchChapter(selectedBook, selectedChapter, version)
-      .then(data => { if (!cancelled && data.verses) setVerses(data.verses); })
+      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); } })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };

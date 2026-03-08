@@ -31,6 +31,15 @@ export default function Index() {
         <p className="text-sm opacity-80 font-body">— {dailyVerse.ref}</p>
       </motion.section>
 
+      {/* Reading Streak */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <StreakCard />
+      </motion.section>
+
       {/* Daily Topic */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
