@@ -111,9 +111,40 @@ export default function Reader() {
               {isPlaying ? <VolumeX size={18} /> : <Volume2 size={18} />}
             </button>
           )}
-          <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full">
-            {version.toUpperCase()}
-          </span>
+          <div className="relative" ref={versionRef}>
+            <button
+              onClick={() => setShowVersionPicker(prev => !prev)}
+              className="flex items-center gap-1 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+            >
+              {version.toUpperCase()}
+              <ChevronDown size={12} />
+            </button>
+
+            <AnimatePresence>
+              {showVersionPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1 z-50 bg-card border border-border rounded-lg shadow-lg overflow-hidden min-w-[180px]"
+                >
+                  {BIBLE_VERSIONS.map(v => (
+                    <button
+                      key={v.id}
+                      onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
+                      className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                        version === v.id ? 'bg-primary/10 text-primary font-medium' : 'text-card-foreground'
+                      }`}
+                    >
+                      <span>{v.name}</span>
+                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
