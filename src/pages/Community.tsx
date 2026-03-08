@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
@@ -31,7 +31,9 @@ export default function Community() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [author, setAuthor] = useState('');
+  const [author, setAuthor] = useState(() => {
+    try { return localStorage.getItem('hw-community-author') || ''; } catch { return ''; }
+  });
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
@@ -152,6 +154,7 @@ export default function Community() {
     if (error) {
       toast.error('Failed to publish');
     } else {
+      localStorage.setItem('hw-community-author', author.trim());
       setTitle('');
       setContent('');
       removeFile();
@@ -241,13 +244,24 @@ export default function Community() {
     <div className="fade-in">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-xl font-bold text-foreground">Community</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-        >
-          {showForm ? <X size={16} /> : <Plus size={16} />}
-          {showForm ? 'Cancel' : 'Share Idea'}
-        </button>
+        <div className="flex items-center gap-2">
+          {author.trim() && (
+            <button
+              onClick={() => setProfileAuthor(author.trim())}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:opacity-90 transition"
+            >
+              <User size={16} />
+              My Profile
+            </button>
+          )}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+          >
+            {showForm ? <X size={16} /> : <Plus size={16} />}
+            {showForm ? 'Cancel' : 'Share Idea'}
+          </button>
+        </div>
       </div>
 
       {/* Create Post Form */}
@@ -430,6 +444,7 @@ export default function Community() {
         authorName={profileAuthor || ''}
         open={!!profileAuthor}
         onClose={() => setProfileAuthor(null)}
+        isSelf={!!author.trim() && profileAuthor === author.trim()}
       />
     </div>
   );
