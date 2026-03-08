@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { THEMES, BIBLE_VERSIONS, FONT_SIZES, useTheme } from '@/contexts/ThemeContext';
+import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/contexts/ThemeContext';
 import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { theme, setTheme, version, setVersion, fontSize, setFontSize } = useTheme();
+  const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = () => {
