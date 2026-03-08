@@ -29,10 +29,3 @@ export function isApiBibleTranslation(translation: string): boolean {
   return translation in API_BIBLE_TRANSLATIONS;
 }
 
-/** NLT translations served via the NLT API proxy */
-export const NLT_TRANSLATIONS = ['nlt'] as const;
-
-/** Check if a translation uses the NLT API */
-export function isNltTranslation(translation: string): boolean {
-  return (NLT_TRANSLATIONS as readonly string[]).includes(translation);
-}
