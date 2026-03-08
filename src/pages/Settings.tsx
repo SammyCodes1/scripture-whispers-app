@@ -122,6 +122,9 @@ export default function SettingsPage() {
       {/* Offline Download */}
       <OfflineDownload />
 
+      {/* Admin Announcement Panel */}
+      <AdminAnnouncementPanel />
+
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
         <h3 className="font-display text-base font-bold text-foreground mb-2">Danger Zone</h3>
