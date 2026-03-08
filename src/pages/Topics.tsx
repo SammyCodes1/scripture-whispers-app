@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { TOPICS } from '@/data/topicsData';
 import { useSearchParams } from 'react-router-dom';
 
@@ -8,6 +8,20 @@ export default function Topics() {
   const [searchParams] = useSearchParams();
   const initialTopic = searchParams.get('t') || '';
   const [expandedId, setExpandedId] = useState<string>(initialTopic);
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return TOPICS;
+    const q = search.toLowerCase();
+    return TOPICS.filter(topic =>
+      topic.name.toLowerCase().includes(q) ||
+      topic.description.toLowerCase().includes(q) ||
+      topic.verses.some(v => 
+        v.ref.toLowerCase().includes(q) || 
+        v.text.toLowerCase().includes(q)
+      )
+    );
+  }, [search]);
 
   return (
     <div className="fade-in">
