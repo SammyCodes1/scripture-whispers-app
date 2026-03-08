@@ -4,7 +4,8 @@ import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, Vol
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
+import { type BibleVerse } from '@/hooks/useBibleApi';
+import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import VerseShareCard from '@/components/VerseShareCard';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
@@ -54,7 +55,7 @@ export default function Reader() {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
     let cancelled = false;
     setLoading(true);
-    fetchChapter(selectedBook, selectedChapter, version)
+    fetchChapterCached(selectedBook, selectedChapter, version)
       .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); } })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });

@@ -4,6 +4,7 @@ import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 import DailyReminderSettings from '@/components/DailyReminderSettings';
 import VoiceSettings from '@/components/VoiceSettings';
+import OfflineDownload from '@/components/OfflineDownload';
 
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
@@ -114,6 +115,9 @@ export default function SettingsPage() {
 
       {/* Voice Selection */}
       <VoiceSettings />
+
+      {/* Offline Download */}
+      <OfflineDownload />
 
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
