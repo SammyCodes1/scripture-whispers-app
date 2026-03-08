@@ -13,6 +13,7 @@ import BookmarksPage from "./pages/Bookmarks";
 import SearchPage from "./pages/SearchPage";
 import SettingsPage from "./pages/Settings";
 import FeedbackPage from "./pages/Feedback";
+import InstallPage from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
