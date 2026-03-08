@@ -1,0 +1,1 @@
+CREATE POLICY "Allow insert for announcements" ON public.announcements FOR INSERT WITH CHECK (true);
