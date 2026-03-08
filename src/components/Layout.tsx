@@ -31,12 +31,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <span className="text-2xl">📖</span>
             <h1 className="font-display text-xl font-bold text-foreground">HolyWord</h1>
           </Link>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg hover:bg-secondary text-foreground transition-colors"
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/install"
+              className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+              title="Install App"
+            >
+              <Download size={20} />
+            </Link>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-lg hover:bg-secondary text-foreground transition-colors"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </header>
 
