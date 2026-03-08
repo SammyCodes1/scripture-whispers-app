@@ -174,9 +174,20 @@ export default function AuthorProfile({ authorName, open, onClose, isSelf }: Aut
                         </a>
                       )
                     )}
-                    <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-1"><Heart size={10} /> {p.likes}</span>
-                      <span>{timeAgo(p.created_at)}</span>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Heart size={10} /> {p.likes}</span>
+                        <span>{timeAgo(p.created_at)}</span>
+                      </div>
+                      {isSelf && (
+                        <button
+                          onClick={() => deletePost(p.id)}
+                          className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete post"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
