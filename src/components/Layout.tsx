@@ -23,7 +23,13 @@ const MENU_ITEMS = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dlState, setDlState] = useState(getDownloadState);
 
+  useEffect(() => {
+    return subscribeDownload(() => setDlState(getDownloadState()));
+  }, []);
+
+  const dlPct = dlState.progress ? Math.round((dlState.progress.downloaded / dlState.progress.total) * 100) : 0;
   return (
     <div className="min-h-screen bg-background theme-transition flex flex-col">
       {/* Header */}
