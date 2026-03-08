@@ -195,6 +195,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          author_name: string
+          avatar_url: string | null
+          created_at: string
+          device_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          author_name: string
+          avatar_url?: string | null
+          created_at?: string
+          device_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string
+          avatar_url?: string | null
+          created_at?: string
+          device_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
