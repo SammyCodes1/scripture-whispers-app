@@ -29,7 +29,7 @@ export default function OfflineDownload() {
   // If a download is active for a different translation, sync the selector
   useEffect(() => {
     if (dlState.active && dlState.translation) {
-      setSelectedTranslation(dlState.translation);
+      setSelectedTranslation(dlState.translation as BibleVersion);
     }
   }, [dlState.active, dlState.translation]);
 
