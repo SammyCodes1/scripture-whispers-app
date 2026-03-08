@@ -530,8 +530,18 @@ export const TOPICS: Topic[] = [
       { ref: '1 Timothy 4:4-5', text: 'For every creature of God is good, and nothing to be refused, if it be received with thanksgiving: For it is sanctified by the word of God and prayer.', testament: 'NT' },
       { ref: 'Psalm 50:14', text: 'Offer unto God thanksgiving; and pay thy vows unto the most High.', testament: 'OT' },
       { ref: 'Revelation 7:12', text: 'Saying, Amen: Blessing, and glory, and wisdom, and thanksgiving, and honour, and power, and might, be unto our God for ever and ever. Amen.', testament: 'NT' },
-      { ref: 'Psalm 106:1', text: 'Praise ye the Lord. O give thanks unto the Lord; for he is good: for his mercy endureth for ever.', testament: 'OT' },
-    ]
+       { ref: 'Psalm 106:1', text: 'Praise ye the Lord. O give thanks unto the Lord; for he is good: for his mercy endureth for ever.', testament: 'OT' },
+       { ref: 'Psalm 103:2', text: 'Bless the Lord, O my soul, and forget not all his benefits.', testament: 'OT' },
+       { ref: 'Daniel 2:23', text: 'I thank thee, and praise thee, O thou God of my fathers, who hast given me wisdom and might.', testament: 'OT' },
+       { ref: 'Psalm 75:1', text: 'Unto thee, O God, do we give thanks, unto thee do we give thanks: for that thy name is near thy wondrous works declare.', testament: 'OT' },
+       { ref: '2 Corinthians 2:14', text: 'Now thanks be unto God, which always causeth us to triumph in Christ.', testament: 'NT' },
+       { ref: 'Psalm 30:12', text: 'To the end that my glory may sing praise to thee, and not be silent. O Lord my God, I will give thanks unto thee for ever.', testament: 'OT' },
+       { ref: 'Philippians 1:3', text: 'I thank my God upon every remembrance of you.', testament: 'NT' },
+       { ref: 'Psalm 28:7', text: 'The Lord is my strength and my shield; my heart trusted in him, and I am helped: therefore my heart greatly rejoiceth; and with my song will I praise him.', testament: 'OT' },
+       { ref: '1 Corinthians 1:4', text: 'I thank my God always on your behalf, for the grace of God which is given you by Jesus Christ.', testament: 'NT' },
+       { ref: 'Psalm 138:1', text: 'I will praise thee with my whole heart: before the gods will I sing praise unto thee.', testament: 'OT' },
+       { ref: 'Romans 1:8', text: 'First, I thank my God through Jesus Christ for you all, that your faith is spoken of throughout the whole world.', testament: 'NT' },
+     ]
   },
   {
     id: 'courage',
