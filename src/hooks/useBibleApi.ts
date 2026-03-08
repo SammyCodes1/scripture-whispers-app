@@ -186,49 +186,9 @@ async function searchApiBible(query: string, translation: string, limit: number)
   };
 }
 
-// ─── NLT API support ────────────────────────────────────────
-
-async function callNltProxy(params: Record<string, string>): Promise<any> {
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/nlt-api-proxy?${qs}`, {
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`NLT proxy error ${res.status}: ${body}`);
-  }
-  return res.json();
-}
-
-async function fetchChapterFromNlt(book: string, chapter: number): Promise<ChapterResponse> {
-  const data = await callNltProxy({ action: 'chapter', book, chapter: String(chapter) });
-  return {
-    reference: data.reference || `${book} ${chapter}`,
-    verses: data.verses || [],
-    text: data.text || '',
-    translation_id: 'nlt',
-    translation_name: 'New Living Translation',
-  };
-}
-
-async function searchNlt(query: string, limit: number): Promise<SearchResponse> {
-  const data = await callNltProxy({ action: 'search', query });
-  return {
-    query,
-    results: (data.results || []).slice(0, limit),
-    count: data.count || 0,
-  };
-}
-
 // ─── Public API ──────────────────────────────────────────────
 
 export async function fetchChapter(book: string, chapter: number, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isNltTranslation(translation)) {
-    return fetchChapterFromNlt(book, chapter);
-  }
   if (isApiBibleTranslation(translation)) {
     return fetchChapterFromApiBible(book, chapter, translation);
   }
@@ -241,9 +201,6 @@ export async function fetchChapter(book: string, chapter: number, translation: s
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
-  if (isNltTranslation(translation)) {
-    return searchNlt(query, limit);
-  }
   if (isApiBibleTranslation(translation)) {
     return searchApiBible(query, translation, limit);
   }
@@ -261,14 +218,6 @@ export async function searchBible(query: string, translation: string = 'kjv', li
 }
 
 export async function fetchVerse(ref: string, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isNltTranslation(translation)) {
-    const match = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
-    if (match) {
-      const [, book, ch] = match;
-      return fetchChapterFromNlt(book, parseInt(ch, 10));
-    }
-    throw new Error(`Cannot parse verse reference for NLT: ${ref}`);
-  }
   if (isApiBibleTranslation(translation)) {
     const match = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
     if (match) {
