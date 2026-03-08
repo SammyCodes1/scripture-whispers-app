@@ -48,6 +48,7 @@ export default function Community() {
     } catch { return new Set(); }
   });
   const [profileAuthor, setProfileAuthor] = useState<string | null>(null);
+  const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
     loadPosts();
