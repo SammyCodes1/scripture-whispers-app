@@ -606,8 +606,18 @@ export const TOPICS: Topic[] = [
       { ref: '1 John 5:3', text: 'For this is the love of God, that we keep his commandments: and his commandments are not grievous.', testament: 'NT' },
       { ref: 'Deuteronomy 11:27', text: 'A blessing, if ye obey the commandments of the Lord your God, which I command you this day.', testament: 'OT' },
       { ref: 'Romans 12:1', text: 'I beseech you therefore, brethren, by the mercies of God, that ye present your bodies a living sacrifice, holy, acceptable unto God, which is your reasonable service.', testament: 'NT' },
-      { ref: 'Psalm 119:33', text: 'Teach me, O Lord, the way of thy statutes; and I shall keep it unto the end.', testament: 'OT' },
-    ]
+       { ref: 'Psalm 119:33', text: 'Teach me, O Lord, the way of thy statutes; and I shall keep it unto the end.', testament: 'OT' },
+       { ref: 'Deuteronomy 6:17', text: 'Ye shall diligently keep the commandments of the Lord your God, and his testimonies, and his statutes, which he hath commanded thee.', testament: 'OT' },
+       { ref: 'Philippians 2:12', text: 'Wherefore, my beloved, as ye have always obeyed, not as in my presence only, but now much more in my absence, work out your own salvation with fear and trembling.', testament: 'NT' },
+       { ref: 'Psalm 119:60', text: 'I made haste, and delayed not to keep thy commandments.', testament: 'OT' },
+       { ref: '1 John 2:3', text: 'And hereby we do know that we know him, if we keep his commandments.', testament: 'NT' },
+       { ref: 'Deuteronomy 13:4', text: 'Ye shall walk after the Lord your God, and fear him, and keep his commandments, and obey his voice, and ye shall serve him, and cleave unto him.', testament: 'OT' },
+       { ref: 'John 14:23', text: 'Jesus answered and said unto him, If a man love me, he will keep my words: and my Father will love him, and we will come unto him, and make our abode with him.', testament: 'NT' },
+       { ref: 'Psalm 119:11', text: 'Thy word have I hid in mine heart, that I might not sin against thee.', testament: 'OT' },
+       { ref: 'Matthew 28:20', text: 'Teaching them to observe all things whatsoever I have commanded you: and, lo, I am with you alway, even unto the end of the world.', testament: 'NT' },
+       { ref: 'Micah 6:8', text: 'He hath shewed thee, O man, what is good; and what doth the Lord require of thee, but to do justly, and to love mercy, and to walk humbly with thy God?', testament: 'OT' },
+       { ref: 'Revelation 22:14', text: 'Blessed are they that do his commandments, that they may have right to the tree of life.', testament: 'NT' },
+     ]
   },
   {
     id: 'joy',
