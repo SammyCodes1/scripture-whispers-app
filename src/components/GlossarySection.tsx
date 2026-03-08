@@ -55,7 +55,10 @@ export default function GlossarySection() {
           );
         })}
       </div>
-      {GLOSSARY.length > 8 && (
+      {search && filtered.length === 0 && (
+        <p className="text-xs text-muted-foreground text-center py-3">No terms found.</p>
+      )}
+      {!search && GLOSSARY.length > 8 && (
         <button
           onClick={() => setShowAll(!showAll)}
           className="mt-2 text-sm text-primary hover:underline font-medium"
