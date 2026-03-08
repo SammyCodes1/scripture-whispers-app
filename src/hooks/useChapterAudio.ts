@@ -9,6 +9,7 @@ export interface VoiceOption {
 }
 
 export const VOICE_STORAGE_KEY = 'hw-selected-voice';
+export const SPEED_STORAGE_KEY = 'hw-reading-speed';
 
 export function useChapterAudio(verses: BibleVerse[]) {
   const [isPlaying, setIsPlaying] = useState(false);
