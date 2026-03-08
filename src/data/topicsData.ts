@@ -492,8 +492,18 @@ export const TOPICS: Topic[] = [
       { ref: '2 Timothy 1:9', text: 'Who hath saved us, and called us with an holy calling, not according to our works, but according to his own purpose and grace, which was given us in Christ Jesus before the world began.', testament: 'NT' },
       { ref: 'Psalm 51:12', text: 'Restore unto me the joy of thy salvation; and uphold me with thy free spirit.', testament: 'OT' },
       { ref: 'John 5:24', text: 'Verily, verily, I say unto you, He that heareth my word, and believeth on him that sent me, hath everlasting life, and shall not come into condemnation; but is passed from death unto life.', testament: 'NT' },
-      { ref: 'Jonah 2:9', text: 'But I will sacrifice unto thee with the voice of thanksgiving; I will pay that that I have vowed. Salvation is of the Lord.', testament: 'OT' },
-    ]
+       { ref: 'Jonah 2:9', text: 'But I will sacrifice unto thee with the voice of thanksgiving; I will pay that that I have vowed. Salvation is of the Lord.', testament: 'OT' },
+       { ref: 'Mark 16:16', text: 'He that believeth and is baptized shall be saved; but he that believeth not shall be damned.', testament: 'NT' },
+       { ref: 'Psalm 68:20', text: 'He that is our God is the God of salvation; and unto God the Lord belong the issues from death.', testament: 'OT' },
+       { ref: 'Hebrews 9:28', text: 'So Christ was once offered to bear the sins of many; and unto them that look for him shall he appear the second time without sin unto salvation.', testament: 'NT' },
+       { ref: 'Isaiah 25:9', text: 'And it shall be said in that day, Lo, this is our God; we have waited for him, and he will save us.', testament: 'OT' },
+       { ref: '1 John 5:11-12', text: 'And this is the record, that God hath given to us eternal life, and this life is in his Son. He that hath the Son hath life; and he that hath not the Son of God hath not life.', testament: 'NT' },
+       { ref: 'Psalm 91:16', text: 'With long life will I satisfy him, and shew him my salvation.', testament: 'OT' },
+       { ref: 'Revelation 3:20', text: 'Behold, I stand at the door, and knock: if any man hear my voice, and open the door, I will come in to him, and will sup with him, and he with me.', testament: 'NT' },
+       { ref: 'Joel 2:32', text: 'And it shall come to pass, that whosoever shall call on the name of the Lord shall be delivered.', testament: 'OT' },
+       { ref: 'John 1:12', text: 'But as many as received him, to them gave he power to become the sons of God, even to them that believe on his name.', testament: 'NT' },
+       { ref: '2 Peter 3:9', text: 'The Lord is not slack concerning his promise, as some men count slackness; but is longsuffering to us-ward, not willing that any should perish, but that all should come to repentance.', testament: 'NT' },
+     ]
   },
   {
     id: 'gratitude',
