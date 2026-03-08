@@ -6,7 +6,6 @@ import SpeedControl from '@/components/SpeedControl';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { SPEED_STORAGE_KEY } from '@/hooks/useChapterAudio';
 import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
