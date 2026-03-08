@@ -104,40 +104,45 @@ export async function downloadAllChapters(
 ): Promise<void> {
   const total = getTotalChapters();
   let downloaded = 0;
+  const BATCH_SIZE = 15;
 
+  // Build flat list of all chapters
+  const allChapters: { book: string; chapter: number }[] = [];
   for (const book of BIBLE_BOOKS) {
     for (let ch = 1; ch <= book.chapters; ch++) {
-      if (signal?.aborted) return;
-
-      // Skip if already cached
-      const cached = await getCachedChapter(book.name, ch, translation);
-      if (cached) {
-        downloaded++;
-        continue;
-      }
-
-      try {
-        const data = await fetchChapter(book.name, ch, translation);
-        await cacheChapter(book.name, ch, translation, data);
-        downloaded++;
-        onProgress({ downloaded, total, currentBook: book.name, done: false });
-      } catch (err) {
-        // retry once
-        try {
-          await new Promise(r => setTimeout(r, 1000));
-          const data = await fetchChapter(book.name, ch, translation);
-          await cacheChapter(book.name, ch, translation, data);
-          downloaded++;
-          onProgress({ downloaded, total, currentBook: book.name, done: false });
-        } catch {
-          downloaded++;
-          onProgress({ downloaded, total, currentBook: book.name, done: false, error: `Failed: ${book.name} ${ch}` });
-        }
-      }
-
-      // Small delay to avoid hammering the API
-      await new Promise(r => setTimeout(r, 100));
+      allChapters.push({ book: book.name, chapter: ch });
     }
+  }
+
+  // Process in parallel batches
+  for (let i = 0; i < allChapters.length; i += BATCH_SIZE) {
+    if (signal?.aborted) return;
+
+    const batch = allChapters.slice(i, i + BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(async ({ book, chapter }) => {
+        // Skip if already cached
+        const cached = await getCachedChapter(book, chapter, translation);
+        if (cached) return;
+
+        try {
+          const data = await fetchChapter(book, chapter, translation);
+          await cacheChapter(book, chapter, translation, data);
+        } catch {
+          // retry once
+          try {
+            const data = await fetchChapter(book, chapter, translation);
+            await cacheChapter(book, chapter, translation, data);
+          } catch {
+            // skip failed chapter
+          }
+        }
+      })
+    );
+
+    downloaded += batch.length;
+    const lastBook = batch[batch.length - 1].book;
+    onProgress({ downloaded: Math.min(downloaded, total), total, currentBook: lastBook, done: false });
   }
 
   onProgress({ downloaded: total, total, currentBook: '', done: true });
