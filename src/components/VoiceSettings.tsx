@@ -12,6 +12,9 @@ interface BrowserVoice {
 export default function VoiceSettings() {
   const [voices, setVoices] = useState<BrowserVoice[]>([]);
   const [selectedVoice, setSelectedVoice] = useLocalStorage<string>(VOICE_STORAGE_KEY, '');
+  const [speed, setSpeed] = useLocalStorage<number>(SPEED_STORAGE_KEY, 1);
+
+  const SPEED_STEPS = [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
   useEffect(() => {
     const loadVoices = () => {
