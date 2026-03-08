@@ -18,6 +18,7 @@ import FeedbackPage from "./pages/Feedback";
 import InstallPage from "./pages/Install";
 import ConfessionsPage from "./pages/Confessions";
 import NotFound from "./pages/NotFound";
+import AnnouncementModal from "./components/AnnouncementModal";
 
 const queryClient = new QueryClient();
 
