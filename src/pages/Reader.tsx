@@ -185,21 +185,27 @@ export default function Reader() {
                     }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px]">{verse.verse}</span>
-                    <p className="verse-text text-sm flex-1">{verse.text}</p>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => saveVerse(i, 'bookmark')}
-                        className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
-                      >
-                        <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
-                      </button>
-                      <button
-                        onClick={() => saveVerse(i, 'highlight')}
-                        className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
-                      >
-                        <Highlighter size={14} />
-                      </button>
-                    </div>
+                     <p className="verse-text text-sm flex-1">{verse.text}</p>
+                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button
+                         onClick={() => copyVerse(i)}
+                         className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                       >
+                         <Copy size={14} />
+                       </button>
+                       <button
+                         onClick={() => saveVerse(i, 'bookmark')}
+                         className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
+                       >
+                         <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
+                       </button>
+                       <button
+                         onClick={() => saveVerse(i, 'highlight')}
+                         className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
+                       >
+                         <Highlighter size={14} />
+                       </button>
+                     </div>
                   </div>
                 ))}
                 {verses.length === 0 && !loading && (
