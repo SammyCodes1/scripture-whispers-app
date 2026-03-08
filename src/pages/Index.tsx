@@ -19,6 +19,8 @@ const quickActions = [
 export default function Index() {
   const dailyVerse = getDailyVerse();
   const dailyTopic = getDailyTopic();
+  const dailyConfession = getDailyConfession();
+  const dailyPrayer = getDailyPrayer();
 
   return (
     <div className="space-y-6 fade-in">
