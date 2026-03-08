@@ -152,6 +152,15 @@ export const TOPICS: Topic[] = [
       { ref: 'Nehemiah 9:17', text: 'But thou art a God ready to pardon, gracious and merciful, slow to anger, and of great kindness.', testament: 'OT' },
       { ref: '2 Corinthians 5:17', text: 'Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new.', testament: 'NT' },
       { ref: 'Psalm 103:3', text: 'Who forgiveth all thine iniquities; who healeth all thy diseases.', testament: 'OT' },
+      { ref: 'Matthew 6:15', text: 'But if ye forgive not men their trespasses, neither will your Father forgive your trespasses.', testament: 'NT' },
+      { ref: 'Psalm 130:3-4', text: 'If thou, Lord, shouldest mark iniquities, O Lord, who shall stand? But there is forgiveness with thee, that thou mayest be feared.', testament: 'OT' },
+      { ref: 'Luke 17:3-4', text: 'Take heed to yourselves: If thy brother trespass against thee, rebuke him; and if he repent, forgive him. And if he trespass against thee seven times in a day, and seven times in a day turn again to thee, saying, I repent; thou shalt forgive him.', testament: 'NT' },
+      { ref: 'Jeremiah 31:34', text: 'For I will forgive their iniquity, and I will remember their sin no more.', testament: 'OT' },
+      { ref: 'Romans 4:7', text: 'Saying, Blessed are they whose iniquities are forgiven, and whose sins are covered.', testament: 'NT' },
+      { ref: 'Psalm 51:1-2', text: 'Have mercy upon me, O God, according to thy lovingkindness: according unto the multitude of thy tender mercies blot out my transgressions. Wash me throughly from mine iniquity, and cleanse me from my sin.', testament: 'OT' },
+      { ref: 'Luke 23:34', text: 'Then said Jesus, Father, forgive them; for they know not what they do.', testament: 'NT' },
+      { ref: 'Numbers 14:18', text: 'The Lord is longsuffering, and of great mercy, forgiving iniquity and transgression.', testament: 'OT' },
+      { ref: 'Colossians 1:14', text: 'In whom we have redemption through his blood, even the forgiveness of sins.', testament: 'NT' },
     ]
   },
   {
