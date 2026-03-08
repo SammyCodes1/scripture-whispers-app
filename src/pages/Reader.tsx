@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2 } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
