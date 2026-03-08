@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 
 export default function OfflineDownload() {
   const { version } = useTheme();
-  const [selectedTranslation, setSelectedTranslation] = useState(version);
+  type BibleVersion = typeof BIBLE_VERSIONS[number]['id'];
+  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(version);
   const [cachedCount, setCachedCount] = useState(0);
   const [dlState, setDlState] = useState(getDownloadState);
   const total = getTotalChapters();
