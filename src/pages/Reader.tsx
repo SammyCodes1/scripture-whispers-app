@@ -59,7 +59,7 @@ export default function Reader() {
     let cancelled = false;
     setLoading(true);
     fetchChapterCached(selectedBook, selectedChapter, version)
-      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); } })
+      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); recordChapter(selectedBook, selectedChapter); } })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
