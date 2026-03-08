@@ -22,8 +22,10 @@ export interface SavedVerse {
 }
 
 export default function Reader() {
-  const { version } = useTheme();
+  const { version, setVersion } = useTheme();
   const [view, setView] = useState<View>('books');
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
+  const versionRef = useRef<HTMLDivElement>(null);
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(0);
   const [testament, setTestament] = useState<'OT' | 'NT'>('OT');
