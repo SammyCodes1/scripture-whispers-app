@@ -48,7 +48,7 @@ export interface SearchResponse {
 }
 
 // ─── API.Bible support ───────────────────────────────────────
-import { isApiBibleTranslation, API_BIBLE_TRANSLATIONS, BOOK_NAME_TO_API_BIBLE_ID } from '@/data/apiBibleMapping';
+import { isApiBibleTranslation, API_BIBLE_TRANSLATIONS, BOOK_NAME_TO_API_BIBLE_ID, isNltTranslation } from '@/data/apiBibleMapping';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
