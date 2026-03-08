@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, WifiOff } from 'lucide-react';
 import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
 import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
+import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
 
 interface SearchResult {
   ref: string;
@@ -15,12 +16,15 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [searchedOffline, setSearchedOffline] = useState(false);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
     setSearched(true);
+    setSearchedOffline(false);
 
+    // Try online search first
     try {
       const data = await searchBible(query.trim(), version, 50);
       const mapped = (data.results || []).map((r: ApiSearchResult) => ({
@@ -29,10 +33,21 @@ export default function SearchPage() {
       }));
       setResults(mapped);
       setTotalCount(data.count || mapped.length);
-    } catch (err) {
-      console.error('Search error:', err);
-      setResults([]);
-      setTotalCount(0);
+    } catch {
+      // Online failed — try offline search
+      try {
+        const offlineData = await searchCachedBible(query.trim(), version, 50);
+        const mapped = offlineData.results.map(r => ({
+          ref: r.reference,
+          text: r.text,
+        }));
+        setResults(mapped);
+        setTotalCount(offlineData.count);
+        setSearchedOffline(true);
+      } catch {
+        setResults([]);
+        setTotalCount(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -87,6 +102,12 @@ export default function SearchPage() {
       {/* Results */}
       {searched && (
         <div>
+          {searchedOffline && (
+            <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
+              <WifiOff size={14} />
+              <span>Searching offline downloaded Bible</span>
+            </div>
+          )}
           <p className="text-xs text-muted-foreground mb-3">
             Showing {results.length} of {totalCount} result{totalCount !== 1 ? 's' : ''}
           </p>
@@ -99,7 +120,7 @@ export default function SearchPage() {
             ))}
             {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8">
-                No verses found. Try a different keyword.
+                No verses found. Try a different keyword{!searchedOffline ? '' : ' or download the Bible for offline search'}.
               </p>
             )}
           </div>
