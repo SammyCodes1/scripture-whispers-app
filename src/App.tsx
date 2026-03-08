@@ -43,6 +43,7 @@ const App = () => {
       <ThemeProvider>
         <TooltipProvider>
           <Sonner />
+          <AnnouncementModal />
           {showIntro && <BibleIntro onComplete={handleIntroComplete} />}
           <BrowserRouter>
             <Layout>
