@@ -32,6 +32,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const dlPct = dlState.progress ? Math.round((dlState.progress.downloaded / dlState.progress.total) * 100) : 0;
   return (
     <div className="min-h-screen bg-background theme-transition flex flex-col">
+      {/* Global download progress bar */}
+      {dlState.active && (
+        <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-secondary">
+          <div
+            className="h-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${dlPct}%` }}
+          />
+        </div>
+      )}
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 h-14 max-w-4xl mx-auto">
