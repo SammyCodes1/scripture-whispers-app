@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { THEMES, BIBLE_VERSIONS, FONT_SIZES, useTheme } from '@/contexts/ThemeContext';
+import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/contexts/ThemeContext';
 import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
-  const { theme, setTheme, version, setVersion, fontSize, setFontSize } = useTheme();
+  const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = () => {
@@ -81,7 +81,30 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Preview: <span style={{ fontSize: FONT_SIZES.find(f => f.id === fontSize)?.value }}>The Lord is my shepherd.</span></p>
+        <p className="text-xs text-muted-foreground mt-2">Preview: <span style={{ fontSize: FONT_SIZES.find(f => f.id === fontSize)?.value, fontFamily: FONT_FAMILIES.find(f => f.id === fontFamily)?.value }}>The Lord is my shepherd.</span></p>
+      </section>
+
+      {/* Font Family */}
+      <section>
+        <h3 className="font-display text-base font-bold text-foreground mb-3 flex items-center gap-2">
+          <Type size={18} /> Font Family
+        </h3>
+        <div className="flex gap-2">
+          {FONT_FAMILIES.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setFontFamily(f.id)}
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                fontFamily === f.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
+              }`}
+            >
+              <span>{f.emoji}</span>
+              <span style={{ fontFamily: f.value }}>{f.name}</span>
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* Delete Account */}
