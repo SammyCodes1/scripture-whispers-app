@@ -244,13 +244,24 @@ export default function Community() {
     <div className="fade-in">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-xl font-bold text-foreground">Community</h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-        >
-          {showForm ? <X size={16} /> : <Plus size={16} />}
-          {showForm ? 'Cancel' : 'Share Idea'}
-        </button>
+        <div className="flex items-center gap-2">
+          {author.trim() && (
+            <button
+              onClick={() => setProfileAuthor(author.trim())}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:opacity-90 transition"
+            >
+              <User size={16} />
+              My Profile
+            </button>
+          )}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+          >
+            {showForm ? <X size={16} /> : <Plus size={16} />}
+            {showForm ? 'Cancel' : 'Share Idea'}
+          </button>
+        </div>
       </div>
 
       {/* Create Post Form */}
