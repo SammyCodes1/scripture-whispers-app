@@ -250,7 +250,5 @@ export default function BibleIntro({ onComplete }: { onComplete: () => void }) {
             )}
           </div>
         </motion.div>
-      ) : null}
-    </AnimatePresence>
   );
 }
