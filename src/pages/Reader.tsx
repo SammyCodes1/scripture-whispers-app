@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2 } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -84,6 +84,15 @@ export default function Reader() {
     if (!verse) return false;
     const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
     return savedVerses.some(v => v.ref === ref && v.type === type);
+  };
+
+  const copyVerse = (index: number) => {
+    const verse = verses[index];
+    if (!verse) return;
+    const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+    const verseText = `${ref}\n${verse.text}`;
+    navigator.clipboard.writeText(verseText);
+    toast.success('Verse copied to clipboard');
   };
 
   const versionLabel = version.toUpperCase();
@@ -176,21 +185,27 @@ export default function Reader() {
                     }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px]">{verse.verse}</span>
-                    <p className="verse-text text-sm flex-1">{verse.text}</p>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => saveVerse(i, 'bookmark')}
-                        className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
-                      >
-                        <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
-                      </button>
-                      <button
-                        onClick={() => saveVerse(i, 'highlight')}
-                        className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
-                      >
-                        <Highlighter size={14} />
-                      </button>
-                    </div>
+                     <p className="verse-text text-sm flex-1">{verse.text}</p>
+                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button
+                         onClick={() => copyVerse(i)}
+                         className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                       >
+                         <Copy size={14} />
+                       </button>
+                       <button
+                         onClick={() => saveVerse(i, 'bookmark')}
+                         className={`p-1 rounded ${isVerseSaved(i, 'bookmark') ? 'text-primary' : 'text-muted-foreground'}`}
+                       >
+                         <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
+                       </button>
+                       <button
+                         onClick={() => saveVerse(i, 'highlight')}
+                         className={`p-1 rounded ${isVerseSaved(i, 'highlight') ? 'text-accent' : 'text-muted-foreground'}`}
+                       >
+                         <Highlighter size={14} />
+                       </button>
+                     </div>
                   </div>
                 ))}
                 {verses.length === 0 && !loading && (
