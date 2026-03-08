@@ -1,9 +1,11 @@
+import { useState, useEffect, useCallback } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Layout from "@/components/Layout";
+import BibleIntro from "@/components/BibleIntro";
 import Index from "./pages/Index";
 import Reader from "./pages/Reader";
 import ReadingPlans from "./pages/ReadingPlans";
@@ -19,32 +21,50 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Sonner />
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/read" element={<Reader />} />
-              <Route path="/plans" element={<ReadingPlans />} />
-              <Route path="/topics" element={<Topics />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/bookmarks" element={<BookmarksPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/confessions" element={<ConfessionsPage />} />
-              <Route path="/feedback" element={<FeedbackPage />} />
-              <Route path="/install" element={<InstallPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const INTRO_KEY = 'hw-intro-seen';
+
+const App = () => {
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      return !localStorage.getItem(INTRO_KEY);
+    } catch {
+      return false;
+    }
+  });
+
+  const handleIntroComplete = useCallback(() => {
+    try { localStorage.setItem(INTRO_KEY, '1'); } catch {}
+    setShowIntro(false);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Sonner />
+          {showIntro && <BibleIntro onComplete={handleIntroComplete} />}
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/read" element={<Reader />} />
+                <Route path="/plans" element={<ReadingPlans />} />
+                <Route path="/topics" element={<Topics />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/bookmarks" element={<BookmarksPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/confessions" element={<ConfessionsPage />} />
+                <Route path="/feedback" element={<FeedbackPage />} />
+                <Route path="/install" element={<InstallPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
