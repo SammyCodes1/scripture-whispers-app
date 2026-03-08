@@ -1,5 +1,5 @@
 import { BIBLE_BOOKS } from '@/data/bibleData';
-import { fetchChapter, type ChapterResponse } from '@/hooks/useBibleApi';
+import { fetchChapter, type ChapterResponse, type BibleVerse } from '@/hooks/useBibleApi';
 
 const DB_NAME = 'holyword-bible-cache';
 const DB_VERSION = 1;
@@ -88,6 +88,12 @@ export async function getCachedCount(translation: string): Promise<number> {
   }
 }
 
+/** Check if a translation is fully downloaded */
+export async function isFullyDownloaded(translation: string): Promise<boolean> {
+  const count = await getCachedCount(translation);
+  return count >= getTotalChapters();
+}
+
 export interface DownloadProgress {
   downloaded: number;
   total: number;
@@ -119,7 +125,7 @@ export async function downloadAllChapters(
     if (signal?.aborted) return;
 
     const batch = allChapters.slice(i, i + BATCH_SIZE);
-    const results = await Promise.allSettled(
+    await Promise.allSettled(
       batch.map(async ({ book, chapter }) => {
         // Skip if already cached
         const cached = await getCachedChapter(book, chapter, translation);
@@ -165,5 +171,70 @@ export async function clearCache(translation: string): Promise<void> {
     });
   } catch {
     // silently fail
+  }
+}
+
+/** Search through all cached chapters for a translation */
+export interface OfflineSearchResult {
+  reference: string;
+  book_name: string;
+  chapter: number;
+  verse: number;
+  text: string;
+}
+
+export async function searchCachedBible(
+  query: string,
+  translation: string,
+  limit: number = 50
+): Promise<{ results: OfflineSearchResult[]; count: number }> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+
+    const allKeys: IDBValidKey[] = await new Promise((resolve, reject) => {
+      const req = store.getAllKeys();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+    const translationKeys = (allKeys as string[]).filter(k => k.startsWith(`${translation}::`));
+    const lowerQuery = query.toLowerCase();
+    const words = lowerQuery.split(/\s+/).filter(Boolean);
+    const results: OfflineSearchResult[] = [];
+    let totalCount = 0;
+
+    // Process in batches to avoid blocking UI
+    for (const key of translationKeys) {
+      const chapter: ChapterResponse = await new Promise((resolve, reject) => {
+        const req2 = store.get(key);
+        req2.onsuccess = () => resolve(req2.result);
+        req2.onerror = () => reject(req2.error);
+      });
+
+      if (!chapter?.verses) continue;
+
+      for (const verse of chapter.verses) {
+        const lowerText = verse.text.toLowerCase();
+        const matches = words.every(w => lowerText.includes(w));
+        if (matches) {
+          totalCount++;
+          if (results.length < limit) {
+            results.push({
+              reference: `${verse.book_name} ${verse.chapter}:${verse.verse}`,
+              book_name: verse.book_name,
+              chapter: verse.chapter,
+              verse: verse.verse,
+              text: verse.text,
+            });
+          }
+        }
+      }
+    }
+
+    return { results, count: totalCount };
+  } catch {
+    return { results: [], count: 0 };
   }
 }
