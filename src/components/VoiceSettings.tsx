@@ -103,6 +103,31 @@ export default function VoiceSettings() {
           </div>
         ))}
       </div>
+
+      {/* Reading Speed */}
+      <div className="mt-4">
+        <h4 className="font-display text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+          <Gauge size={16} /> Reading Speed
+        </h4>
+        <div className="flex flex-wrap gap-1.5">
+          {SPEED_STEPS.map(s => (
+            <button
+              key={s}
+              onClick={() => setSpeed(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                speed === s
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
+              }`}
+            >
+              {s}x
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Current speed: <span className="font-bold text-foreground">{speed}x</span>
+        </p>
+      </div>
     </section>
   );
 }
