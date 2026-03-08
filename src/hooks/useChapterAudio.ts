@@ -9,11 +9,13 @@ export interface VoiceOption {
 }
 
 export const VOICE_STORAGE_KEY = 'hw-selected-voice';
+export const SPEED_STORAGE_KEY = 'hw-reading-speed';
 
 export function useChapterAudio(verses: BibleVerse[]) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(-1);
   const [selectedVoice] = useLocalStorage<string>(VOICE_STORAGE_KEY, '');
+  const [speed] = useLocalStorage<number>(SPEED_STORAGE_KEY, 1);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
@@ -42,7 +44,7 @@ export function useChapterAudio(verses: BibleVerse[]) {
     indexRef.current = index;
 
     const utt = new SpeechSynthesisUtterance(verses[index].text);
-    utt.rate = 0.9;
+    utt.rate = speed;
     utt.pitch = 1;
 
     const voice = getVoice();

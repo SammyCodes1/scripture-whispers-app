@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Volume2, Check, Play } from 'lucide-react';
+import { Volume2, Check, Play, Gauge } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { VOICE_STORAGE_KEY } from '@/hooks/useChapterAudio';
+import { VOICE_STORAGE_KEY, SPEED_STORAGE_KEY } from '@/hooks/useChapterAudio';
 
 interface BrowserVoice {
   name: string;
@@ -12,6 +12,9 @@ interface BrowserVoice {
 export default function VoiceSettings() {
   const [voices, setVoices] = useState<BrowserVoice[]>([]);
   const [selectedVoice, setSelectedVoice] = useLocalStorage<string>(VOICE_STORAGE_KEY, '');
+  const [speed, setSpeed] = useLocalStorage<number>(SPEED_STORAGE_KEY, 1);
+
+  const SPEED_STEPS = [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
   useEffect(() => {
     const loadVoices = () => {
@@ -30,7 +33,7 @@ export default function VoiceSettings() {
   const previewVoice = (voiceURI: string) => {
     speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance('The Lord is my shepherd; I shall not want.');
-    utt.rate = 0.9;
+    utt.rate = speed;
     const voice = speechSynthesis.getVoices().find(v => v.voiceURI === voiceURI);
     if (voice) utt.voice = voice;
     speechSynthesis.speak(utt);
@@ -99,6 +102,31 @@ export default function VoiceSettings() {
             {selectedVoice === voice.voiceURI && <Check size={16} className="text-primary" />}
           </div>
         ))}
+      </div>
+
+      {/* Reading Speed */}
+      <div className="mt-4">
+        <h4 className="font-display text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+          <Gauge size={16} /> Reading Speed
+        </h4>
+        <div className="flex flex-wrap gap-1.5">
+          {SPEED_STEPS.map(s => (
+            <button
+              key={s}
+              onClick={() => setSpeed(s)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                speed === s
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
+              }`}
+            >
+              {s}x
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Current speed: <span className="font-bold text-foreground">{speed}x</span>
+        </p>
       </div>
     </section>
   );
