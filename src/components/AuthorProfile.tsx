@@ -47,6 +47,16 @@ export default function AuthorProfile({ authorName, open, onClose, isSelf }: Aut
     load();
   }, [open, authorName, deviceId]);
 
+  const deletePost = async (postId: string) => {
+    const { error } = await supabase.from('community_posts').delete().eq('id', postId);
+    if (error) {
+      toast.error('Failed to delete post');
+    } else {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('Post deleted');
+    }
+  };
+
   const toggleSubscribe = async () => {
     if (subscribed) {
       await supabase.from('subscriptions').delete().eq('subscriber_device_id', deviceId).eq('author_name', authorName);
