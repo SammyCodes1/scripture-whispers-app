@@ -454,8 +454,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Psalm 37:4', text: 'Delight thyself also in the Lord; and he shall give thee the desires of thine heart.', testament: 'OT' },
       { ref: '2 Corinthians 9:10', text: 'Now he that ministereth seed to the sower both minister bread for your food, and multiply your seed sown, and increase the fruits of your righteousness.', testament: 'NT' },
       { ref: 'Deuteronomy 28:12', text: 'The Lord shall open unto thee his good treasure, the heaven to give the rain unto thy land in his season, and to bless all the work of thine hand.', testament: 'OT' },
-      { ref: 'Matthew 6:26', text: 'Behold the fowls of the air: for they sow not, neither do they reap, nor gather into barns; yet your heavenly Father feedeth them. Are ye not much better than they?', testament: 'NT' },
-    ]
+       { ref: 'Matthew 6:26', text: 'Behold the fowls of the air: for they sow not, neither do they reap, nor gather into barns; yet your heavenly Father feedeth them. Are ye not much better than they?', testament: 'NT' },
+       { ref: 'Psalm 111:5', text: 'He hath given meat unto them that fear him: he will ever be mindful of his covenant.', testament: 'OT' },
+       { ref: '2 Corinthians 9:11', text: 'Being enriched in every thing to all bountifulness, which causeth through us thanksgiving to God.', testament: 'NT' },
+       { ref: 'Psalm 145:15-16', text: 'The eyes of all wait upon thee; and thou givest them their meat in due season. Thou openest thine hand, and satisfiest the desire of every living thing.', testament: 'OT' },
+       { ref: 'Matthew 6:31-32', text: 'Therefore take no thought, saying, What shall we eat? or, What shall we drink? or, Wherewithal shall we be clothed? For your heavenly Father knoweth that ye have need of all these things.', testament: 'NT' },
+       { ref: 'Psalm 132:15', text: 'I will abundantly bless her provision: I will satisfy her poor with bread.', testament: 'OT' },
+       { ref: 'Hebrews 13:5', text: 'Let your conversation be without covetousness; and be content with such things as ye have: for he hath said, I will never leave thee, nor forsake thee.', testament: 'NT' },
+       { ref: 'Isaiah 58:11', text: 'And the Lord shall guide thee continually, and satisfy thy soul in drought.', testament: 'OT' },
+       { ref: '1 Timothy 6:17', text: 'Charge them that are rich in this world, that they be not highminded, nor trust in uncertain riches, but in the living God, who giveth us richly all things to enjoy.', testament: 'NT' },
+       { ref: 'Psalm 65:11', text: 'Thou crownest the year with thy goodness; and thy paths drop fatness.', testament: 'OT' },
+       { ref: 'Proverbs 3:9-10', text: 'Honour the Lord with thy substance, and with the firstfruits of all thine increase: So shall thy barns be filled with plenty, and thy presses shall burst out with new wine.', testament: 'OT' },
+     ]
   },
   {
     id: 'salvation',
