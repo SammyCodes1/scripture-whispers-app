@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          sender_email: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          sender_email: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          sender_email?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       community_comments: {
         Row: {
           author_name: string
