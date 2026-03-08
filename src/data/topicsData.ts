@@ -189,6 +189,16 @@ export const TOPICS: Topic[] = [
       { ref: '2 Corinthians 12:10', text: 'Therefore I take pleasure in infirmities, in reproaches, in necessities, in persecutions, in distresses for Christ\'s sake: for when I am weak, then am I strong.', testament: 'NT' },
       { ref: 'Psalm 18:32', text: 'It is God that girdeth me with strength, and maketh my way perfect.', testament: 'OT' },
       { ref: 'Isaiah 40:29', text: 'He giveth power to the faint; and to them that have no might he increaseth strength.', testament: 'OT' },
+      { ref: 'Psalm 27:1', text: 'The Lord is my light and my salvation; whom shall I fear? the Lord is the strength of my life; of whom shall I be afraid?', testament: 'OT' },
+      { ref: 'Psalm 138:3', text: 'In the day when I cried thou answeredst me, and strengthenedst me with strength in my soul.', testament: 'OT' },
+      { ref: 'Isaiah 12:2', text: 'Behold, God is my salvation; I will trust, and not be afraid: for the Lord Jehovah is my strength and my song; he also is become my salvation.', testament: 'OT' },
+      { ref: 'Ephesians 3:16', text: 'That he would grant you, according to the riches of his glory, to be strengthened with might by his Spirit in the inner man.', testament: 'NT' },
+      { ref: 'Psalm 29:11', text: 'The Lord will give strength unto his people; the Lord will bless his people with peace.', testament: 'OT' },
+      { ref: 'Isaiah 30:15', text: 'In returning and rest shall ye be saved; in quietness and in confidence shall be your strength.', testament: 'OT' },
+      { ref: 'Psalm 144:1', text: 'Blessed be the Lord my strength, which teacheth my hands to war, and my fingers to fight.', testament: 'OT' },
+      { ref: 'Zechariah 4:6', text: 'Not by might, nor by power, but by my spirit, saith the Lord of hosts.', testament: 'OT' },
+      { ref: 'Philippians 4:13', text: 'I can do all things through Christ which strengtheneth me.', testament: 'NT' },
+      { ref: 'Psalm 68:35', text: 'O God, thou art terrible out of thy holy places: the God of Israel is he that giveth strength and power unto his people. Blessed be God.', testament: 'OT' },
     ]
   },
    {
