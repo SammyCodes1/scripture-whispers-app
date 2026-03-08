@@ -86,6 +86,15 @@ export default function Reader() {
     return savedVerses.some(v => v.ref === ref && v.type === type);
   };
 
+  const copyVerse = (index: number) => {
+    const verse = verses[index];
+    if (!verse) return;
+    const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+    const verseText = `${ref}\n${verse.text}`;
+    navigator.clipboard.writeText(verseText);
+    toast.success('Verse copied to clipboard');
+  };
+
   const versionLabel = version.toUpperCase();
 
   return (
