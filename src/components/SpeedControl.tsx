@@ -62,4 +62,6 @@ const SpeedControl = forwardRef<HTMLDivElement>(function SpeedControl(_props, fo
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default SpeedControl;
