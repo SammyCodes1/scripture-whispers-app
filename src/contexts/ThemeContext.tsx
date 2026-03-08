@@ -13,7 +13,6 @@ export const THEMES = [
   { id: 'marble', name: 'Marble', emoji: '🏛️' },
 ] as const;
 
-// Free translations available from dailybible.ca API
 export const BIBLE_VERSIONS = [
   { id: 'kjv', name: 'KJV', full: 'King James Version' },
   { id: 'asv', name: 'ASV', full: 'American Standard Version' },
@@ -21,14 +20,25 @@ export const BIBLE_VERSIONS = [
   { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
 ] as const;
 
+export const FONT_SIZES = [
+  { id: 'xs', name: 'Extra Small', value: '13px' },
+  { id: 'sm', name: 'Small', value: '14px' },
+  { id: 'md', name: 'Medium', value: '16px' },
+  { id: 'lg', name: 'Large', value: '18px' },
+  { id: 'xl', name: 'Extra Large', value: '20px' },
+] as const;
+
 type ThemeId = typeof THEMES[number]['id'];
 type BibleVersionId = typeof BIBLE_VERSIONS[number]['id'];
+type FontSizeId = typeof FONT_SIZES[number]['id'];
 
 interface ThemeContextType {
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
   version: BibleVersionId;
   setVersion: (v: BibleVersionId) => void;
+  fontSize: FontSizeId;
+  setFontSize: (f: FontSizeId) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
@@ -41,10 +51,15 @@ export const useTheme = () => {
 
 function applyTheme(themeId: string) {
   const root = document.documentElement;
-  // Remove all theme classes first
   THEMES.forEach(t => root.classList.remove(`theme-${t.id}`));
-  // Add the new theme class
   root.classList.add(`theme-${themeId}`);
+}
+
+function applyFontSize(sizeId: string) {
+  const size = FONT_SIZES.find(f => f.id === sizeId);
+  if (size) {
+    document.documentElement.style.setProperty('--verse-font-size', size.value);
+  }
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -53,6 +68,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
   const [version, setVersionState] = useState<BibleVersionId>(() =>
     (localStorage.getItem('hw-version') as BibleVersionId) || 'kjv'
+  );
+  const [fontSize, setFontSizeState] = useState<FontSizeId>(() =>
+    (localStorage.getItem('hw-font-size') as FontSizeId) || 'md'
   );
 
   const setTheme = useCallback((t: ThemeId) => {
@@ -66,12 +84,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('hw-version', v);
   }, []);
 
+  const setFontSize = useCallback((f: FontSizeId) => {
+    setFontSizeState(f);
+    localStorage.setItem('hw-font-size', f);
+    applyFontSize(f);
+  }, []);
+
   useEffect(() => {
     applyTheme(theme);
-  }, [theme]);
+    applyFontSize(fontSize);
+  }, [theme, fontSize]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, version, setVersion }}>
+    <ThemeContext.Provider value={{ theme, setTheme, version, setVersion, fontSize, setFontSize }}>
       {children}
     </ThemeContext.Provider>
   );

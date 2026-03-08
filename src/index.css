@@ -5,6 +5,7 @@
 @layer base {
   /* Theme 1: Classic (default) - Warm parchment */
   :root, .theme-classic {
+    --verse-font-size: 16px;
     --background: 38 38% 93%;
     --foreground: 20 50% 13%;
     --card: 38 35% 97%;
@@ -264,6 +265,7 @@
 
   .verse-text {
     font-family: 'Lora', serif;
+    font-size: var(--verse-font-size, 16px);
     @apply leading-relaxed text-foreground/90;
   }
 
