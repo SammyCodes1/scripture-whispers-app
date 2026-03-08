@@ -167,6 +167,7 @@ export default function Reader() {
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ReadingStats />
+            <div className="flex gap-2 mb-4">
               {(['OT', 'NT'] as const).map(t => (
                 <button key={t} onClick={() => setTestament(t)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${testament === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
@@ -176,14 +177,31 @@ export default function Reader() {
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {books.map(book => (
-                <button key={book.name} onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
-                  className="text-left rounded-lg bg-card border border-border p-3 hover:shadow-md transition-all hover:-translate-y-0.5"
-                >
-                  <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
-                  <p className="text-xs text-muted-foreground">{book.chapters} chapters</p>
-                </button>
-              ))}
+              {books.map(book => {
+                const stats = bookStats[book.name];
+                const readCount = stats?.read || 0;
+                const isComplete = readCount === book.chapters;
+                return (
+                  <button key={book.name} onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
+                    className={`text-left rounded-lg bg-card border p-3 hover:shadow-md transition-all hover:-translate-y-0.5 ${isComplete ? 'border-green-500/40' : 'border-border'}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
+                      {readCount > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isComplete ? 'bg-green-500/15 text-green-600' : 'bg-primary/10 text-primary'}`}>
+                          {readCount}/{book.chapters}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{book.chapters} chapters</p>
+                    {readCount > 0 && (
+                      <div className="mt-1.5 h-1 rounded-full bg-border overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-primary'}`} style={{ width: `${(readCount / book.chapters) * 100}%` }} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
