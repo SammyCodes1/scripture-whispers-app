@@ -466,6 +466,8 @@ export default function Community() {
         open={!!profileAuthor}
         onClose={() => setProfileAuthor(null)}
         isSelf={!!author.trim() && profileAuthor === author.trim()}
+        avatarUrl={profileAuthor ? avatars[profileAuthor] : undefined}
+        onAvatarChange={refreshAvatars}
       />
     </div>
   );
