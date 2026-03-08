@@ -346,18 +346,33 @@ export default function Community() {
         )}
         {posts.map(post => (
           <div key={post.id} className="rounded-xl bg-card border border-border p-4">
-            <button
-              onClick={() => setProfileAuthor(post.author_name)}
-              className="flex items-center gap-2 mb-2 group/author"
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold group-hover/author:ring-2 group-hover/author:ring-primary transition-all">
-                {post.author_name[0]}
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium text-card-foreground group-hover/author:text-primary transition-colors">{post.author_name}</p>
-                <p className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</p>
-              </div>
-            </button>
+            <div className="flex items-center justify-between mb-2">
+              <button
+                onClick={() => setProfileAuthor(post.author_name)}
+                className="flex items-center gap-2 group/author"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold group-hover/author:ring-2 group-hover/author:ring-primary transition-all">
+                  {post.author_name[0]}
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-card-foreground group-hover/author:text-primary transition-colors">{post.author_name}</p>
+                  <p className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</p>
+                </div>
+              </button>
+              {post.device_id === getDeviceId() && (
+                <button
+                  onClick={async () => {
+                    const { error } = await supabase.from('community_posts').delete().eq('id', post.id);
+                    if (error) toast.error('Failed to delete');
+                    else { toast.success('Post deleted'); loadPosts(); }
+                  }}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  title="Delete post"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+            </div>
             <h3 className="font-display font-bold text-card-foreground mb-1">{post.title}</h3>
             <p className="text-sm text-muted-foreground mb-3">{post.content}</p>
 
