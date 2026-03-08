@@ -77,6 +77,16 @@ export const TOPICS: Topic[] = [
       { ref: 'Zephaniah 3:17', text: 'The Lord thy God in the midst of thee is mighty; he will save, he will rejoice over thee with joy; he will rest in his love, he will joy over thee with singing.', testament: 'OT' },
       { ref: 'Colossians 3:14', text: 'And above all these things put on charity, which is the bond of perfectness.', testament: 'NT' },
       { ref: 'Jeremiah 31:3', text: 'The Lord hath appeared of old unto me, saying, Yea, I have loved thee with an everlasting love: therefore with lovingkindness have I drawn thee.', testament: 'OT' },
+      { ref: '1 Corinthians 16:14', text: 'Let all your things be done with charity.', testament: 'NT' },
+      { ref: 'Psalm 63:3', text: 'Because thy lovingkindness is better than life, my lips shall praise thee.', testament: 'OT' },
+      { ref: '1 John 4:16', text: 'And we have known and believed the love that God hath to us. God is love; and he that dwelleth in love dwelleth in God, and God in him.', testament: 'NT' },
+      { ref: 'Proverbs 10:12', text: 'Hatred stirreth up strifes: but love covereth all sins.', testament: 'OT' },
+      { ref: 'Galatians 5:14', text: 'For all the law is fulfilled in one word, even in this; Thou shalt love thy neighbour as thyself.', testament: 'NT' },
+      { ref: 'Psalm 36:7', text: 'How excellent is thy lovingkindness, O God! therefore the children of men put their trust under the shadow of thy wings.', testament: 'OT' },
+      { ref: 'Romans 13:10', text: 'Love worketh no ill to his neighbour: therefore love is the fulfilling of the law.', testament: 'NT' },
+      { ref: '1 John 3:1', text: 'Behold, what manner of love the Father hath bestowed upon us, that we should be called the sons of God.', testament: 'NT' },
+      { ref: 'Hosea 2:19', text: 'And I will betroth thee unto me for ever; yea, I will betroth thee unto me in righteousness, and in judgment, and in lovingkindness, and in mercies.', testament: 'OT' },
+      { ref: 'Ephesians 3:17-19', text: 'That Christ may dwell in your hearts by faith; that ye, being rooted and grounded in love, May be able to comprehend with all saints what is the breadth, and length, and depth, and height; And to know the love of Christ, which passeth knowledge.', testament: 'NT' },
     ]
   },
   {
