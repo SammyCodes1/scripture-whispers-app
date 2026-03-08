@@ -568,8 +568,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Isaiah 54:17', text: 'No weapon that is formed against thee shall prosper; and every tongue that shall rise against thee in judgment thou shalt condemn.', testament: 'OT' },
       { ref: 'Philippians 1:28', text: 'And in nothing terrified by your adversaries: which is to them an evident token of perdition, but to you of salvation, and that of God.', testament: 'NT' },
       { ref: 'Deuteronomy 20:4', text: 'For the Lord your God is he that goeth with you, to fight for you against your enemies, to save you.', testament: 'OT' },
-      { ref: 'Ephesians 3:12', text: 'In whom we have boldness and access with confidence by the faith of him.', testament: 'NT' },
-    ]
+       { ref: 'Ephesians 3:12', text: 'In whom we have boldness and access with confidence by the faith of him.', testament: 'NT' },
+       { ref: 'Psalm 23:4', text: 'Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me.', testament: 'OT' },
+       { ref: 'Isaiah 35:4', text: 'Say to them that are of a fearful heart, Be strong, fear not: behold, your God will come with vengeance, even God with a recompence; he will come and save you.', testament: 'OT' },
+       { ref: 'Numbers 14:9', text: 'Only rebel not ye against the Lord, neither fear ye the people of the land; for they are bread for us: their defence is departed from them, and the Lord is with us: fear them not.', testament: 'OT' },
+       { ref: 'Acts 4:13', text: 'Now when they saw the boldness of Peter and John, and perceived that they were unlearned and ignorant men, they marvelled; and they took knowledge of them, that they had been with Jesus.', testament: 'NT' },
+       { ref: 'Psalm 112:7', text: 'He shall not be afraid of evil tidings: his heart is fixed, trusting in the Lord.', testament: 'OT' },
+       { ref: '1 John 4:18', text: 'There is no fear in love; but perfect love casteth out fear.', testament: 'NT' },
+       { ref: 'Deuteronomy 3:22', text: 'Ye shall not fear them: for the Lord your God he shall fight for you.', testament: 'OT' },
+       { ref: '2 Chronicles 20:15', text: 'Thus saith the Lord unto you, Be not afraid nor dismayed by reason of this great multitude; for the battle is not yours, but God\'s.', testament: 'OT' },
+       { ref: 'Philippians 1:14', text: 'And many of the brethren in the Lord, waxing confident by my bonds, are much more bold to speak the word without fear.', testament: 'NT' },
+       { ref: 'Psalm 46:2', text: 'Therefore will not we fear, though the earth be removed, and though the mountains be carried into the midst of the sea.', testament: 'OT' },
+     ]
   },
   {
     id: 'obedience',
