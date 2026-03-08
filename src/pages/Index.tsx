@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
 import StreakCard from '@/components/StreakCard';
+import GlossarySection from '@/components/GlossarySection';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture' },
@@ -95,6 +96,15 @@ export default function Index() {
             </Link>
           ))}
         </div>
+      </motion.section>
+
+      {/* Glossary */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <GlossarySection />
       </motion.section>
     </div>
   );
