@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
@@ -8,6 +9,7 @@ import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import { useReadingHistory } from '@/hooks/useReadingHistory';
+import { useLastRead } from '@/hooks/useLastRead';
 import VerseShareCard from '@/components/VerseShareCard';
 import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
