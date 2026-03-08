@@ -39,6 +39,34 @@ export default function Index() {
         <p className="text-sm opacity-80 font-body">— {dailyVerse.ref}</p>
       </motion.section>
 
+      {/* Continue Reading */}
+      {lastRead && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+        >
+          <Link
+            to={`/read?book=${encodeURIComponent(lastRead.book)}&chapter=${lastRead.chapter}`}
+            className="flex items-center gap-4 rounded-xl bg-card border border-border p-4 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+          >
+            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+              <PlayCircle size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5">Continue Reading</p>
+              <p className="font-display font-bold text-card-foreground truncate">
+                {lastRead.book} {lastRead.chapter}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDistanceToNow(lastRead.timestamp, { addSuffix: true })}
+              </p>
+            </div>
+            <BookOpen size={18} className="text-muted-foreground group-hover:text-primary transition-colors" />
+          </Link>
+        </motion.section>
+      )}
+
       {/* Reading Streak */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
