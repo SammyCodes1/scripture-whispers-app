@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 }
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
+import AuthorProfile from '@/components/AuthorProfile';
 
 interface Comment {
   id: string;
