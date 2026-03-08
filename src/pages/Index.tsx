@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Lightbulb, MessageSquare, Search } from 'lucide-react';
+import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
 import { getDailyConfession, getDailyPrayer } from '@/data/confessionsData';
 import { Flame } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
 import StreakCard from '@/components/StreakCard';
 import GlossarySection from '@/components/GlossarySection';
+import { useLastRead } from '@/hooks/useLastRead';
+import { formatDistanceToNow } from 'date-fns';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture' },
