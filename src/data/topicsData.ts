@@ -416,8 +416,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Jeremiah 30:17', text: 'For I will restore health unto thee, and I will heal thee of thy wounds, saith the Lord.', testament: 'OT' },
       { ref: 'Matthew 14:14', text: 'And Jesus went forth, and saw a great multitude, and was moved with compassion toward them, and he healed their sick.', testament: 'NT' },
       { ref: 'Proverbs 3:7-8', text: 'Be not wise in thine own eyes: fear the Lord, and depart from evil. It shall be health to thy navel, and marrow to thy bones.', testament: 'OT' },
-      { ref: 'Luke 4:18', text: 'The Spirit of the Lord is upon me, because he hath anointed me to preach the gospel to the poor; he hath sent me to heal the brokenhearted, to preach deliverance to the captives, and recovering of sight to the blind, to set at liberty them that are bruised.', testament: 'NT' },
-    ]
+       { ref: 'Luke 4:18', text: 'The Spirit of the Lord is upon me, because he hath anointed me to preach the gospel to the poor; he hath sent me to heal the brokenhearted, to preach deliverance to the captives, and recovering of sight to the blind, to set at liberty them that are bruised.', testament: 'NT' },
+       { ref: 'Psalm 107:20', text: 'He sent his word, and healed them, and delivered them from their destructions.', testament: 'OT' },
+       { ref: 'Matthew 4:23', text: 'And Jesus went about all Galilee, teaching in their synagogues, and preaching the gospel of the kingdom, and healing all manner of sickness and all manner of disease among the people.', testament: 'NT' },
+       { ref: 'Isaiah 58:8', text: 'Then shall thy light break forth as the morning, and thine health shall spring forth speedily.', testament: 'OT' },
+       { ref: 'James 5:16', text: 'Confess your faults one to another, and pray one for another, that ye may be healed.', testament: 'NT' },
+       { ref: 'Psalm 6:2', text: 'Have mercy upon me, O Lord; for I am weak: O Lord, heal me; for my bones are vexed.', testament: 'OT' },
+       { ref: 'Revelation 21:4', text: 'And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain.', testament: 'NT' },
+       { ref: '2 Kings 20:5', text: 'I have heard thy prayer, I have seen thy tears: behold, I will heal thee.', testament: 'OT' },
+       { ref: 'Mark 16:18', text: 'They shall lay hands on the sick, and they shall recover.', testament: 'NT' },
+       { ref: 'Psalm 34:19', text: 'Many are the afflictions of the righteous: but the Lord delivereth him out of them all.', testament: 'OT' },
+       { ref: 'Hosea 6:1', text: 'Come, and let us return unto the Lord: for he hath torn, and he will heal us; he hath smitten, and he will bind us up.', testament: 'OT' },
+     ]
   },
   {
     id: 'provision',
