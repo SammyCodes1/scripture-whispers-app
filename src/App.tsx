@@ -14,6 +14,7 @@ import SearchPage from "./pages/SearchPage";
 import SettingsPage from "./pages/Settings";
 import FeedbackPage from "./pages/Feedback";
 import InstallPage from "./pages/Install";
+import ConfessionsPage from "./pages/Confessions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
