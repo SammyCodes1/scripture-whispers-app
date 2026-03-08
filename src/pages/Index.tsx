@@ -3,6 +3,9 @@ import { BookOpen, Lightbulb, MessageSquare, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
+import { getDailyConfession, getDailyPrayer } from '@/data/confessionsData';
+import { Flame } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
 import StreakCard from '@/components/StreakCard';
 import GlossarySection from '@/components/GlossarySection';
 
