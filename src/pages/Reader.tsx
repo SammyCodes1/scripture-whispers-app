@@ -209,13 +209,23 @@ export default function Reader() {
         {view === 'chapters' && currentBook && (
           <motion.div key="chapters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
-              {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => (
-                <button key={ch} onClick={() => { setSelectedChapter(ch); setView('reading'); }}
-                  className="aspect-square rounded-lg bg-card border border-border flex items-center justify-center font-display font-bold text-card-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                >
-                  {ch}
-                </button>
-              ))}
+              {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => {
+                const read = isChapterRead(selectedBook, ch);
+                return (
+                  <button key={ch} onClick={() => { setSelectedChapter(ch); setView('reading'); }}
+                    className={`aspect-square rounded-lg border flex items-center justify-center font-display font-bold transition-colors relative ${
+                      read
+                        ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
+                        : 'bg-card border-border text-card-foreground hover:bg-primary hover:text-primary-foreground'
+                    }`}
+                  >
+                    {ch}
+                    {read && (
+                      <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-green-500" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
