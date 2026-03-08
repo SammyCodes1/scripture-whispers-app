@@ -3,6 +3,7 @@ import { BookOpen, Lightbulb, MessageSquare, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
+import StreakCard from '@/components/StreakCard';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture' },
