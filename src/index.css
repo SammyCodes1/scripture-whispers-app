@@ -4,7 +4,7 @@
 
 @layer base {
   /* Theme 1: Classic (default) - Warm parchment */
-  :root, .theme-classic {
+  :root, [data-theme="classic"] {
     --verse-font-size: 16px;
     --background: 38 38% 93%;
     --foreground: 20 50% 13%;
@@ -36,8 +36,7 @@
     --sidebar-ring: 4 52% 32%;
   }
 
-  /* Theme 2: Glassy */
-  .theme-glassy {
+  [data-theme="glassy"] {
     --background: 220 40% 96%;
     --foreground: 220 30% 15%;
     --card: 220 40% 98%;
@@ -59,8 +58,7 @@
     --ring: 220 70% 50%;
   }
 
-  /* Theme 3: Wooden */
-  .theme-wooden {
+  [data-theme="wooden"] {
     --background: 30 35% 82%;
     --foreground: 25 60% 12%;
     --card: 30 30% 88%;
@@ -82,8 +80,7 @@
     --ring: 25 55% 30%;
   }
 
-  /* Theme 4: Lights Out (OLED) */
-  .theme-lights-out {
+  [data-theme="lights-out"] {
     --background: 0 0% 4%;
     --foreground: 0 0% 90%;
     --card: 0 0% 8%;
@@ -105,8 +102,7 @@
     --ring: 45 85% 55%;
   }
 
-  /* Theme 5: Nature */
-  .theme-nature {
+  [data-theme="nature"] {
     --background: 130 25% 92%;
     --foreground: 140 35% 12%;
     --card: 130 20% 96%;
@@ -128,8 +124,7 @@
     --ring: 145 45% 32%;
   }
 
-  /* Theme 6: Glossy */
-  .theme-glossy {
+  [data-theme="glossy"] {
     --background: 0 0% 99%;
     --foreground: 0 0% 8%;
     --card: 0 0% 100%;
@@ -151,8 +146,7 @@
     --ring: 210 80% 52%;
   }
 
-  /* Theme 7: Ocean */
-  .theme-ocean {
+  [data-theme="ocean"] {
     --background: 205 40% 12%;
     --foreground: 200 20% 92%;
     --card: 205 35% 16%;
@@ -174,8 +168,7 @@
     --ring: 190 75% 48%;
   }
 
-  /* Theme 8: Royal */
-  .theme-royal {
+  [data-theme="royal"] {
     --background: 270 25% 10%;
     --foreground: 45 40% 90%;
     --card: 270 22% 14%;
@@ -197,8 +190,7 @@
     --ring: 45 85% 55%;
   }
 
-  /* Theme 9: Sunset */
-  .theme-sunset {
+  [data-theme="sunset"] {
     --background: 25 55% 92%;
     --foreground: 15 60% 12%;
     --card: 25 50% 96%;
@@ -220,8 +212,7 @@
     --ring: 15 80% 48%;
   }
 
-  /* Theme 10: Marble */
-  .theme-marble {
+  [data-theme="marble"] {
     --background: 210 18% 96%;
     --foreground: 210 22% 14%;
     --card: 210 15% 99%;
