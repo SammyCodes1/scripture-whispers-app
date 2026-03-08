@@ -166,7 +166,7 @@ export default function Reader() {
       <AnimatePresence mode="wait">
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="flex gap-2 mb-4">
+            <ReadingStats />
               {(['OT', 'NT'] as const).map(t => (
                 <button key={t} onClick={() => setTestament(t)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${testament === t ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
