@@ -264,8 +264,18 @@ export const TOPICS: Topic[] = [
        { ref: 'Romans 9:15-16', text: 'For he saith to Moses, I will have mercy on whom I will have mercy, and I will have compassion on whom I will have compassion. So then it is not of him that willeth, nor of him that runneth, but of God that sheweth mercy.', testament: 'NT' },
        { ref: 'Nehemiah 9:17', text: 'But thou art a God ready to pardon, gracious and merciful, slow to anger, and of great kindness, and forsookest them not.', testament: 'OT' },
        { ref: '2 John 1:3', text: 'Grace be with you, mercy, and peace, from God the Father, and from the Lord Jesus Christ, the Son of the Father, in truth and love.', testament: 'NT' },
-       { ref: 'Psalm 57:10', text: 'For thy mercy is great unto the heavens, and thy truth unto the clouds.', testament: 'OT' },
-     ]
+        { ref: 'Psalm 57:10', text: 'For thy mercy is great unto the heavens, and thy truth unto the clouds.', testament: 'OT' },
+        { ref: 'Isaiah 30:18', text: 'And therefore will the Lord wait, that he may be gracious unto you, and therefore will he be exalted, that he may have mercy upon you.', testament: 'OT' },
+        { ref: 'Hebrews 2:17', text: 'Wherefore in all things it behoved him to be made like unto his brethren, that he might be a merciful and faithful high priest in things pertaining to God.', testament: 'NT' },
+        { ref: 'Psalm 25:6', text: 'Remember, O Lord, thy tender mercies and thy lovingkindnesses; for they have been ever of old.', testament: 'OT' },
+        { ref: 'Luke 6:36', text: 'Be ye therefore merciful, as your Father also is merciful.', testament: 'NT' },
+        { ref: 'Psalm 116:5', text: 'Gracious is the Lord, and righteous; yea, our God is merciful.', testament: 'OT' },
+        { ref: 'Ephesians 2:4-5', text: 'But God, who is rich in mercy, for his great love wherewith he loved us, Even when we were dead in sins, hath quickened us together with Christ, (by grace ye are saved).', testament: 'NT' },
+        { ref: 'Psalm 145:9', text: 'The Lord is good to all: and his tender mercies are over all his works.', testament: 'OT' },
+        { ref: 'Matthew 9:13', text: 'But go ye and learn what that meaneth, I will have mercy, and not sacrifice: for I am not come to call the righteous, but sinners to repentance.', testament: 'NT' },
+        { ref: 'Psalm 86:13', text: 'For great is thy mercy toward me: and thou hast delivered my soul from the lowest hell.', testament: 'OT' },
+        { ref: 'Jude 1:21', text: 'Keep yourselves in the love of God, looking for the mercy of our Lord Jesus Christ unto eternal life.', testament: 'NT' },
+      ]
    },
    {
      id: 'peace',
