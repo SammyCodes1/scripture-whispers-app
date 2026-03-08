@@ -46,6 +46,32 @@ export default function Index() {
         <StreakCard />
       </motion.section>
 
+      {/* Daily Confession & Prayer */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.07 }}
+        className="rounded-xl bg-accent/30 border border-accent/40 p-5 space-y-4"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Flame size={18} className="text-primary" />
+          <p className="text-xs uppercase tracking-widest text-accent-foreground/70">Today's Confession</p>
+        </div>
+        <p className="font-display text-base font-bold text-accent-foreground">{dailyConfession.title}</p>
+        <p className="text-sm leading-relaxed text-accent-foreground/90">{dailyConfession.confession}</p>
+        <p className="text-xs italic text-muted-foreground">📖 {dailyConfession.scriptureRef}</p>
+
+        <div className="border-t border-border pt-3 mt-3">
+          <p className="text-xs uppercase tracking-widest text-accent-foreground/70 mb-1">🙏 Today's Prayer</p>
+          <p className="text-sm leading-relaxed text-accent-foreground/90">{dailyPrayer.prayer}</p>
+          <p className="text-xs italic text-muted-foreground mt-1">📖 {dailyPrayer.scriptureRef}</p>
+        </div>
+
+        <Link to="/confessions" className="text-sm text-primary hover:underline inline-block">
+          View all confessions & prayers →
+        </Link>
+      </motion.section>
+
       {/* Daily Topic */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
