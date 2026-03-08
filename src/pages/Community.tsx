@@ -168,6 +168,18 @@ export default function Community() {
     setLikedPosts(newLikedPosts);
     localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
     await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
+
+    // Notify post author on new like (not on unlike, not on own post)
+    if (!isLiked && post.device_id && post.device_id !== getDeviceId()) {
+      await supabase.from('notifications').insert({
+        device_id: post.device_id,
+        post_id: post.id,
+        type: 'like',
+        actor_name: 'Someone',
+        message: `Someone liked your post "${post.title}"`,
+      } as any);
+    }
+
     loadPosts();
   };
 
