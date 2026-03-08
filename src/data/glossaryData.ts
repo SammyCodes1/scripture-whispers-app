@@ -1,0 +1,42 @@
+export interface GlossaryEntry {
+  term: string;
+  definition: string;
+}
+
+export const GLOSSARY: GlossaryEntry[] = [
+  { term: 'Atonement', definition: 'The act of making amends for sin; reconciliation between God and humanity, ultimately fulfilled through Christ\'s sacrifice.' },
+  { term: 'Baptism', definition: 'A rite of immersion in or sprinkling with water, symbolizing purification, repentance, and identification with Christ\'s death and resurrection.' },
+  { term: 'Blasphemy', definition: 'Speaking irreverently about God or sacred things; claiming for oneself the attributes of God.' },
+  { term: 'Covenant', definition: 'A solemn agreement between God and His people, such as the covenants with Abraham, Moses, and the New Covenant through Jesus.' },
+  { term: 'Crucifixion', definition: 'A Roman method of execution by nailing to a cross; the means by which Jesus died to atone for the sins of the world.' },
+  { term: 'Disciple', definition: 'A follower or student; specifically one of the twelve chosen followers of Jesus during His earthly ministry.' },
+  { term: 'Edification', definition: 'The building up of believers in faith, knowledge, and spiritual maturity through teaching and encouragement.' },
+  { term: 'Epistle', definition: 'A formal letter, especially the letters written by apostles in the New Testament to churches and individuals.' },
+  { term: 'Exhortation', definition: 'An urgent appeal or encouragement to do what is right and to remain faithful to God.' },
+  { term: 'Faith', definition: 'Complete trust and confidence in God; belief in His promises and the unseen realities of His kingdom (Hebrews 11:1).' },
+  { term: 'Gentile', definition: 'A person who is not Jewish; in the New Testament, the gospel extends salvation to both Jews and Gentiles.' },
+  { term: 'Gospel', definition: 'Meaning "good news," it refers to the message of salvation through Jesus Christ\'s life, death, and resurrection.' },
+  { term: 'Grace', definition: 'Unmerited favor from God; the free and undeserved gift of salvation and blessings given to humanity.' },
+  { term: 'Holiness', definition: 'Being set apart for God\'s purposes; moral purity and devotion to God\'s character and will.' },
+  { term: 'Intercession', definition: 'The act of praying or pleading on behalf of another person before God.' },
+  { term: 'Justification', definition: 'The act by which God declares a sinner righteous through faith in Jesus Christ, apart from works of the law.' },
+  { term: 'Kingdom of God', definition: 'The reign and rule of God over all creation; both a present spiritual reality and a future eternal state.' },
+  { term: 'Lamb of God', definition: 'A title for Jesus referring to His role as the perfect sacrifice for sin, fulfilling the Old Testament sacrificial system.' },
+  { term: 'Manna', definition: 'The miraculous food God provided daily to the Israelites during their 40 years in the wilderness (Exodus 16).' },
+  { term: 'Mercy', definition: 'Compassion and forgiveness shown to someone who could be punished; God\'s withholding of deserved judgment.' },
+  { term: 'Parable', definition: 'A short story used by Jesus to illustrate a spiritual or moral lesson using everyday situations.' },
+  { term: 'Pharisee', definition: 'A member of an ancient Jewish sect known for strict observance of the law and oral traditions.' },
+  { term: 'Prophet', definition: 'A person chosen by God to speak His message to the people, often foretelling future events or calling for repentance.' },
+  { term: 'Redemption', definition: 'The act of being saved or delivered from sin through a price paid; in Christianity, accomplished by Christ\'s blood.' },
+  { term: 'Repentance', definition: 'A sincere turning away from sin and turning toward God, accompanied by a change of heart and behavior.' },
+  { term: 'Resurrection', definition: 'Rising from the dead; refers primarily to Jesus rising on the third day and the future resurrection of believers.' },
+  { term: 'Righteousness', definition: 'The quality of being morally right and just; conformity to God\'s character and standards.' },
+  { term: 'Sabbath', definition: 'The seventh day of the week set apart for rest and worship, as commanded by God in the Ten Commandments.' },
+  { term: 'Salvation', definition: 'Deliverance from sin and its consequences; the gift of eternal life through faith in Jesus Christ.' },
+  { term: 'Sanctification', definition: 'The ongoing process by which believers are made holy and conformed to the image of Christ through the Holy Spirit.' },
+  { term: 'Sin', definition: 'Any transgression against God\'s law; falling short of His perfect standard (Romans 3:23).' },
+  { term: 'Tithe', definition: 'A tenth of one\'s income or produce given as an offering to God, practiced in both the Old and New Testaments.' },
+  { term: 'Transgression', definition: 'A violation of God\'s law; an act of willful disobedience against His commands.' },
+  { term: 'Trinity', definition: 'The Christian doctrine that God exists as three persons — Father, Son, and Holy Spirit — in one being.' },
+  { term: 'Worship', definition: 'The act of giving reverence, honor, and praise to God through prayer, song, and obedient living.' },
+];
