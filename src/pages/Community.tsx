@@ -196,6 +196,18 @@ export default function Community() {
       setCommentText(prev => ({ ...prev, [postId]: '' }));
       toast.success('Comment added');
       loadComments(postId);
+
+      // Notify the post author
+      const post = posts.find(p => p.id === postId);
+      if (post?.device_id && post.device_id !== getDeviceId()) {
+        await supabase.from('notifications').insert({
+          device_id: post.device_id,
+          post_id: postId,
+          type: 'comment',
+          actor_name: 'Someone',
+          message: `Someone commented on your post "${post.title}"`,
+        } as any);
+      }
     }
   };
 
