@@ -7,6 +7,7 @@ import { getDailyConfession, getDailyPrayer } from '@/data/confessionsData';
 import { Flame } from 'lucide-react';
 import StreakCard from '@/components/StreakCard';
 import GlossarySection from '@/components/GlossarySection';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { useLastRead } from '@/hooks/useLastRead';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -26,6 +27,9 @@ export default function Index() {
 
   return (
     <div className="space-y-6 fade-in">
+      {/* Announcements */}
+      <AnnouncementBanner />
+
       {/* Daily Verse */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
