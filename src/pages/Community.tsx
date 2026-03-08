@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
+import { useAvatars } from '@/hooks/useAvatars';
 
 interface Comment {
   id: string;
