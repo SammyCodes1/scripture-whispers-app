@@ -27,6 +27,9 @@ export default function Index() {
 
   return (
     <div className="space-y-6 fade-in">
+      {/* Announcements */}
+      <AnnouncementBanner />
+
       {/* Daily Verse */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
