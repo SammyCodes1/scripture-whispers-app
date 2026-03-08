@@ -31,7 +31,9 @@ export default function Community() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [author, setAuthor] = useState('');
+  const [author, setAuthor] = useState(() => {
+    try { return localStorage.getItem('hw-community-author') || ''; } catch { return ''; }
+  });
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
