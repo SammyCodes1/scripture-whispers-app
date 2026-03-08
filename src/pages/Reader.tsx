@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
+import SpeedControl from '@/components/SpeedControl';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -149,6 +150,9 @@ export default function Reader() {
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
         <div className="ml-auto flex items-center gap-2">
+          {view === 'reading' && verses.length > 0 && (
+            <SpeedControl />
+          )}
           {view === 'reading' && verses.length > 0 && (
             <button
               onClick={toggle}
