@@ -35,6 +35,7 @@ export default function Reader() {
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
+  const { recordReading } = useReadingStreak();
 
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
