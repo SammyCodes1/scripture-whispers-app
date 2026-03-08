@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb } from 'lucide-react';
+import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
