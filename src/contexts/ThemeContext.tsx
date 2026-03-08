@@ -66,9 +66,12 @@ function applyTheme(themeId: string) {
 
 function applyFontSize(sizeId: string) {
   const size = FONT_SIZES.find(f => f.id === sizeId);
-  if (size) {
-    document.documentElement.style.setProperty('--verse-font-size', size.value);
-  }
+  if (size) document.documentElement.style.setProperty('--verse-font-size', size.value);
+}
+
+function applyFontFamily(familyId: string) {
+  const family = FONT_FAMILIES.find(f => f.id === familyId);
+  if (family) document.documentElement.style.setProperty('--verse-font-family', family.value);
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -80,6 +83,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
   const [fontSize, setFontSizeState] = useState<FontSizeId>(() =>
     (localStorage.getItem('hw-font-size') as FontSizeId) || 'md'
+  );
+  const [fontFamily, setFontFamilyState] = useState<FontFamilyId>(() =>
+    (localStorage.getItem('hw-font-family') as FontFamilyId) || 'serif'
   );
 
   const setTheme = useCallback((t: ThemeId) => {
@@ -99,13 +105,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     applyFontSize(f);
   }, []);
 
+  const setFontFamily = useCallback((f: FontFamilyId) => {
+    setFontFamilyState(f);
+    localStorage.setItem('hw-font-family', f);
+    applyFontFamily(f);
+  }, []);
+
   useEffect(() => {
     applyTheme(theme);
     applyFontSize(fontSize);
-  }, [theme, fontSize]);
+    applyFontFamily(fontFamily);
+  }, [theme, fontSize, fontFamily]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, version, setVersion, fontSize, setFontSize }}>
+    <ThemeContext.Provider value={{ theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily }}>
       {children}
     </ThemeContext.Provider>
   );
