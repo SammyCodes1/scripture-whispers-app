@@ -340,8 +340,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Psalm 71:14', text: 'But I will hope continually, and will yet praise thee more and more.', testament: 'OT' },
       { ref: 'Colossians 1:27', text: 'To whom God would make known what is the riches of the glory of this mystery among the Gentiles; which is Christ in you, the hope of glory.', testament: 'NT' },
       { ref: 'Psalm 39:7', text: 'And now, Lord, what wait I for? my hope is in thee.', testament: 'OT' },
-      { ref: 'Hebrews 10:23', text: 'Let us hold fast the profession of our faith without wavering; for he is faithful that promised.', testament: 'NT' },
-    ]
+       { ref: 'Hebrews 10:23', text: 'Let us hold fast the profession of our faith without wavering; for he is faithful that promised.', testament: 'NT' },
+       { ref: 'Psalm 62:5', text: 'My soul, wait thou only upon God; for my expectation is from him.', testament: 'OT' },
+       { ref: 'Romans 12:12', text: 'Rejoicing in hope; patient in tribulation; continuing instant in prayer.', testament: 'NT' },
+       { ref: 'Psalm 146:5', text: 'Happy is he that hath the God of Jacob for his help, whose hope is in the Lord his God.', testament: 'OT' },
+       { ref: '1 Corinthians 13:13', text: 'And now abideth faith, hope, charity, these three; but the greatest of these is charity.', testament: 'NT' },
+       { ref: 'Isaiah 40:31', text: 'But they that wait upon the Lord shall renew their strength; they shall mount up with wings as eagles.', testament: 'OT' },
+       { ref: '1 Timothy 6:17', text: 'Charge them that are rich in this world, that they be not highminded, nor trust in uncertain riches, but in the living God, who giveth us richly all things to enjoy.', testament: 'NT' },
+       { ref: 'Psalm 25:5', text: 'Lead me in thy truth, and teach me: for thou art the God of my salvation; on thee do I wait all the day.', testament: 'OT' },
+       { ref: 'Micah 7:7', text: 'Therefore I will look unto the Lord; I will wait for the God of my salvation: my God will hear me.', testament: 'OT' },
+       { ref: '2 Corinthians 4:16-18', text: 'For which cause we faint not; but though our outward man perish, yet the inward man is renewed day by day. For our light affliction, which is but for a moment, worketh for us a far more exceeding and eternal weight of glory.', testament: 'NT' },
+       { ref: 'Isaiah 49:23', text: 'They shall not be ashamed that wait for me.', testament: 'OT' },
+     ]
   },
   {
     id: 'wisdom',
