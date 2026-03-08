@@ -35,6 +35,7 @@ const App = () => (
               <Route path="/search" element={<SearchPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/install" element={<InstallPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

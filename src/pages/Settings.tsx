@@ -116,6 +116,9 @@ export default function SettingsPage() {
       {/* Voice Selection */}
       <VoiceSettings />
 
+      {/* Offline Download */}
+      <OfflineDownload />
+
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
         <h3 className="font-display text-base font-bold text-foreground mb-2">Danger Zone</h3>
