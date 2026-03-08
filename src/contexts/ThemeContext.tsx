@@ -59,9 +59,7 @@ export const useTheme = () => {
 };
 
 function applyTheme(themeId: string) {
-  const root = document.documentElement;
-  THEMES.forEach(t => root.classList.remove(`theme-${t.id}`));
-  root.classList.add(`theme-${themeId}`);
+  document.documentElement.setAttribute('data-theme', themeId);
 }
 
 function applyFontSize(sizeId: string) {
