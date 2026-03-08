@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 }
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
+import AuthorProfile from '@/components/AuthorProfile';
 
 interface Comment {
   id: string;
@@ -43,6 +44,7 @@ export default function Community() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const [profileAuthor, setProfileAuthor] = useState<string | null>(null);
 
   useEffect(() => {
     loadPosts();
@@ -330,15 +332,18 @@ export default function Community() {
         )}
         {posts.map(post => (
           <div key={post.id} className="rounded-xl bg-card border border-border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
+            <button
+              onClick={() => setProfileAuthor(post.author_name)}
+              className="flex items-center gap-2 mb-2 group/author"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold group-hover/author:ring-2 group-hover/author:ring-primary transition-all">
                 {post.author_name[0]}
               </div>
-              <div>
-                <p className="text-sm font-medium text-card-foreground">{post.author_name}</p>
+              <div className="text-left">
+                <p className="text-sm font-medium text-card-foreground group-hover/author:text-primary transition-colors">{post.author_name}</p>
                 <p className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</p>
               </div>
-            </div>
+            </button>
             <h3 className="font-display font-bold text-card-foreground mb-1">{post.title}</h3>
             <p className="text-sm text-muted-foreground mb-3">{post.content}</p>
 
@@ -419,6 +424,13 @@ export default function Community() {
           </div>
         ))}
       </div>
+
+      {/* Author Profile Popup */}
+      <AuthorProfile
+        authorName={profileAuthor || ''}
+        open={!!profileAuthor}
+        onClose={() => setProfileAuthor(null)}
+      />
     </div>
   );
 }
