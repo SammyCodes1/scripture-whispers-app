@@ -44,7 +44,7 @@ export function useChapterAudio(verses: BibleVerse[]) {
     indexRef.current = index;
 
     const utt = new SpeechSynthesisUtterance(verses[index].text);
-    utt.rate = 0.9;
+    utt.rate = speed;
     utt.pitch = 1;
 
     const voice = getVoice();
