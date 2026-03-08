@@ -7,6 +7,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import VerseShareCard from '@/components/VerseShareCard';
+import { useReadingStreak } from '@/hooks/useReadingStreak';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
