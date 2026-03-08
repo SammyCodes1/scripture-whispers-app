@@ -115,6 +115,15 @@ export const TOPICS: Topic[] = [
       { ref: 'Isaiah 65:24', text: 'And it shall come to pass, that before they call, I will answer; and while they are yet speaking, I will hear.', testament: 'OT' },
       { ref: 'Mark 11:24', text: 'Therefore I say unto you, What things soever ye desire, when ye pray, believe that ye receive them, and ye shall have them.', testament: 'NT' },
       { ref: 'Psalm 102:17', text: 'He will regard the prayer of the destitute, and not despise their prayer.', testament: 'OT' },
+      { ref: 'Ephesians 6:18', text: 'Praying always with all prayer and supplication in the Spirit, and watching thereunto with all perseverance and supplication for all saints.', testament: 'NT' },
+      { ref: 'Psalm 66:19-20', text: 'But verily God hath heard me; he hath attended to the voice of my prayer. Blessed be God, which hath not turned away my prayer, nor his mercy from me.', testament: 'OT' },
+      { ref: 'John 15:7', text: 'If ye abide in me, and my words abide in you, ye shall ask what ye will, and it shall be done unto you.', testament: 'NT' },
+      { ref: 'Psalm 18:6', text: 'In my distress I called upon the Lord, and cried unto my God: he heard my voice out of his temple, and my cry came before him, even into his ears.', testament: 'OT' },
+      { ref: 'Luke 11:9', text: 'And I say unto you, Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you.', testament: 'NT' },
+      { ref: 'Psalm 141:2', text: 'Let my prayer be set forth before thee as incense; and the lifting up of my hands as the evening sacrifice.', testament: 'OT' },
+      { ref: 'John 14:13', text: 'And whatsoever ye shall ask in my name, that will I do, that the Father may be glorified in the Son.', testament: 'NT' },
+      { ref: 'Psalm 86:6-7', text: 'Give ear, O Lord, unto my prayer; and attend to the voice of my supplications. In the day of my trouble I will call upon thee: for thou wilt answer me.', testament: 'OT' },
+      { ref: 'Hebrews 4:16', text: 'Let us therefore come boldly unto the throne of grace, that we may obtain mercy, and find grace to help in time of need.', testament: 'NT' },
     ]
   },
   {
