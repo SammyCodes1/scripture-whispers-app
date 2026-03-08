@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, UserPlus, UserCheck, Heart, MessageCircle, FileText } from 'lucide-react';
+import { X, UserPlus, UserCheck, Heart, MessageCircle, FileText, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
@@ -46,6 +46,16 @@ export default function AuthorProfile({ authorName, open, onClose, isSelf }: Aut
     };
     load();
   }, [open, authorName, deviceId]);
+
+  const deletePost = async (postId: string) => {
+    const { error } = await supabase.from('community_posts').delete().eq('id', postId);
+    if (error) {
+      toast.error('Failed to delete post');
+    } else {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('Post deleted');
+    }
+  };
 
   const toggleSubscribe = async () => {
     if (subscribed) {
@@ -164,9 +174,20 @@ export default function AuthorProfile({ authorName, open, onClose, isSelf }: Aut
                         </a>
                       )
                     )}
-                    <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-1"><Heart size={10} /> {p.likes}</span>
-                      <span>{timeAgo(p.created_at)}</span>
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Heart size={10} /> {p.likes}</span>
+                        <span>{timeAgo(p.created_at)}</span>
+                      </div>
+                      {isSelf && (
+                        <button
+                          onClick={() => deletePost(p.id)}
+                          className="p-1 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete post"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

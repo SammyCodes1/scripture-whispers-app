@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can delete own community posts" ON public.community_posts FOR DELETE USING (true);
