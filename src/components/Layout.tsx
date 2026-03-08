@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDownloadState, subscribeDownload } from '@/hooks/useDownloadManager';
 
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
