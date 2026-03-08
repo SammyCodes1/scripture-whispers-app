@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import { Gauge } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { SPEED_STORAGE_KEY } from '@/hooks/useChapterAudio';
@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const SPEED_STEPS = [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
-export default function SpeedControl() {
+const SpeedControl = forwardRef<HTMLDivElement>(function SpeedControl(_props, forwardedRef) {
   const [speed, setSpeed] = useLocalStorage<number>(SPEED_STORAGE_KEY, 1);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -62,4 +62,6 @@ export default function SpeedControl() {
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default SpeedControl;
