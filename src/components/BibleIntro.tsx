@@ -49,7 +49,7 @@ export default function BibleIntro({ onComplete }: { onComplete: () => void }) {
 
   useEffect(() => {
     if (phase === 'fading') {
-      const t = setTimeout(onComplete, 800);
+      const t = setTimeout(onComplete, 1000);
       return () => clearTimeout(t);
     }
   }, [phase, onComplete]);
@@ -57,13 +57,11 @@ export default function BibleIntro({ onComplete }: { onComplete: () => void }) {
   const bookName = BIBLE_BOOKS_PREVIEW[currentPage] || 'Psalms';
 
   return (
-    <AnimatePresence>
-      {phase !== 'fading' ? (
-        <motion.div
-          key="intro"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.7 }}
+    <motion.div
+      key="intro"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: phase === 'fading' ? 0 : 1 }}
+      transition={{ duration: 0.7 }}
           className="fixed inset-0 z-[9999] flex items-center justify-center"
           style={{ background: 'hsl(var(--background))' }}
         >
