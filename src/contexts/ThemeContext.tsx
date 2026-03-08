@@ -18,6 +18,8 @@ export const BIBLE_VERSIONS = [
   { id: 'asv', name: 'ASV', full: 'American Standard Version' },
   { id: 'darby', name: 'Darby', full: 'Darby Translation' },
   { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
+  { id: 'web', name: 'WEB', full: 'World English Bible' },
+  { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
 ] as const;
 
 export const FONT_SIZES = [
