@@ -144,7 +144,8 @@ export default function Community() {
       title: title.trim(),
       content: content.trim(),
       image_url: imageUrl,
-    });
+      device_id: getDeviceId(),
+    } as any);
 
     if (error) {
       toast.error('Failed to publish');
