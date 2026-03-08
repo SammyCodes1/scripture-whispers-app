@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Plus, X, Send, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ interface Post {
   title: string;
   content: string;
   likes: number;
+  image_url: string | null;
   created_at: string;
   comments?: Comment[];
 }
@@ -31,6 +32,9 @@ export default function Community() {
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem('hw-liked-posts');
@@ -40,27 +44,25 @@ export default function Community() {
 
   useEffect(() => {
     loadPosts();
-
-    // Realtime subscription
     const channel = supabase
       .channel('community')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  // Clean up file preview URL
+  useEffect(() => {
+    return () => { if (filePreview) URL.revokeObjectURL(filePreview); };
+  }, [filePreview]);
 
   const loadPosts = async () => {
     const { data, error } = await supabase
       .from('community_posts')
       .select('*')
       .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error loading posts:', error);
-    } else {
-      setPosts(data || []);
-    }
+    if (error) console.error('Error loading posts:', error);
+    else setPosts(data || []);
     setLoading(false);
   };
 
@@ -70,10 +72,51 @@ export default function Community() {
       .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
-    
-    if (data) {
-      setComments(prev => ({ ...prev, [postId]: data }));
+    if (data) setComments(prev => ({ ...prev, [postId]: data }));
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 10MB limit
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File must be under 10MB');
+      return;
     }
+
+    setSelectedFile(file);
+    if (file.type.startsWith('image/')) {
+      setFilePreview(URL.createObjectURL(file));
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const removeFile = () => {
+    if (filePreview) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const ext = file.name.split('.').pop() || 'bin';
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('community-attachments')
+      .upload(path, file);
+
+    if (error) {
+      console.error('Upload error:', error);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from('community-attachments')
+      .getPublicUrl(path);
+
+    return data.publicUrl;
   };
 
   const createPost = async () => {
@@ -82,10 +125,23 @@ export default function Community() {
       return;
     }
 
+    setUploading(true);
+    let imageUrl: string | null = null;
+
+    if (selectedFile) {
+      imageUrl = await uploadFile(selectedFile);
+      if (!imageUrl) {
+        toast.error('Failed to upload file');
+        setUploading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from('community_posts').insert({
       author_name: author.trim(),
       title: title.trim(),
       content: content.trim(),
+      image_url: imageUrl,
     });
 
     if (error) {
@@ -93,21 +149,21 @@ export default function Community() {
     } else {
       setTitle('');
       setContent('');
+      removeFile();
       setShowForm(false);
       toast.success('Idea published!');
     }
+    setUploading(false);
   };
 
   const toggleLike = async (post: Post) => {
     const isLiked = likedPosts.has(post.id);
     const newLikes = isLiked ? post.likes - 1 : post.likes + 1;
-    
     const newLikedPosts = new Set(likedPosts);
     if (isLiked) newLikedPosts.delete(post.id);
     else newLikedPosts.add(post.id);
     setLikedPosts(newLikedPosts);
     localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
-
     await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
     loadPosts();
   };
@@ -115,16 +171,13 @@ export default function Community() {
   const addComment = async (postId: string) => {
     const text = commentText[postId]?.trim();
     if (!text) return;
-
     const { error } = await supabase.from('community_comments').insert({
       post_id: postId,
       author_name: 'Anonymous',
       content: text,
     });
-
-    if (error) {
-      toast.error('Failed to add comment');
-    } else {
+    if (error) toast.error('Failed to add comment');
+    else {
       setCommentText(prev => ({ ...prev, [postId]: '' }));
       toast.success('Comment added');
       loadComments(postId);
@@ -132,12 +185,8 @@ export default function Community() {
   };
 
   const handleShowComments = (postId: string) => {
-    if (showComments === postId) {
-      setShowComments(null);
-    } else {
-      setShowComments(postId);
-      loadComments(postId);
-    }
+    if (showComments === postId) setShowComments(null);
+    else { setShowComments(postId); loadComments(postId); }
   };
 
   const timeAgo = (ts: string) => {
@@ -148,6 +197,8 @@ export default function Community() {
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
   };
+
+  const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
 
   if (loading) {
     return (
@@ -199,11 +250,48 @@ export default function Community() {
             rows={3}
             className="w-full rounded-lg bg-background border border-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring resize-none"
           />
+
+          {/* File attachment area */}
+          {selectedFile ? (
+            <div className="rounded-lg border border-border bg-background p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {selectedFile.type.startsWith('image/') ? <Image size={16} className="text-primary shrink-0" /> : <FileText size={16} className="text-primary shrink-0" />}
+                  <span className="text-xs text-foreground truncate">{selectedFile.name}</span>
+                  <span className="text-[10px] text-muted-foreground shrink-0">
+                    ({(selectedFile.size / 1024).toFixed(0)} KB)
+                  </span>
+                </div>
+                <button onClick={removeFile} className="p-1 rounded hover:bg-secondary text-muted-foreground hover:text-destructive transition-colors shrink-0">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              {filePreview && (
+                <img src={filePreview} alt="Preview" className="rounded-lg max-h-48 w-full object-cover" />
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <label className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-border bg-background text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                <Image size={14} />
+                Add Photo
+                <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+              </label>
+              <label className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-border bg-background text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer">
+                <FileText size={14} />
+                Add Document
+                <input type="file" accept=".pdf,.doc,.docx,.txt" className="hidden" onChange={handleFileSelect} />
+              </label>
+            </div>
+          )}
+
           <button
             onClick={createPost}
-            className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:opacity-90 transition"
+            disabled={uploading}
+            className="w-full rounded-lg bg-primary text-primary-foreground py-2 text-sm font-medium hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Publish Idea
+            {uploading && <Loader2 size={16} className="animate-spin" />}
+            {uploading ? 'Uploading…' : 'Publish Idea'}
           </button>
         </motion.div>
       )}
@@ -226,6 +314,30 @@ export default function Community() {
             </div>
             <h3 className="font-display font-bold text-card-foreground mb-1">{post.title}</h3>
             <p className="text-sm text-muted-foreground mb-3">{post.content}</p>
+
+            {/* Attached image or document */}
+            {post.image_url && (
+              isImage(post.image_url) ? (
+                <a href={post.image_url} target="_blank" rel="noopener noreferrer" className="block mb-3">
+                  <img
+                    src={post.image_url}
+                    alt="Attachment"
+                    className="rounded-lg max-h-64 w-full object-cover border border-border"
+                    loading="lazy"
+                  />
+                </a>
+              ) : (
+                <a
+                  href={post.image_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 mb-3 text-xs text-primary hover:bg-primary/5 transition-colors"
+                >
+                  <FileText size={16} />
+                  View attached document
+                </a>
+              )
+            )}
 
             <div className="flex items-center gap-4 border-t border-border pt-2">
               <button
