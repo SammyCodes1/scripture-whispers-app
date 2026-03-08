@@ -44,6 +44,7 @@ export default function Community() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const [profileAuthor, setProfileAuthor] = useState<string | null>(null);
 
   useEffect(() => {
     loadPosts();
