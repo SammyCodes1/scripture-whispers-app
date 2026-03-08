@@ -19,6 +19,7 @@ interface Post {
   content: string;
   likes: number;
   image_url: string | null;
+  device_id: string | null;
   created_at: string;
   comments?: Comment[];
 }
