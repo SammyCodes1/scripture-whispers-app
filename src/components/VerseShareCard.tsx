@@ -17,6 +17,12 @@ const CARD_STYLES = [
   { id: 'midnight', label: 'Midnight', bg: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', text: '#e8e4f0', accent: '#a89ec9' },
   { id: 'rose', label: 'Rose', bg: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)', text: '#4a0e1a', accent: '#7a1a30' },
   { id: 'earth', label: 'Earth', bg: 'linear-gradient(135deg, #8B7355 0%, #C4A882 50%, #D4C5A9 100%)', text: '#2d1f0e', accent: '#5c4427' },
+  { id: 'royal', label: 'Royal', bg: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)', text: '#d4af37', accent: '#b8962e' },
+  { id: 'lavender', label: 'Lavender', bg: 'linear-gradient(135deg, #E8D5F5 0%, #C3AED6 50%, #A888C4 100%)', text: '#2e1a47', accent: '#4a2d6e' },
+  { id: 'flame', label: 'Flame', bg: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)', text: '#ffffff', accent: '#fff3d6' },
+  { id: 'arctic', label: 'Arctic', bg: 'linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)', text: '#1a2a4a', accent: '#3a5a8a' },
+  { id: 'noir', label: 'Noir', bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', text: '#e0e0e0', accent: '#888888' },
+  { id: 'peach', label: 'Peach', bg: 'linear-gradient(135deg, #FCEABB 0%, #F8B500 100%)', text: '#3d2800', accent: '#6b4700' },
 ];
 
 export default function VerseShareCard({ reference, text, version, onClose }: VerseShareCardProps) {
