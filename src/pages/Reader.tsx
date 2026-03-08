@@ -4,7 +4,8 @@ import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, Vol
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
+import { type BibleVerse } from '@/hooks/useBibleApi';
+import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import VerseShareCard from '@/components/VerseShareCard';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
