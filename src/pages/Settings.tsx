@@ -4,6 +4,7 @@ import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
 import DailyReminderSettings from '@/components/DailyReminderSettings';
 import VoiceSettings from '@/components/VoiceSettings';
+import AudioSpeedSettings from '@/components/AudioSpeedSettings';
 import OfflineDownload from '@/components/OfflineDownload';
 
 export default function SettingsPage() {
