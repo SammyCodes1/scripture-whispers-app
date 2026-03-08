@@ -50,6 +50,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h1 className="font-display text-xl font-bold text-foreground">HolyWord</h1>
           </Link>
           <div className="flex items-center gap-1">
+            <NotificationBell />
             {dlState.active && (
               <Link
                 to="/install"
