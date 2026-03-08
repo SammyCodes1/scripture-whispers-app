@@ -7,7 +7,9 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
+import { useReadingHistory } from '@/hooks/useReadingHistory';
 import VerseShareCard from '@/components/VerseShareCard';
+import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
 import { toast } from 'sonner';
 
