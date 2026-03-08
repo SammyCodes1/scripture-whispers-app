@@ -7,13 +7,76 @@ const corsHeaders = {
 
 const NLT_API_BASE = 'https://api.nlt.to/api';
 
+/**
+ * Parse NLT HTML response into individual verses.
+ * NLT returns HTML with verse numbers in <span class="verse-num"> tags.
+ */
+function parseVersesFromHtml(html: string, book: string, chapter: number): any[] {
+  const verses: any[] = [];
+  
+  // Remove script/style tags
+  let clean = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  clean = clean.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  
+  // Try to extract verses using verse-num spans
+  // Pattern: <span class="verse-num">N </span>text until next verse-num or end
+  const versePattern = /<span[^>]*class="[^"]*verse-num[^"]*"[^>]*>\s*(\d+)\s*<\/span>([\s\S]*?)(?=<span[^>]*class="[^"]*verse-num|$)/gi;
+  
+  let match;
+  while ((match = versePattern.exec(clean)) !== null) {
+    const verseNum = parseInt(match[1], 10);
+    // Strip remaining HTML tags and clean whitespace
+    let text = match[2]
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    if (text) {
+      verses.push({
+        book_id: book,
+        book_name: book,
+        chapter,
+        verse: verseNum,
+        text,
+      });
+    }
+  }
+  
+  // Fallback: if no verse-num spans found, return the whole text as verse 1
+  if (verses.length === 0) {
+    const plainText = clean
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    if (plainText) {
+      verses.push({
+        book_id: book,
+        book_name: book,
+        chapter,
+        verse: 1,
+        text: plainText,
+      });
+    }
+  }
+  
+  return verses;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   // NLT API allows anonymous access with key=TEST (500 req/day, 50 verses/req)
-  // If user has a real key, use it; otherwise fall back to TEST
   const NLT_API_KEY = Deno.env.get('NLT_API_KEY')?.trim() || 'TEST';
 
   try {
@@ -23,49 +86,70 @@ serve(async (req) => {
     const chapter = url.searchParams.get('chapter');
     const query = url.searchParams.get('query');
 
-    let apiUrl = '';
-    let parseAs: 'passages' | 'search' = 'passages';
-
     if (action === 'chapter' && book && chapter) {
-      // Fetch a full chapter
-      apiUrl = `${NLT_API_BASE}/passages?ref=${encodeURIComponent(`${book}+${chapter}`)}&key=${NLT_API_KEY}&format=json`;
-      parseAs = 'passages';
+      const ref = `${book}+${chapter}`;
+      const apiUrl = `${NLT_API_BASE}/passages?ref=${encodeURIComponent(ref)}&key=${NLT_API_KEY}`;
+      
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`NLT API call failed [${response.status}]: ${errorText}`);
+      }
+      
+      const html = await response.text();
+      const chapterNum = parseInt(chapter, 10);
+      const verses = parseVersesFromHtml(html, book, chapterNum);
+      
+      return new Response(JSON.stringify({
+        reference: `${book} ${chapter}`,
+        verses,
+        text: verses.map(v => v.text).join(' '),
+        translation_id: 'nlt',
+        translation_name: 'New Living Translation',
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+      
     } else if (action === 'search' && query) {
-      apiUrl = `${NLT_API_BASE}/search?query=${encodeURIComponent(query)}&key=${NLT_API_KEY}&format=json`;
-      parseAs = 'search';
+      const apiUrl = `${NLT_API_BASE}/search?text=${encodeURIComponent(query)}&key=${NLT_API_KEY}`;
+      
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`NLT API search failed [${response.status}]: ${errorText}`);
+      }
+      
+      const html = await response.text();
+      // Parse search results from HTML
+      const results: any[] = [];
+      
+      // Search results come as HTML paragraphs with references
+      const refPattern = /<h3[^>]*>(.*?)<\/h3>\s*([\s\S]*?)(?=<h3|$)/gi;
+      let m;
+      while ((m = refPattern.exec(html)) !== null) {
+        const reference = m[1].replace(/<[^>]+>/g, '').trim();
+        const text = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (reference && text) {
+          results.push({ reference, text, book_name: '', chapter: 0, verse: 0 });
+        }
+      }
+      
+      return new Response(JSON.stringify({
+        query,
+        results,
+        count: results.length,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+      
     } else {
       return new Response(JSON.stringify({ error: 'Invalid action. Use chapter or search.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const response = await fetch(apiUrl, {
-      headers: { 'Accept': 'application/json' },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`NLT API call failed [${response.status}]: ${errorText}`);
-    }
-
-    // NLT API may return HTML or JSON depending on the format param
-    const contentType = response.headers.get('content-type') || '';
-    let data: any;
-
-    if (contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      // NLT API sometimes returns HTML even with format=json
-      // Parse the HTML text content
-      const htmlText = await response.text();
-      data = { html: htmlText };
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error: unknown) {
     console.error('nlt-api-proxy error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
