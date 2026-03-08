@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
