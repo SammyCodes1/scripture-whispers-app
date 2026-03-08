@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Volume2, Check, Play } from 'lucide-react';
+import { Volume2, Check, Play, Gauge } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { VOICE_STORAGE_KEY } from '@/hooks/useChapterAudio';
+import { VOICE_STORAGE_KEY, SPEED_STORAGE_KEY } from '@/hooks/useChapterAudio';
 
 interface BrowserVoice {
   name: string;
