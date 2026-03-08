@@ -302,8 +302,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Romans 5:1', text: 'Therefore being justified by faith, we have peace with God through our Lord Jesus Christ.', testament: 'NT' },
       { ref: 'Psalm 34:14', text: 'Depart from evil, and do good; seek peace, and pursue it.', testament: 'OT' },
       { ref: 'Galatians 5:22', text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith.', testament: 'NT' },
-      { ref: 'Isaiah 54:10', text: 'For the mountains shall depart, and the hills be removed; but my kindness shall not depart from thee, neither shall the covenant of my peace be removed, saith the Lord that hath mercy on thee.', testament: 'OT' },
-    ]
+       { ref: 'Isaiah 54:10', text: 'For the mountains shall depart, and the hills be removed; but my kindness shall not depart from thee, neither shall the covenant of my peace be removed, saith the Lord that hath mercy on thee.', testament: 'OT' },
+       { ref: 'Psalm 85:8', text: 'I will hear what God the Lord will speak: for he will speak peace unto his people, and to his saints.', testament: 'OT' },
+       { ref: '2 Peter 1:2', text: 'Grace and peace be multiplied unto you through the knowledge of God, and of Jesus our Lord.', testament: 'NT' },
+       { ref: 'Psalm 122:6', text: 'Pray for the peace of Jerusalem: they shall prosper that love thee.', testament: 'OT' },
+       { ref: 'Romans 12:18', text: 'If it be possible, as much as lieth in you, live peaceably with all men.', testament: 'NT' },
+       { ref: 'Psalm 46:10', text: 'Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.', testament: 'OT' },
+       { ref: 'Hebrews 12:14', text: 'Follow peace with all men, and holiness, without which no man shall see the Lord.', testament: 'NT' },
+       { ref: 'Isaiah 32:17', text: 'And the work of righteousness shall be peace; and the effect of righteousness quietness and assurance for ever.', testament: 'OT' },
+       { ref: 'James 3:18', text: 'And the fruit of righteousness is sown in peace of them that make peace.', testament: 'NT' },
+       { ref: 'Psalm 37:11', text: 'But the meek shall inherit the earth; and shall delight themselves in the abundance of peace.', testament: 'OT' },
+       { ref: 'Ephesians 2:14', text: 'For he is our peace, who hath made both one, and hath broken down the middle wall of partition between us.', testament: 'NT' },
+     ]
   },
   {
     id: 'hope',
