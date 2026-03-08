@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/data/bibleData';
-import { useTheme } from '@/contexts/ThemeContext';
+import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
