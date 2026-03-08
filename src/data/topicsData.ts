@@ -226,8 +226,18 @@ export const TOPICS: Topic[] = [
        { ref: '2 Corinthians 1:12', text: 'For our rejoicing is this, the testimony of our conscience, that in simplicity and godly sincerity, not with fleshly wisdom, but by the grace of God, we have had our conversation in the world.', testament: 'NT' },
        { ref: 'Hebrews 12:15', text: 'Looking diligently lest any man fail of the grace of God; lest any root of bitterness springing up trouble you, and thereby many be defiled.', testament: 'NT' },
        { ref: '1 Peter 1:13', text: 'Wherefore gird up the loins of your mind, be sober, and hope to the end for the grace that is to be brought unto you at the revelation of Jesus Christ.', testament: 'NT' },
-       { ref: 'Jude 1:4', text: 'For there are certain men crept in unawares, who were before of old ordained to this condemnation, ungodly men, turning the grace of our God into lasciviousness, and denying the only Lord God, and our Lord Jesus Christ.', testament: 'NT' },
-     ]
+        { ref: 'Jude 1:4', text: 'For there are certain men crept in unawares, who were before of old ordained to this condemnation, ungodly men, turning the grace of our God into lasciviousness, and denying the only Lord God, and our Lord Jesus Christ.', testament: 'NT' },
+        { ref: 'Romans 11:6', text: 'And if by grace, then is it no more of works: otherwise grace is no more grace.', testament: 'NT' },
+        { ref: 'Acts 20:24', text: 'But none of these things move me, neither count I my life dear unto myself, so that I might finish my course with joy, and the ministry, which I have received of the Lord Jesus, to testify the gospel of the grace of God.', testament: 'NT' },
+        { ref: 'John 1:16', text: 'And of his fulness have all we received, and grace for grace.', testament: 'NT' },
+        { ref: 'Romans 5:17', text: 'For if by one man\'s offence death reigned by one; much more they which receive abundance of grace and of the gift of righteousness shall reign in life by one, Jesus Christ.', testament: 'NT' },
+        { ref: '2 Corinthians 8:9', text: 'For ye know the grace of our Lord Jesus Christ, that, though he was rich, yet for your sakes he became poor, that ye through his poverty might be rich.', testament: 'NT' },
+        { ref: 'James 4:6', text: 'But he giveth more grace. Wherefore he saith, God resisteth the proud, but giveth grace unto the humble.', testament: 'NT' },
+        { ref: 'Romans 5:20', text: 'Moreover the law entered, that the offence might abound. But where sin abounded, grace did much more abound.', testament: 'NT' },
+        { ref: 'Ephesians 3:7', text: 'Whereof I was made a minister, according to the gift of the grace of God given unto me by the effectual working of his power.', testament: 'NT' },
+        { ref: '2 Corinthians 9:8', text: 'And God is able to make all grace abound toward you; that ye, always having all sufficiency in all things, may abound to every good work.', testament: 'NT' },
+        { ref: 'Psalm 84:11', text: 'For the Lord God is a sun and shield: the Lord will give grace and glory: no good thing will he withhold from them that walk uprightly.', testament: 'OT' },
+      ]
    },
    {
      id: 'mercy',
