@@ -644,8 +644,18 @@ export const TOPICS: Topic[] = [
       { ref: 'Acts 2:28', text: 'Thou hast made known to me the ways of life; thou shalt make me full of joy with thy countenance.', testament: 'NT' },
       { ref: 'Isaiah 55:12', text: 'For ye shall go out with joy, and be led forth with peace: the mountains and the hills shall break forth before you into singing, and all the trees of the field shall clap their hands.', testament: 'OT' },
       { ref: '1 Thessalonians 5:16', text: 'Rejoice evermore.', testament: 'NT' },
-      { ref: 'Psalm 47:1', text: 'O clap your hands, all ye people; shout unto God with the voice of triumph.', testament: 'OT' },
-    ]
+       { ref: 'Psalm 47:1', text: 'O clap your hands, all ye people; shout unto God with the voice of triumph.', testament: 'OT' },
+       { ref: 'Psalm 43:4', text: 'Then will I go unto the altar of God, unto God my exceeding joy: yea, upon the harp will I praise thee, O God my God.', testament: 'OT' },
+       { ref: '3 John 1:4', text: 'I have no greater joy than to hear that my children walk in truth.', testament: 'NT' },
+       { ref: 'Psalm 118:24', text: 'This is the day which the Lord hath made; we will rejoice and be glad in it.', testament: 'OT' },
+       { ref: 'Luke 10:20', text: 'Notwithstanding in this rejoice not, that the spirits are subject unto you; but rather rejoice, because your names are written in heaven.', testament: 'NT' },
+       { ref: 'Psalm 37:4', text: 'Delight thyself also in the Lord; and he shall give thee the desires of thine heart.', testament: 'OT' },
+       { ref: 'John 17:13', text: 'And now come I to thee; and these things I speak in the world, that they might have my joy fulfilled in themselves.', testament: 'NT' },
+       { ref: 'Psalm 68:3', text: 'But let the righteous be glad; let them rejoice before God: yea, let them exceedingly rejoice.', testament: 'OT' },
+       { ref: 'Acts 13:52', text: 'And the disciples were filled with joy, and with the Holy Ghost.', testament: 'NT' },
+       { ref: 'Zephaniah 3:17', text: 'The Lord thy God in the midst of thee is mighty; he will save, he will rejoice over thee with joy; he will rest in his love, he will joy over thee with singing.', testament: 'OT' },
+       { ref: 'Philippians 2:2', text: 'Fulfil ye my joy, that ye be likeminded, having the same love, being of one accord, of one mind.', testament: 'NT' },
+     ]
   },
 ];
 
