@@ -28,9 +28,16 @@ export const FONT_SIZES = [
   { id: 'xl', name: 'Extra Large', value: '20px' },
 ] as const;
 
+export const FONT_FAMILIES = [
+  { id: 'serif', name: 'Serif', value: "'Lora', 'Georgia', serif", emoji: '📖' },
+  { id: 'sans', name: 'Sans-serif', value: "'Inter', 'Helvetica', sans-serif", emoji: '🔤' },
+  { id: 'mono', name: 'Monospace', value: "'JetBrains Mono', 'Courier New', monospace", emoji: '💻' },
+] as const;
+
 type ThemeId = typeof THEMES[number]['id'];
 type BibleVersionId = typeof BIBLE_VERSIONS[number]['id'];
 type FontSizeId = typeof FONT_SIZES[number]['id'];
+type FontFamilyId = typeof FONT_FAMILIES[number]['id'];
 
 interface ThemeContextType {
   theme: ThemeId;
@@ -39,6 +46,8 @@ interface ThemeContextType {
   setVersion: (v: BibleVersionId) => void;
   fontSize: FontSizeId;
   setFontSize: (f: FontSizeId) => void;
+  fontFamily: FontFamilyId;
+  setFontFamily: (f: FontFamilyId) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
