@@ -7,6 +7,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { fetchChapter, type BibleVerse } from '@/hooks/useBibleApi';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import VerseShareCard from '@/components/VerseShareCard';
+import { useReadingStreak } from '@/hooks/useReadingStreak';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
@@ -34,13 +35,14 @@ export default function Reader() {
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
   const { isPlaying, currentVerseIndex, toggle, stop } = useChapterAudio(verses);
+  const { recordReading } = useReadingStreak();
 
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
     let cancelled = false;
     setLoading(true);
     fetchChapter(selectedBook, selectedChapter, version)
-      .then(data => { if (!cancelled && data.verses) setVerses(data.verses); })
+      .then(data => { if (!cancelled && data.verses) { setVerses(data.verses); recordReading(); } })
       .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };

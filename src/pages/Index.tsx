@@ -3,6 +3,7 @@ import { BookOpen, Lightbulb, MessageSquare, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
+import StreakCard from '@/components/StreakCard';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture' },
@@ -28,6 +29,15 @@ export default function Index() {
           "{dailyVerse.text}"
         </blockquote>
         <p className="text-sm opacity-80 font-body">— {dailyVerse.ref}</p>
+      </motion.section>
+
+      {/* Reading Streak */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <StreakCard />
       </motion.section>
 
       {/* Daily Topic */}

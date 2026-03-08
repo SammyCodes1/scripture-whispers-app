@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/contexts/ThemeContext';
 import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
+import DailyReminderSettings from '@/components/DailyReminderSettings';
 
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
@@ -106,6 +107,9 @@ export default function SettingsPage() {
           ))}
         </div>
       </section>
+
+      {/* Daily Reminder */}
+      <DailyReminderSettings />
 
       {/* Delete Account */}
       <section className="border-t border-border pt-6">
