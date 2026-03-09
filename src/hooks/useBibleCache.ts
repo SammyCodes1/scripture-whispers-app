@@ -5,6 +5,34 @@ const DB_NAME = 'holyword-bible-cache';
 const DB_VERSION = 1;
 const STORE_NAME = 'chapters';
 
+// Bump this version whenever content/API changes are made.
+// Users with an older cached version will have their cache cleared automatically.
+const CONTENT_VERSION = '2025-03-09-v1';
+const CONTENT_VERSION_KEY = 'hw-cache-content-version';
+
+/** Check and invalidate stale offline cache on app start */
+export async function invalidateStaleCacheIfNeeded(): Promise<void> {
+  try {
+    const stored = localStorage.getItem(CONTENT_VERSION_KEY);
+    if (stored === CONTENT_VERSION) return; // up to date
+
+    // Version mismatch — clear entire IndexedDB store
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).clear();
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+
+    localStorage.setItem(CONTENT_VERSION_KEY, CONTENT_VERSION);
+    console.log('[Cache] Stale offline cache cleared — new content version:', CONTENT_VERSION);
+  } catch {
+    // If anything fails, just update the key so we don't loop
+    try { localStorage.setItem(CONTENT_VERSION_KEY, CONTENT_VERSION); } catch {}
+  }
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
