@@ -6,7 +6,7 @@ import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
 import { useAvatars } from '@/hooks/useAvatars';
-import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline } from '@/hooks/useCommunityCache';
+import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline, enqueue, processQueue, getQueueCount } from '@/hooks/useCommunityCache';
 interface Comment {
   id: string;
   author_name: string;
@@ -52,13 +52,21 @@ export default function Community() {
   const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
-    const handleOnline = () => { setOffline(false); loadPosts(); };
+    const handleOnline = async () => {
+      setOffline(false);
+      // Process any queued offline actions first
+      const synced = await processQueue(() => loadPosts());
+      if (synced === 0) loadPosts();
+    };
     const handleOffline = () => setOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     if (!isOffline()) {
-      loadPosts();
+      // Process queue on mount too (in case user refreshed while online)
+      processQueue(() => loadPosts()).then(synced => {
+        if (synced === 0) loadPosts();
+      });
       const channel = supabase
         .channel('community')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
@@ -69,7 +77,6 @@ export default function Community() {
         window.removeEventListener('offline', handleOffline);
       };
     } else {
-      // Load from cache
       const cached = getCachedPosts() as Post[];
       if (cached.length > 0) setPosts(cached);
       setLoading(false);
@@ -165,6 +172,39 @@ export default function Community() {
       return;
     }
 
+    if (isOffline()) {
+      // Queue the post for later sync (no file upload offline)
+      if (selectedFile) {
+        toast.error('File uploads are not available offline');
+        return;
+      }
+      enqueue({
+        type: 'post',
+        title: title.trim(),
+        content: content.trim(),
+        authorName: author.trim(),
+        timestamp: Date.now(),
+      });
+      // Add optimistic local post
+      const tempPost: Post = {
+        id: `offline-${Date.now()}`,
+        author_name: author.trim(),
+        title: title.trim(),
+        content: content.trim(),
+        likes: 0,
+        image_url: null,
+        device_id: getDeviceId(),
+        created_at: new Date().toISOString(),
+      };
+      setPosts(prev => [tempPost, ...prev]);
+      localStorage.setItem('hw-community-author', author.trim());
+      setTitle('');
+      setContent('');
+      setShowForm(false);
+      toast.success('Idea saved — will publish when back online');
+      return;
+    }
+
     setUploading(true);
     let imageUrl: string | null = null;
 
@@ -206,9 +246,26 @@ export default function Community() {
     else newLikedPosts.add(post.id);
     setLikedPosts(newLikedPosts);
     localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
+
+    // Update local state optimistically
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likes: Math.max(0, newLikes) } : p));
+
+    if (isOffline()) {
+      enqueue({
+        type: 'like',
+        postId: post.id,
+        postTitle: post.title,
+        newLikes: Math.max(0, newLikes),
+        unlike: isLiked,
+        postDeviceId: post.device_id,
+        timestamp: Date.now(),
+      });
+      toast.success(isLiked ? 'Unlike saved — will sync when online' : 'Like saved — will sync when online');
+      return;
+    }
+
     await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
 
-    // Notify post author on new like (not on unlike, not on own post)
     if (!isLiked && post.device_id && post.device_id !== getDeviceId()) {
       await supabase.from('notifications').insert({
         device_id: post.device_id,
@@ -225,9 +282,35 @@ export default function Community() {
   const addComment = async (postId: string) => {
     const text = commentText[postId]?.trim();
     if (!text) return;
+    const post = posts.find(p => p.id === postId);
+    const commentAuthor = author.trim() || 'Anonymous';
+
+    if (isOffline()) {
+      // Add optimistic local comment
+      const tempComment: Comment = {
+        id: `offline-${Date.now()}`,
+        author_name: commentAuthor,
+        content: text,
+        created_at: new Date().toISOString(),
+      };
+      setComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), tempComment] }));
+      setCommentText(prev => ({ ...prev, [postId]: '' }));
+      enqueue({
+        type: 'comment',
+        postId,
+        postTitle: post?.title || '',
+        content: text,
+        authorName: commentAuthor,
+        postDeviceId: post?.device_id || null,
+        timestamp: Date.now(),
+      });
+      toast.success('Comment saved — will sync when online');
+      return;
+    }
+
     const { error } = await supabase.from('community_comments').insert({
       post_id: postId,
-      author_name: 'Anonymous',
+      author_name: commentAuthor,
       content: text,
     });
     if (error) toast.error('Failed to add comment');
@@ -236,15 +319,13 @@ export default function Community() {
       toast.success('Comment added');
       loadComments(postId);
 
-      // Notify the post author
-      const post = posts.find(p => p.id === postId);
       if (post?.device_id && post.device_id !== getDeviceId()) {
         await supabase.from('notifications').insert({
           device_id: post.device_id,
           post_id: postId,
           type: 'comment',
-          actor_name: 'Someone',
-          message: `Someone commented on your post "${post.title}"`,
+          actor_name: commentAuthor,
+          message: `${commentAuthor} commented on your post "${post.title}"`,
         } as any);
       }
     }
@@ -278,8 +359,8 @@ export default function Community() {
     <div className="fade-in">
       {offline && (
         <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 mb-4 text-xs text-muted-foreground">
-          <WifiOff size={14} />
-          You're offline — viewing cached community data. Some actions are unavailable.
+          <WifiOff size={14} className="shrink-0" />
+          <span>You're offline — actions will sync when you reconnect.{getQueueCount() > 0 && ` (${getQueueCount()} pending)`}</span>
         </div>
       )}
       <div className="flex items-center justify-between mb-4">
@@ -294,15 +375,13 @@ export default function Community() {
               My Profile
             </button>
           )}
-          {!offline && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-            >
-              {showForm ? <X size={16} /> : <Plus size={16} />}
-              {showForm ? 'Cancel' : 'Share Idea'}
-            </button>
-          )}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+          >
+            {showForm ? <X size={16} /> : <Plus size={16} />}
+            {showForm ? 'Cancel' : 'Share Idea'}
+          </button>
         </div>
       </div>
 
