@@ -359,8 +359,8 @@ export default function Community() {
     <div className="fade-in">
       {offline && (
         <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 mb-4 text-xs text-muted-foreground">
-          <WifiOff size={14} />
-          You're offline — viewing cached community data. Some actions are unavailable.
+          <WifiOff size={14} className="shrink-0" />
+          <span>You're offline — actions will sync when you reconnect.{getQueueCount() > 0 && ` (${getQueueCount()} pending)`}</span>
         </div>
       )}
       <div className="flex items-center justify-between mb-4">
