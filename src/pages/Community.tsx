@@ -375,15 +375,13 @@ export default function Community() {
               My Profile
             </button>
           )}
-          {!offline && (
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-            >
-              {showForm ? <X size={16} /> : <Plus size={16} />}
-              {showForm ? 'Cancel' : 'Share Idea'}
-            </button>
-          )}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+          >
+            {showForm ? <X size={16} /> : <Plus size={16} />}
+            {showForm ? 'Cancel' : 'Share Idea'}
+          </button>
         </div>
       </div>
 
