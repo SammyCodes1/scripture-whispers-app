@@ -91,17 +91,28 @@ export default function Community() {
       .select('*')
       .order('created_at', { ascending: false });
     if (error) console.error('Error loading posts:', error);
-    else setPosts(data || []);
+    else {
+      setPosts(data || []);
+      cachePosts(data || []);
+    }
     setLoading(false);
   };
 
   const loadComments = async (postId: string) => {
+    if (isOffline()) {
+      const cached = getCachedComments();
+      if (cached[postId]) setComments(prev => ({ ...prev, [postId]: cached[postId] }));
+      return;
+    }
     const { data } = await supabase
       .from('community_comments')
       .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
-    if (data) setComments(prev => ({ ...prev, [postId]: data }));
+    if (data) {
+      setComments(prev => ({ ...prev, [postId]: data }));
+      cacheComments(postId, data);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
