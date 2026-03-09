@@ -266,7 +266,7 @@ export default function Community() {
 
   const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
 
-  if (loading) {
+  if (loading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="animate-spin text-primary" size={32} />
@@ -276,6 +276,12 @@ export default function Community() {
 
   return (
     <div className="fade-in">
+      {offline && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 mb-4 text-xs text-muted-foreground">
+          <WifiOff size={14} />
+          You're offline — viewing cached community data. Some actions are unavailable.
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-xl font-bold text-foreground">Community</h2>
         <div className="flex items-center gap-2">
