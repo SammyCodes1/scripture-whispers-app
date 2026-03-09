@@ -172,6 +172,39 @@ export default function Community() {
       return;
     }
 
+    if (isOffline()) {
+      // Queue the post for later sync (no file upload offline)
+      if (selectedFile) {
+        toast.error('File uploads are not available offline');
+        return;
+      }
+      enqueue({
+        type: 'post',
+        title: title.trim(),
+        content: content.trim(),
+        authorName: author.trim(),
+        timestamp: Date.now(),
+      });
+      // Add optimistic local post
+      const tempPost: Post = {
+        id: `offline-${Date.now()}`,
+        author_name: author.trim(),
+        title: title.trim(),
+        content: content.trim(),
+        likes: 0,
+        image_url: null,
+        device_id: getDeviceId(),
+        created_at: new Date().toISOString(),
+      };
+      setPosts(prev => [tempPost, ...prev]);
+      localStorage.setItem('hw-community-author', author.trim());
+      setTitle('');
+      setContent('');
+      setShowForm(false);
+      toast.success('Idea saved — will publish when back online');
+      return;
+    }
+
     setUploading(true);
     let imageUrl: string | null = null;
 
