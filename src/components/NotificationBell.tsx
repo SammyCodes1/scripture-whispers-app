@@ -223,6 +223,7 @@ export default function NotificationBell() {
               )}
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

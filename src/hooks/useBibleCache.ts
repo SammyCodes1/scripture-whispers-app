@@ -7,7 +7,7 @@ const STORE_NAME = 'chapters';
 
 // Bump this version whenever content/API changes are made.
 // Users with an older cached version will have their cache cleared automatically.
-const CONTENT_VERSION = '2025-03-09-v1';
+const CONTENT_VERSION = '2026-03-09-v2';
 const CONTENT_VERSION_KEY = 'hw-cache-content-version';
 
 /** Check and invalidate stale offline cache on app start */
