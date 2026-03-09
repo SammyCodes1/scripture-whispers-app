@@ -6,7 +6,7 @@ import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
 import { useAvatars } from '@/hooks/useAvatars';
-import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline } from '@/hooks/useCommunityCache';
+import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline, enqueue, processQueue, getQueueCount } from '@/hooks/useCommunityCache';
 interface Comment {
   id: string;
   author_name: string;
