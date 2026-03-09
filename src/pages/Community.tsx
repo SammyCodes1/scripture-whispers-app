@@ -52,13 +52,21 @@ export default function Community() {
   const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
-    const handleOnline = () => { setOffline(false); loadPosts(); };
+    const handleOnline = async () => {
+      setOffline(false);
+      // Process any queued offline actions first
+      const synced = await processQueue(() => loadPosts());
+      if (synced === 0) loadPosts();
+    };
     const handleOffline = () => setOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     if (!isOffline()) {
-      loadPosts();
+      // Process queue on mount too (in case user refreshed while online)
+      processQueue(() => loadPosts()).then(synced => {
+        if (synced === 0) loadPosts();
+      });
       const channel = supabase
         .channel('community')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
@@ -69,7 +77,6 @@ export default function Community() {
         window.removeEventListener('offline', handleOffline);
       };
     } else {
-      // Load from cache
       const cached = getCachedPosts() as Post[];
       if (cached.length > 0) setPosts(cached);
       setLoading(false);
