@@ -34,6 +34,11 @@ const App = () => {
     }
   });
 
+  // Invalidate stale offline cache on app start
+  useEffect(() => {
+    invalidateStaleCacheIfNeeded();
+  }, []);
+
   const handleIntroComplete = useCallback(() => {
     try { localStorage.setItem(INTRO_KEY, '1'); } catch {}
     setShowIntro(false);
