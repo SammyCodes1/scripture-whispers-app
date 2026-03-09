@@ -246,9 +246,26 @@ export default function Community() {
     else newLikedPosts.add(post.id);
     setLikedPosts(newLikedPosts);
     localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
+
+    // Update local state optimistically
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likes: Math.max(0, newLikes) } : p));
+
+    if (isOffline()) {
+      enqueue({
+        type: 'like',
+        postId: post.id,
+        postTitle: post.title,
+        newLikes: Math.max(0, newLikes),
+        unlike: isLiked,
+        postDeviceId: post.device_id,
+        timestamp: Date.now(),
+      });
+      toast.success(isLiked ? 'Unlike saved — will sync when online' : 'Like saved — will sync when online');
+      return;
+    }
+
     await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
 
-    // Notify post author on new like (not on unlike, not on own post)
     if (!isLiked && post.device_id && post.device_id !== getDeviceId()) {
       await supabase.from('notifications').insert({
         device_id: post.device_id,
@@ -265,9 +282,35 @@ export default function Community() {
   const addComment = async (postId: string) => {
     const text = commentText[postId]?.trim();
     if (!text) return;
+    const post = posts.find(p => p.id === postId);
+    const commentAuthor = author.trim() || 'Anonymous';
+
+    if (isOffline()) {
+      // Add optimistic local comment
+      const tempComment: Comment = {
+        id: `offline-${Date.now()}`,
+        author_name: commentAuthor,
+        content: text,
+        created_at: new Date().toISOString(),
+      };
+      setComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), tempComment] }));
+      setCommentText(prev => ({ ...prev, [postId]: '' }));
+      enqueue({
+        type: 'comment',
+        postId,
+        postTitle: post?.title || '',
+        content: text,
+        authorName: commentAuthor,
+        postDeviceId: post?.device_id || null,
+        timestamp: Date.now(),
+      });
+      toast.success('Comment saved — will sync when online');
+      return;
+    }
+
     const { error } = await supabase.from('community_comments').insert({
       post_id: postId,
-      author_name: 'Anonymous',
+      author_name: commentAuthor,
       content: text,
     });
     if (error) toast.error('Failed to add comment');
@@ -276,15 +319,13 @@ export default function Community() {
       toast.success('Comment added');
       loadComments(postId);
 
-      // Notify the post author
-      const post = posts.find(p => p.id === postId);
       if (post?.device_id && post.device_id !== getDeviceId()) {
         await supabase.from('notifications').insert({
           device_id: post.device_id,
           post_id: postId,
           type: 'comment',
-          actor_name: 'Someone',
-          message: `Someone commented on your post "${post.title}"`,
+          actor_name: commentAuthor,
+          message: `${commentAuthor} commented on your post "${post.title}"`,
         } as any);
       }
     }
