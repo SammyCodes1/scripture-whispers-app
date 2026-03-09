@@ -52,12 +52,32 @@ export default function Community() {
   const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
-    loadPosts();
-    const channel = supabase
-      .channel('community')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const handleOnline = () => { setOffline(false); loadPosts(); };
+    const handleOffline = () => setOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    if (!isOffline()) {
+      loadPosts();
+      const channel = supabase
+        .channel('community')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    } else {
+      // Load from cache
+      const cached = getCachedPosts() as Post[];
+      if (cached.length > 0) setPosts(cached);
+      setLoading(false);
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
   }, []);
 
   // Clean up file preview URL
