@@ -27,8 +27,9 @@ interface Post {
 }
 
 export default function Community() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>(() => getCachedPosts() as Post[]);
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(!navigator.onLine);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
