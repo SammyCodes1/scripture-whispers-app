@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2, User } from 'lucide-react';
+import { Heart, MessageCircle, Plus, X, Send, Loader2, Image, FileText, Trash2, User, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
 import { useAvatars } from '@/hooks/useAvatars';
-
+import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline } from '@/hooks/useCommunityCache';
 interface Comment {
   id: string;
   author_name: string;
@@ -27,8 +27,9 @@ interface Post {
 }
 
 export default function Community() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>(() => getCachedPosts() as Post[]);
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(!navigator.onLine);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -51,12 +52,32 @@ export default function Community() {
   const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
-    loadPosts();
-    const channel = supabase
-      .channel('community')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const handleOnline = () => { setOffline(false); loadPosts(); };
+    const handleOffline = () => setOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    if (!isOffline()) {
+      loadPosts();
+      const channel = supabase
+        .channel('community')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'community_posts' }, () => loadPosts())
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    } else {
+      // Load from cache
+      const cached = getCachedPosts() as Post[];
+      if (cached.length > 0) setPosts(cached);
+      setLoading(false);
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
   }, []);
 
   // Clean up file preview URL
@@ -70,17 +91,28 @@ export default function Community() {
       .select('*')
       .order('created_at', { ascending: false });
     if (error) console.error('Error loading posts:', error);
-    else setPosts(data || []);
+    else {
+      setPosts(data || []);
+      cachePosts(data || []);
+    }
     setLoading(false);
   };
 
   const loadComments = async (postId: string) => {
+    if (isOffline()) {
+      const cached = getCachedComments();
+      if (cached[postId]) setComments(prev => ({ ...prev, [postId]: cached[postId] }));
+      return;
+    }
     const { data } = await supabase
       .from('community_comments')
       .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
-    if (data) setComments(prev => ({ ...prev, [postId]: data }));
+    if (data) {
+      setComments(prev => ({ ...prev, [postId]: data }));
+      cacheComments(postId, data);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,7 +266,7 @@ export default function Community() {
 
   const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
 
-  if (loading) {
+  if (loading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="animate-spin text-primary" size={32} />
@@ -244,6 +276,12 @@ export default function Community() {
 
   return (
     <div className="fade-in">
+      {offline && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted border border-border px-3 py-2 mb-4 text-xs text-muted-foreground">
+          <WifiOff size={14} />
+          You're offline — viewing cached community data. Some actions are unavailable.
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-xl font-bold text-foreground">Community</h2>
         <div className="flex items-center gap-2">
@@ -256,13 +294,15 @@ export default function Community() {
               My Profile
             </button>
           )}
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-          >
-            {showForm ? <X size={16} /> : <Plus size={16} />}
-            {showForm ? 'Cancel' : 'Share Idea'}
-          </button>
+          {!offline && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+            >
+              {showForm ? <X size={16} /> : <Plus size={16} />}
+              {showForm ? 'Cancel' : 'Share Idea'}
+            </button>
+          )}
         </div>
       </div>
 
