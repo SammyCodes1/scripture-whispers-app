@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Layout from "@/components/Layout";
+import { invalidateStaleCacheIfNeeded } from "@/hooks/useBibleCache";
 import BibleIntro from "@/components/BibleIntro";
 import Index from "./pages/Index";
 import Reader from "./pages/Reader";
