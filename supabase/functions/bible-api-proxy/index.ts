@@ -22,7 +22,7 @@ serve(async (req) => {
     });
   }
 
-  if (API_BIBLE_KEY.length < 30) {
+  if (API_BIBLE_KEY.length < 10) {
     return new Response(JSON.stringify({ error: 'API_BIBLE_KEY appears invalid (too short). Re-save the full key from API.Bible.' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
