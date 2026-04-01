@@ -186,18 +186,31 @@ async function searchApiBible(query: string, translation: string, limit: number)
   };
 }
 
+// Book name overrides for APIs that use different naming conventions
+const PRIMARY_API_BOOK_NAMES: Record<string, string> = {
+  'Song of Solomon': 'Song of Songs',
+};
+
 // ─── Public API ──────────────────────────────────────────────
 
 export async function fetchChapter(book: string, chapter: number, translation: string = 'kjv'): Promise<ChapterResponse> {
   if (isApiBibleTranslation(translation)) {
     return fetchChapterFromApiBible(book, chapter, translation);
   }
-  const reference = `${book} ${chapter}`;
   const apiBase = getApiBase(translation);
+  // Some APIs use different book names; map if needed
+  const apiBookName = apiBase === PRIMARY_API ? (PRIMARY_API_BOOK_NAMES[book] || book) : book;
+  const reference = `${apiBookName} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to fetch chapter: ${res.status}`);
-  return res.json();
+  const data: ChapterResponse = await res.json();
+  // Normalise book_name back to our canonical name in verses
+  if (apiBookName !== book && data.verses) {
+    data.verses = data.verses.map(v => ({ ...v, book_name: book }));
+    data.reference = `${book} ${chapter}`;
+  }
+  return data;
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
