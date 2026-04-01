@@ -173,16 +173,23 @@ export default function Community() {
     }
 
     if (isOffline()) {
-      // Queue the post for later sync (no file upload offline)
+      // Store file in IndexedDB if present
+      let fileKey: string | undefined;
       if (selectedFile) {
-        toast.error('File uploads are not available offline');
-        return;
+        fileKey = `offline-file-${Date.now()}`;
+        try {
+          await storeOfflineFile(fileKey, selectedFile);
+        } catch {
+          toast.error('Failed to save file offline');
+          return;
+        }
       }
       enqueue({
         type: 'post',
         title: title.trim(),
         content: content.trim(),
         authorName: author.trim(),
+        fileKey,
         timestamp: Date.now(),
       });
       // Add optimistic local post
@@ -192,7 +199,7 @@ export default function Community() {
         title: title.trim(),
         content: content.trim(),
         likes: 0,
-        image_url: null,
+        image_url: filePreview || null,
         device_id: getDeviceId(),
         created_at: new Date().toISOString(),
       };
@@ -200,8 +207,9 @@ export default function Community() {
       localStorage.setItem('hw-community-author', author.trim());
       setTitle('');
       setContent('');
+      removeFile();
       setShowForm(false);
-      toast.success('Idea saved — will publish when back online');
+      toast.success(selectedFile ? 'Idea saved with attachment — will publish when back online' : 'Idea saved — will publish when back online');
       return;
     }
 
