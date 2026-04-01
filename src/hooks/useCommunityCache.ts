@@ -7,6 +7,67 @@ const COMMENTS_KEY = 'hw-community-comments-cache';
 const PROFILES_KEY = 'hw-community-profiles-cache';
 const QUEUE_KEY = 'hw-offline-queue';
 
+// ── IndexedDB for binary file storage ──
+const FILE_DB_NAME = 'hw-offline-files';
+const FILE_DB_VERSION = 1;
+const FILE_STORE = 'files';
+
+function openFileDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(FILE_DB_NAME, FILE_DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(FILE_STORE)) {
+        db.createObjectStore(FILE_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function storeOfflineFile(key: string, file: File): Promise<void> {
+  const db = await openFileDB();
+  const buffer = await file.arrayBuffer();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FILE_STORE, 'readwrite');
+    tx.objectStore(FILE_STORE).put({ buffer, name: file.name, type: file.type, size: file.size }, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function getOfflineFile(key: string): Promise<File | null> {
+  try {
+    const db = await openFileDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FILE_STORE, 'readonly');
+      const req = tx.objectStore(FILE_STORE).get(key);
+      req.onsuccess = () => {
+        const data = req.result;
+        if (!data) return resolve(null);
+        const file = new File([data.buffer], data.name, { type: data.type });
+        resolve(file);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteOfflineFile(key: string): Promise<void> {
+  try {
+    const db = await openFileDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FILE_STORE, 'readwrite');
+      tx.objectStore(FILE_STORE).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {}
+}
+
 // ── Cached data types ──
 
 export interface CachedPost {
@@ -61,6 +122,7 @@ interface QueuedPost {
   title: string;
   content: string;
   authorName: string;
+  fileKey?: string; // IndexedDB key for attached file
   timestamp: number;
 }
 
@@ -136,6 +198,16 @@ export function getQueueCount(): number {
   return getQueue().length;
 }
 
+/** Upload a file to Supabase storage */
+async function uploadFileToStorage(file: File): Promise<string | null> {
+  const ext = file.name.split('.').pop() || 'bin';
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage.from('community-attachments').upload(path, file);
+  if (error) return null;
+  const { data } = supabase.storage.from('community-attachments').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 /** Process all queued actions and sync to the server */
 export async function processQueue(onDone?: () => void): Promise<number> {
   const queue = getQueue();
@@ -153,7 +225,6 @@ export async function processQueue(onDone?: () => void): Promise<number> {
           .update({ likes: Math.max(0, action.newLikes) })
           .eq('id', action.postId);
 
-        // Send notification for likes (not unlikes, not own posts)
         if (!action.unlike && action.postDeviceId && action.postDeviceId !== deviceId) {
           await supabase.from('notifications').insert({
             device_id: action.postDeviceId,
@@ -171,7 +242,6 @@ export async function processQueue(onDone?: () => void): Promise<number> {
           content: action.content,
         });
         if (!error) {
-          // Send notification
           if (action.postDeviceId && action.postDeviceId !== deviceId) {
             await supabase.from('notifications').insert({
               device_id: action.postDeviceId,
@@ -186,10 +256,24 @@ export async function processQueue(onDone?: () => void): Promise<number> {
           failed.push(action);
         }
       } else if (action.type === 'post') {
+        let imageUrl: string | null = null;
+
+        // Upload queued file from IndexedDB if present
+        if (action.fileKey) {
+          const file = await getOfflineFile(action.fileKey);
+          if (file) {
+            imageUrl = await uploadFileToStorage(file);
+            if (imageUrl) {
+              await deleteOfflineFile(action.fileKey);
+            }
+          }
+        }
+
         const { error } = await supabase.from('community_posts').insert({
           author_name: action.authorName,
           title: action.title,
           content: action.content,
+          image_url: imageUrl,
           device_id: deviceId,
         } as any);
         if (!error) {
@@ -203,7 +287,6 @@ export async function processQueue(onDone?: () => void): Promise<number> {
     }
   }
 
-  // Keep only failed actions in queue
   saveQueue(failed);
 
   if (processed > 0) {
