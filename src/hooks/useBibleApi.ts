@@ -186,10 +186,29 @@ async function searchApiBible(query: string, translation: string, limit: number)
   };
 }
 
-// Book name overrides for APIs that use different naming conventions
-const PRIMARY_API_BOOK_NAMES: Record<string, string> = {
-  'Song of Solomon': 'Song of Songs',
-};
+// Some books fail on the primary chapter endpoint even though the translation exists there.
+const PRIMARY_API_FALLBACK_BOOKS = new Set(['Song of Solomon']);
+
+function resolveContentApiBase(book: string, translation: string) {
+  const apiBase = getApiBase(translation);
+  return apiBase === PRIMARY_API && PRIMARY_API_FALLBACK_BOOKS.has(book)
+    ? FALLBACK_API
+    : apiBase;
+}
+
+function normalizeChapterResponse(data: ChapterResponse, book: string, reference: string): ChapterResponse {
+  if (data.verses) {
+    data.verses = data.verses.map(verse =>
+      verse.book_name === book ? verse : { ...verse, book_name: book }
+    );
+  }
+  data.reference = reference;
+  return data;
+}
+
+function getBookFromReference(reference: string) {
+  return reference.replace(/\s+\d+(?::\d+(?:-\d+)?)?$/, '');
+}
 
 // ─── Public API ──────────────────────────────────────────────
 
@@ -197,20 +216,16 @@ export async function fetchChapter(book: string, chapter: number, translation: s
   if (isApiBibleTranslation(translation)) {
     return fetchChapterFromApiBible(book, chapter, translation);
   }
-  const apiBase = getApiBase(translation);
-  // Some APIs use different book names; map if needed
-  const apiBookName = apiBase === PRIMARY_API ? (PRIMARY_API_BOOK_NAMES[book] || book) : book;
-  const reference = `${apiBookName} ${chapter}`;
+
+  const apiBase = resolveContentApiBase(book, translation);
+  const reference = `${book} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
   const res = await fetch(url);
+
   if (!res.ok) throw new Error(`Failed to fetch chapter: ${res.status}`);
+
   const data: ChapterResponse = await res.json();
-  // Normalise book_name back to our canonical name in verses
-  if (apiBookName !== book && data.verses) {
-    data.verses = data.verses.map(v => ({ ...v, book_name: book }));
-    data.reference = `${book} ${chapter}`;
-  }
-  return data;
+  return normalizeChapterResponse(data, book, reference);
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
@@ -239,9 +254,14 @@ export async function fetchVerse(ref: string, translation: string = 'kjv'): Prom
     }
     throw new Error(`Cannot parse verse reference for API.Bible: ${ref}`);
   }
-  const apiBase = getApiBase(translation);
+
+  const book = getBookFromReference(ref);
+  const apiBase = resolveContentApiBase(book, translation);
   const url = buildUrl(apiBase, ref, translation);
   const res = await fetch(url);
+
   if (!res.ok) throw new Error(`Failed to fetch verse: ${res.status}`);
-  return res.json();
+
+  const data: ChapterResponse = await res.json();
+  return normalizeChapterResponse(data, book, ref);
 }
