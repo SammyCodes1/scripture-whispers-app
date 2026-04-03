@@ -101,15 +101,6 @@ export async function searchBible(query: string, translation: string = 'kjv', li
 }
 
 export async function fetchVerse(ref: string, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isApiBibleTranslation(translation)) {
-    const match = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
-    if (match) {
-      const [, book, ch] = match;
-      return fetchChapterFromApiBible(book, parseInt(ch, 10), translation);
-    }
-    throw new Error(`Cannot parse verse reference for API.Bible: ${ref}`);
-  }
-
   const book = getBookFromReference(ref);
   const apiBase = resolveContentApiBase(book, translation);
   const url = buildUrl(apiBase, ref, translation);
