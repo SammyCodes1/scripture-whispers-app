@@ -75,10 +75,6 @@ function getBookFromReference(reference: string) {
 // ─── Public API ──────────────────────────────────────────────
 
 export async function fetchChapter(book: string, chapter: number, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isApiBibleTranslation(translation)) {
-    return fetchChapterFromApiBible(book, chapter, translation);
-  }
-
   const apiBase = resolveContentApiBase(book, translation);
   const reference = `${book} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
