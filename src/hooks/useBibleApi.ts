@@ -47,144 +47,6 @@ export interface SearchResponse {
   count: number;
 }
 
-// ─── API.Bible support ───────────────────────────────────────
-import { isApiBibleTranslation, API_BIBLE_TRANSLATIONS, BOOK_NAME_TO_API_BIBLE_ID } from '@/data/apiBibleMapping';
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-
-async function callEdgeFunction(params: Record<string, string>): Promise<any> {
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/bible-api-proxy?${qs}`, {
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Edge function error ${res.status}: ${body}`);
-  }
-  return res.json();
-}
-
-/**
- * Fetch a chapter from API.Bible and normalise to our ChapterResponse format.
- */
-async function fetchChapterFromApiBible(book: string, chapter: number, translation: string): Promise<ChapterResponse> {
-  const config = API_BIBLE_TRANSLATIONS[translation];
-  const bookId = BOOK_NAME_TO_API_BIBLE_ID[book];
-  if (!config || !bookId) throw new Error(`Unknown API.Bible translation or book: ${translation} / ${book}`);
-
-  const chapterId = `${bookId}.${chapter}`;
-
-  // First get verse list for the chapter
-  const versesData = await callEdgeFunction({
-    action: 'verses',
-    bibleId: config.bibleId,
-    chapterId,
-  });
-
-  const verseItems: any[] = versesData?.data || [];
-
-  // Fetch each verse's content in parallel (API.Bible verses endpoint only gives references)
-  // To avoid too many calls, fetch the chapter content as a whole and parse
-  const chapterData = await callEdgeFunction({
-    action: 'chapter',
-    bibleId: config.bibleId,
-    chapterId,
-  });
-
-  const chapterContent: string = chapterData?.data?.content || '';
-  // API.Bible returns text content — split by verse markers or use verse list
-  // Build verse objects from the verse list with text from chapter content
-  const verses: BibleVerse[] = [];
-
-  if (verseItems.length > 0) {
-    // Fetch individual verse texts in batches
-    const BATCH = 10;
-    for (let i = 0; i < verseItems.length; i += BATCH) {
-      const batch = verseItems.slice(i, i + BATCH);
-      const results = await Promise.allSettled(
-        batch.map(v =>
-          callEdgeFunction({
-            action: 'verse',
-            bibleId: config.bibleId,
-            verseId: v.id,
-          })
-        )
-      );
-      for (let j = 0; j < results.length; j++) {
-        const r = results[j];
-        const verseInfo = batch[j];
-        const verseNum = parseInt(verseInfo.id.split('.').pop() || '0', 10);
-        let text = '';
-        if (r.status === 'fulfilled' && r.value?.data?.content) {
-          text = r.value.data.content.replace(/<[^>]+>/g, '').trim();
-        }
-        verses.push({
-          book_id: bookId,
-          book_name: book,
-          chapter,
-          verse: verseNum,
-          text,
-        });
-      }
-    }
-  }
-
-  // Fallback: if we got no individual verses but have chapter content
-  if (verses.length === 0 && chapterContent) {
-    const cleanText = chapterContent.replace(/<[^>]+>/g, '').trim();
-    verses.push({
-      book_id: bookId,
-      book_name: book,
-      chapter,
-      verse: 1,
-      text: cleanText,
-    });
-  }
-
-  return {
-    reference: `${book} ${chapter}`,
-    verses,
-    text: verses.map(v => v.text).join(' '),
-    translation_id: translation,
-    translation_name: config.name,
-  };
-}
-
-async function searchApiBible(query: string, translation: string, limit: number): Promise<SearchResponse> {
-  const config = API_BIBLE_TRANSLATIONS[translation];
-  if (!config) throw new Error(`Unknown API.Bible translation: ${translation}`);
-
-  const data = await callEdgeFunction({
-    action: 'search',
-    bibleId: config.bibleId,
-    query,
-  });
-
-  const passages: any[] = data?.data?.passages || [];
-  const verses: any[] = data?.data?.verses || [];
-  const results: SearchResult[] = [];
-
-  for (const v of verses.slice(0, limit)) {
-    const text = (v.text || '').replace(/<[^>]+>/g, '').trim();
-    results.push({
-      reference: v.reference || '',
-      book_name: v.bookId || '',
-      chapter: parseInt(v.chapterId?.split('.').pop() || '0', 10),
-      verse: parseInt(v.id?.split('.').pop() || '0', 10),
-      text,
-    });
-  }
-
-  return {
-    query,
-    results,
-    count: data?.data?.total || results.length,
-  };
-}
 
 // Some books fail on the primary chapter endpoint even though the translation exists there.
 const PRIMARY_API_FALLBACK_BOOKS = new Set(['Song of Solomon']);
@@ -213,10 +75,6 @@ function getBookFromReference(reference: string) {
 // ─── Public API ──────────────────────────────────────────────
 
 export async function fetchChapter(book: string, chapter: number, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isApiBibleTranslation(translation)) {
-    return fetchChapterFromApiBible(book, chapter, translation);
-  }
-
   const apiBase = resolveContentApiBase(book, translation);
   const reference = `${book} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
@@ -229,9 +87,6 @@ export async function fetchChapter(book: string, chapter: number, translation: s
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
-  if (isApiBibleTranslation(translation)) {
-    return searchApiBible(query, translation, limit);
-  }
   const apiBase = getApiBase(translation);
   if (apiBase === FALLBACK_API) {
     const url = `${PRIMARY_API}/api/search?q=${encodeURIComponent(query)}&translation=kjv&limit=${limit}`;
@@ -246,15 +101,6 @@ export async function searchBible(query: string, translation: string = 'kjv', li
 }
 
 export async function fetchVerse(ref: string, translation: string = 'kjv'): Promise<ChapterResponse> {
-  if (isApiBibleTranslation(translation)) {
-    const match = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
-    if (match) {
-      const [, book, ch] = match;
-      return fetchChapterFromApiBible(book, parseInt(ch, 10), translation);
-    }
-    throw new Error(`Cannot parse verse reference for API.Bible: ${ref}`);
-  }
-
   const book = getBookFromReference(ref);
   const apiBase = resolveContentApiBase(book, translation);
   const url = buildUrl(apiBase, ref, translation);
