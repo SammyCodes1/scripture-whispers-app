@@ -87,9 +87,6 @@ export async function fetchChapter(book: string, chapter: number, translation: s
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
-  if (isApiBibleTranslation(translation)) {
-    return searchApiBible(query, translation, limit);
-  }
   const apiBase = getApiBase(translation);
   if (apiBase === FALLBACK_API) {
     const url = `${PRIMARY_API}/api/search?q=${encodeURIComponent(query)}&translation=kjv&limit=${limit}`;
