@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2 } from 'lucide-react';
@@ -14,6 +14,7 @@ import { useLastRead } from '@/hooks/useLastRead';
 import VerseShareCard from '@/components/VerseShareCard';
 import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
@@ -48,6 +49,24 @@ export default function Reader() {
   const { recordReading } = useReadingStreak();
   const { recordChapter, isChapterRead, bookStats } = useReadingHistory();
   const { savePosition } = useLastRead();
+
+  const goNextChapter = useCallback(() => {
+    if (!currentBook || selectedChapter >= currentBook.chapters) return;
+    stop();
+    setSelectedChapter(prev => prev + 1);
+    setVerses([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentBook, selectedChapter, stop]);
+
+  const goPrevChapter = useCallback(() => {
+    if (selectedChapter <= 1) return;
+    stop();
+    setSelectedChapter(prev => prev - 1);
+    setVerses([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedChapter, stop]);
+
+  const swipeHandlers = useSwipeGesture(goNextChapter, goPrevChapter);
 
   useEffect(() => {
     if (hasRestoredRef.current) return;
@@ -276,7 +295,7 @@ export default function Reader() {
         )}
 
         {view === 'reading' && (
-          <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} {...swipeHandlers}>
             {loading ? (
               <div className="flex items-center justify-center py-24">
                 <Loader2 className="animate-spin text-primary" size={32} />
