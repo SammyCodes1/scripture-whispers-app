@@ -18,6 +18,7 @@ import SettingsPage from "./pages/Settings";
 import FeedbackPage from "./pages/Feedback";
 import InstallPage from "./pages/Install";
 import ConfessionsPage from "./pages/Confessions";
+import BibleMaps from "./pages/BibleMaps";
 import NotFound from "./pages/NotFound";
 import AnnouncementModal from "./components/AnnouncementModal";
 
@@ -65,6 +66,7 @@ const App = () => {
                 <Route path="/confessions" element={<ConfessionsPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/install" element={<InstallPage />} />
+                <Route path="/maps" element={<BibleMaps />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>

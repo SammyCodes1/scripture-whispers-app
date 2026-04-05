@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame } from 'lucide-react';
+import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame, Globe2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDownloadState, subscribeDownload } from '@/hooks/useDownloadManager';
@@ -8,8 +8,8 @@ import NotificationBell from '@/components/NotificationBell';
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/read', icon: BookOpen, label: 'Read' },
+  { path: '/maps', icon: Globe2, label: 'Maps' },
   { path: '/search', icon: Search, label: 'Search' },
-  { path: '/topics', icon: Lightbulb, label: 'Topics' },
   { path: '/community', icon: MessageSquare, label: 'Community' },
 ];
 
