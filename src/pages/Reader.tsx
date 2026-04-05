@@ -50,6 +50,24 @@ export default function Reader() {
   const { recordChapter, isChapterRead, bookStats } = useReadingHistory();
   const { savePosition } = useLastRead();
 
+  const goNextChapter = useCallback(() => {
+    if (!currentBook || selectedChapter >= currentBook.chapters) return;
+    stop();
+    setSelectedChapter(prev => prev + 1);
+    setVerses([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentBook, selectedChapter, stop]);
+
+  const goPrevChapter = useCallback(() => {
+    if (selectedChapter <= 1) return;
+    stop();
+    setSelectedChapter(prev => prev - 1);
+    setVerses([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedChapter, stop]);
+
+  const swipeHandlers = useSwipeGesture(goNextChapter, goPrevChapter);
+
   useEffect(() => {
     if (hasRestoredRef.current) return;
     const bookParam = searchParams.get('book');
