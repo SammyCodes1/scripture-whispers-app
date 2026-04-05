@@ -66,6 +66,7 @@ const App = () => {
                 <Route path="/confessions" element={<ConfessionsPage />} />
                 <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/install" element={<InstallPage />} />
+                <Route path="/maps" element={<BibleMaps />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
