@@ -295,7 +295,7 @@ export default function Reader() {
         )}
 
         {view === 'reading' && (
-          <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div key="reading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} {...swipeHandlers}>
             {loading ? (
               <div className="flex items-center justify-center py-24">
                 <Loader2 className="animate-spin text-primary" size={32} />
