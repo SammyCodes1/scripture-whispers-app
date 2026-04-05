@@ -14,6 +14,7 @@ import { useLastRead } from '@/hooks/useLastRead';
 import VerseShareCard from '@/components/VerseShareCard';
 import ReadingStats from '@/components/ReadingStats';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import { toast } from 'sonner';
 
 type View = 'books' | 'chapters' | 'reading';
