@@ -64,9 +64,7 @@ function GlobeGrid() {
       {gridLines.map((pts, i) => {
         const geometry = new THREE.BufferGeometry().setFromPoints(pts);
         return (
-          <line key={i} geometry={geometry}>
-            <lineBasicMaterial color="#a08c6e" opacity={0.15} transparent />
-          </line>
+          <primitive key={i} object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: '#a08c6e', opacity: 0.15, transparent: true }))} />
         );
       })}
     </>
