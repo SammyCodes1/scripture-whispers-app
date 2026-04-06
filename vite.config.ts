@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: null,
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "placeholder.svg", "robots.txt", "logo.png"],
       manifest: {
@@ -37,6 +38,9 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,woff,ttf,json}"],
         navigateFallbackDenylist: [/^\/~oauth/],

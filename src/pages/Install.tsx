@@ -50,14 +50,29 @@ export default function InstallPage() {
   const pickAndDownload = async (versionId: string) => {
     setSelectedVersion(versionId);
     setStep('downloading');
+    setProgress(null);
     abortRef.current = new AbortController();
     try {
       await downloadAllChapters(versionId, setProgress, abortRef.current.signal);
-      setStep('done');
-      toast.success('Bible downloaded for offline use!');
+      const count = await getCachedCount(versionId);
+      setCachedCounts(prev => ({ ...prev, [versionId]: count }));
+
+      if (count >= total) {
+        setStep('done');
+        toast.success('Bible downloaded for offline use!');
+      } else {
+        setStep('pick-version');
+        setProgress(null);
+        toast.info(`Downloaded ${count} of ${total} chapters. Tap again to finish offline access.`);
+      }
     } catch {
-      toast.error('Download interrupted');
       setStep('pick-version');
+      setProgress(null);
+      if (abortRef.current?.signal.aborted) {
+        toast('Download cancelled');
+      } else {
+        toast.error('Download interrupted');
+      }
     }
   };
 

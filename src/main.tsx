@@ -1,20 +1,27 @@
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import "./index.css";
 import { playClickSound, playNavSound } from "./hooks/useClickSound";
 
-// PWA: Unregister service workers in preview/iframe contexts to prevent caching issues
 const isInIframe = (() => {
-  try { return window.self !== window.top; } catch { return true; }
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
 })();
+
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
 
 if (isPreviewHost || isInIframe) {
-  navigator.serviceWorker?.getRegistrations().then((regs) => {
-    regs.forEach((r) => r.unregister());
+  navigator.serviceWorker?.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
   });
+} else {
+  registerSW({ immediate: true });
 }
 
 // Global click sound — fires on any button, link, or interactive click

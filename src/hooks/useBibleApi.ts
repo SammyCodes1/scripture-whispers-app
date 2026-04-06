@@ -74,11 +74,16 @@ function getBookFromReference(reference: string) {
 
 // ─── Public API ──────────────────────────────────────────────
 
-export async function fetchChapter(book: string, chapter: number, translation: string = 'kjv'): Promise<ChapterResponse> {
+export async function fetchChapter(
+  book: string,
+  chapter: number,
+  translation: string = 'kjv',
+  signal?: AbortSignal
+): Promise<ChapterResponse> {
   const apiBase = resolveContentApiBase(book, translation);
   const reference = `${book} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
-  const res = await fetch(url);
+  const res = await fetch(url, { signal });
 
   if (!res.ok) throw new Error(`Failed to fetch chapter: ${res.status}`);
 
@@ -100,11 +105,11 @@ export async function searchBible(query: string, translation: string = 'kjv', li
   return res.json();
 }
 
-export async function fetchVerse(ref: string, translation: string = 'kjv'): Promise<ChapterResponse> {
+export async function fetchVerse(ref: string, translation: string = 'kjv', signal?: AbortSignal): Promise<ChapterResponse> {
   const book = getBookFromReference(ref);
   const apiBase = resolveContentApiBase(book, translation);
   const url = buildUrl(apiBase, ref, translation);
-  const res = await fetch(url);
+  const res = await fetch(url, { signal });
 
   if (!res.ok) throw new Error(`Failed to fetch verse: ${res.status}`);
 
