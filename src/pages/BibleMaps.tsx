@@ -1,9 +1,9 @@
 import { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen } from 'lucide-react';
+import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
 import BibleGlobe from '@/components/BibleGlobe';
-
+import { Input } from '@/components/ui/input';
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   all: <Globe2 size={14} />,
   city: <MapPin size={14} />,
@@ -16,19 +16,40 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export default function BibleMaps() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredLocations = useMemo(
-    () => selectedCategory === 'all'
+  const filteredLocations = useMemo(() => {
+    let locs = selectedCategory === 'all'
       ? BIBLICAL_LOCATIONS
-      : BIBLICAL_LOCATIONS.filter(l => l.category === selectedCategory),
-    [selectedCategory]
-  );
+      : BIBLICAL_LOCATIONS.filter(l => l.category === selectedCategory);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      locs = locs.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.modernName?.toLowerCase().includes(q) ||
+        l.description.toLowerCase().includes(q) ||
+        l.verses.some(v => v.toLowerCase().includes(q))
+      );
+    }
+    return locs;
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="fade-in space-y-5">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">Bible Maps</h1>
         <p className="text-sm text-muted-foreground mt-1">Explore biblical locations on an interactive 3D globe</p>
+      </div>
+
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+        <Input
+          placeholder="Search locations, verses…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 rounded-xl bg-secondary/40 border-border/60"
+        />
       </div>
 
       {/* Category filter */}
