@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Download, CheckCircle2, Trash2, WifiOff } from 'lucide-react';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { getCachedCount, getTotalChapters, clearCache } from '@/hooks/useBibleCache';
@@ -12,19 +12,34 @@ export default function OfflineDownload() {
   const [cachedCount, setCachedCount] = useState(0);
   const [dlState, setDlState] = useState(getDownloadState);
   const total = getTotalChapters();
+  const wasDownloadingRef = useRef(false);
 
   // Subscribe to global download state
   useEffect(() => {
-    setDlState(getDownloadState());
+    const initialState = getDownloadState();
+    setDlState(initialState);
+    wasDownloadingRef.current = initialState.active;
+
     return subscribeDownload(() => {
       const s = getDownloadState();
+      const justFinished = wasDownloadingRef.current && !s.active;
+      wasDownloadingRef.current = s.active;
       setDlState(s);
-      // When download finishes, refresh cached count and show toast
-      if (!s.active && s.progress === null) {
-        getCachedCount(selectedTranslation).then(setCachedCount);
+
+      if (!s.active) {
+        getCachedCount(selectedTranslation).then(count => {
+          setCachedCount(count);
+          if (justFinished) {
+            if (count >= total) {
+              toast.success('Bible downloaded for offline use!');
+            } else {
+              toast.info(`Downloaded ${count} of ${total} chapters. Tap Continue Download to finish.`);
+            }
+          }
+        });
       }
     });
-  }, [selectedTranslation]);
+  }, [selectedTranslation, total]);
 
   // If a download is active for a different translation, sync the selector
   useEffect(() => {
@@ -36,14 +51,6 @@ export default function OfflineDownload() {
   useEffect(() => {
     getCachedCount(selectedTranslation).then(setCachedCount);
   }, [selectedTranslation]);
-
-  // Detect completion
-  useEffect(() => {
-    if (dlState.progress?.done) {
-      toast.success('Bible downloaded for offline use!');
-      getCachedCount(selectedTranslation).then(setCachedCount);
-    }
-  }, [dlState.progress?.done]);
 
   const downloading = dlState.active;
   const progress = dlState.progress;
