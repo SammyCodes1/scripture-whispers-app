@@ -16,13 +16,23 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export default function BibleMaps() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredLocations = useMemo(
-    () => selectedCategory === 'all'
+  const filteredLocations = useMemo(() => {
+    let locs = selectedCategory === 'all'
       ? BIBLICAL_LOCATIONS
-      : BIBLICAL_LOCATIONS.filter(l => l.category === selectedCategory),
-    [selectedCategory]
-  );
+      : BIBLICAL_LOCATIONS.filter(l => l.category === selectedCategory);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      locs = locs.filter(l =>
+        l.name.toLowerCase().includes(q) ||
+        l.modernName?.toLowerCase().includes(q) ||
+        l.description.toLowerCase().includes(q) ||
+        l.verses.some(v => v.toLowerCase().includes(q))
+      );
+    }
+    return locs;
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="fade-in space-y-5">
