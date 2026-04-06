@@ -41,6 +41,17 @@ export default function BibleMaps() {
         <p className="text-sm text-muted-foreground mt-1">Explore biblical locations on an interactive 3D globe</p>
       </div>
 
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+        <Input
+          placeholder="Search locations, verses…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 rounded-xl bg-secondary/40 border-border/60"
+        />
+      </div>
+
       {/* Category filter */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
         {LOCATION_CATEGORIES.map(cat => (
