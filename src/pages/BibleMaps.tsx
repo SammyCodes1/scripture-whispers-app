@@ -1,9 +1,9 @@
 import { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen } from 'lucide-react';
+import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
 import BibleGlobe from '@/components/BibleGlobe';
-
+import { Input } from '@/components/ui/input';
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   all: <Globe2 size={14} />,
   city: <MapPin size={14} />,
