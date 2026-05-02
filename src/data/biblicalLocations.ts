@@ -104,7 +104,7 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     verses: ['Genesis 8:4', 'Genesis 9:13-17'],
     category: 'mountain',
     wikiModern: 'Mount Ararat',
-    wikiHistorical: 'Noah's Ark',
+    wikiHistorical: "Noah's Ark",
   },
   {
     id: 'babylon',
