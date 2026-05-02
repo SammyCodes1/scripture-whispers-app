@@ -353,16 +353,17 @@ function LocationPin({
 
 function CameraController({ target }: { target: BiblicalLocation | null }) {
   const { camera } = useThree();
-  const targetPos = useRef(new THREE.Vector3(0, 0, 6));
+  const targetPos = useRef(new THREE.Vector3(0, 1, 5));
 
   useFrame((_, delta) => {
     if (target) {
-      const pos = latLngToVector3(target.lat, target.lng, 5);
-      targetPos.current.lerp(pos, delta * 2);
+      // Dive close to the surface — camera sits just above the location.
+      const surface = latLngToVector3(target.lat, target.lng, 2.6);
+      targetPos.current.lerp(surface, Math.min(1, delta * 1.6));
     } else {
-      targetPos.current.lerp(new THREE.Vector3(0, 1, 5), delta * 2);
+      targetPos.current.lerp(new THREE.Vector3(0, 1, 5), Math.min(1, delta * 1.6));
     }
-    camera.position.lerp(targetPos.current, delta * 3);
+    camera.position.lerp(targetPos.current, Math.min(1, delta * 2.5));
     camera.lookAt(0, 0, 0);
   });
 
