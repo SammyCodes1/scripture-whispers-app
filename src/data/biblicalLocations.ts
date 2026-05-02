@@ -25,6 +25,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Center of Jewish worship; site of Jesus\' crucifixion and resurrection.',
     verses: ['Psalm 122:6', '2 Chronicles 6:6', 'Matthew 21:1', 'Luke 24:47'],
     category: 'city',
+    wikiModern: 'Jerusalem',
+    wikiHistorical: 'History of Jerusalem',
   },
   {
     id: 'bethlehem',
@@ -36,6 +38,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Birthplace of King David and Jesus, fulfilling Micah 5:2.',
     verses: ['Micah 5:2', 'Matthew 2:1', 'Luke 2:4-7', 'Ruth 1:1'],
     category: 'city',
+    wikiModern: 'Bethlehem',
+    wikiHistorical: 'Church of the Nativity',
   },
   {
     id: 'nazareth',
@@ -47,6 +51,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Where the angel Gabriel announced Jesus\' birth to Mary.',
     verses: ['Luke 1:26-28', 'Matthew 2:23', 'Luke 4:16'],
     category: 'city',
+    wikiModern: 'Nazareth',
+    wikiHistorical: 'Basilica of the Annunciation',
   },
   {
     id: 'mount-sinai',
@@ -58,6 +64,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Where the covenant between God and Israel was established.',
     verses: ['Exodus 19:20', 'Exodus 24:12', 'Deuteronomy 5:2'],
     category: 'mountain',
+    wikiModern: 'Mount Sinai',
+    wikiHistorical: 'Biblical Mount Sinai',
   },
   {
     id: 'sea-of-galilee',
@@ -69,6 +77,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Jesus walked on water, calmed the storm, and called His first disciples here.',
     verses: ['Matthew 4:18', 'Matthew 14:25', 'Mark 4:39', 'John 6:1'],
     category: 'sea',
+    wikiModern: 'Sea of Galilee',
+    wikiHistorical: 'Ministry of Jesus',
   },
   {
     id: 'jordan-river',
@@ -80,6 +90,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Israel crossed it to enter the Promised Land; site of Jesus\' baptism.',
     verses: ['Joshua 3:17', 'Matthew 3:13', '2 Kings 5:14'],
     category: 'river',
+    wikiModern: 'Jordan River',
+    wikiHistorical: 'Baptism of Jesus',
   },
   {
     id: 'mount-ararat',
@@ -91,6 +103,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'God\'s covenant with Noah began here with the rainbow promise.',
     verses: ['Genesis 8:4', 'Genesis 9:13-17'],
     category: 'mountain',
+    wikiModern: 'Mount Ararat',
+    wikiHistorical: 'Noah's Ark',
   },
   {
     id: 'babylon',
@@ -102,6 +116,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Where the Tower of Babel was built and where Israel was exiled.',
     verses: ['Genesis 11:9', '2 Kings 25:1', 'Daniel 1:1', 'Psalm 137:1'],
     category: 'city',
+    wikiModern: 'Babylon',
+    wikiHistorical: 'Hanging Gardens of Babylon',
   },
   {
     id: 'mount-olivet',
@@ -113,6 +129,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Jesus ascended to heaven from here; site of the Olivet Discourse.',
     verses: ['Acts 1:9-12', 'Matthew 24:3', 'Zechariah 14:4', 'Luke 22:39'],
     category: 'mountain',
+    wikiModern: 'Mount of Olives',
+    wikiHistorical: 'Garden of Gethsemane',
   },
   {
     id: 'egypt',
@@ -124,6 +142,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'The Exodus from Egypt is the defining event of Israel\'s identity.',
     verses: ['Exodus 1:11', 'Exodus 12:31', 'Genesis 46:3', 'Matthew 2:14'],
     category: 'region',
+    wikiModern: 'Egypt',
+    wikiHistorical: 'Ancient Egypt',
   },
   {
     id: 'jericho',
@@ -135,6 +155,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Its walls fell miraculously; one of the oldest cities in the world.',
     verses: ['Joshua 6:20', 'Luke 10:30', 'Luke 19:1'],
     category: 'city',
+    wikiModern: 'Jericho',
+    wikiHistorical: 'Battle of Jericho',
   },
   {
     id: 'nineveh',
@@ -146,6 +168,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'The entire city repented at Jonah\'s preaching.',
     verses: ['Jonah 1:2', 'Jonah 3:5', 'Nahum 1:1'],
     category: 'city',
+    wikiModern: 'Nineveh',
+    wikiHistorical: 'Assyria',
   },
   {
     id: 'damascus',
@@ -157,6 +181,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Where Paul was converted on the road to Damascus.',
     verses: ['Acts 9:1-9', 'Genesis 14:15', '2 Corinthians 11:32'],
     category: 'city',
+    wikiModern: 'Damascus',
+    wikiHistorical: 'Ancient Damascus',
   },
   {
     id: 'antioch',
@@ -168,6 +194,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'A major center for early Christianity and Paul\'s mission base.',
     verses: ['Acts 11:26', 'Acts 13:1', 'Galatians 2:11'],
     category: 'city',
+    wikiModern: 'Antakya',
+    wikiHistorical: 'Antioch',
   },
   {
     id: 'rome',
@@ -179,6 +207,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Paul wrote his epistle to the Romans; center of early church growth.',
     verses: ['Romans 1:7', 'Acts 28:16', '2 Timothy 4:6-7'],
     category: 'city',
+    wikiModern: 'Rome',
+    wikiHistorical: 'Ancient Rome',
   },
   {
     id: 'dead-sea',
@@ -190,6 +220,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Region associated with judgment; Dead Sea Scrolls found nearby.',
     verses: ['Genesis 14:3', 'Genesis 19:24-25', 'Ezekiel 47:8-9'],
     category: 'sea',
+    wikiModern: 'Dead Sea',
+    wikiHistorical: 'Sodom and Gomorrah',
   },
   {
     id: 'mount-carmel',
@@ -201,6 +233,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'God sent fire from heaven, proving He is the true God.',
     verses: ['1 Kings 18:19-39', 'Song of Solomon 7:5'],
     category: 'mountain',
+    wikiModern: 'Mount Carmel',
+    wikiHistorical: 'Elijah',
   },
   {
     id: 'ur',
@@ -212,6 +246,8 @@ export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
     significance: 'Starting point of Abraham\'s journey of faith.',
     verses: ['Genesis 11:31', 'Genesis 15:7', 'Nehemiah 9:7'],
     category: 'city',
+    wikiModern: 'Ur',
+    wikiHistorical: 'Sumer',
   },
 ];
 
