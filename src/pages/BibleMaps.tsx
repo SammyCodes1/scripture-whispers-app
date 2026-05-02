@@ -67,15 +67,34 @@ export default function BibleMaps() {
         <p className="text-sm text-muted-foreground mt-1">Explore biblical locations on an interactive 3D globe</p>
       </div>
 
-      {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-        <Input
-          placeholder="Search locations, verses…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 rounded-xl bg-secondary/40 border-border/60"
-        />
+      {/* Search bar + offline download */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <Input
+            placeholder="Search locations, verses…"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-9 rounded-xl bg-secondary/40 border-border/60"
+          />
+        </div>
+        <button
+          onClick={handleDownloadAll}
+          disabled={progress.running}
+          title="Save all location images for offline use"
+          className="flex items-center gap-1.5 px-3 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all disabled:opacity-60 whitespace-nowrap"
+        >
+          {progress.running ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              {progress.current}/{progress.total}
+            </>
+          ) : progress.total > 0 && progress.current === progress.total ? (
+            <><Check size={14} /> Saved</>
+          ) : (
+            <><Download size={14} /> Offline</>
+          )}
+        </button>
       </div>
 
       {/* Category filter */}
