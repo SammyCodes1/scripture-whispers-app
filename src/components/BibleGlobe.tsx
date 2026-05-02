@@ -377,14 +377,14 @@ interface BibleGlobeProps {
 
 export default function BibleGlobe({ locations, selectedLocation, onSelectLocation }: BibleGlobeProps) {
   return (
-    <div className="w-full h-[400px] sm:h-[500px] rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-b from-secondary/30 to-background">
+    <div className="w-full h-[400px] sm:h-[500px] rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-b from-[#0a1428] to-[#020617]">
       <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <pointLight position={[-5, -5, -5]} intensity={0.3} />
+        <ambientLight intensity={0.35} />
+        <directionalLight position={[5, 3, 5]} intensity={1.2} />
+        <pointLight position={[-5, -5, -5]} intensity={0.2} color="#5a8fd6" />
 
-        <Globe />
-        <GlobeGrid />
+        <Stars radius={50} depth={30} count={1500} factor={2} fade speed={0.5} />
+        <Earth />
 
         {locations.map((loc) => (
           <LocationPin
