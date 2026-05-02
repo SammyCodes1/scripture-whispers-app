@@ -1,8 +1,202 @@
 import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html, Sphere } from '@react-three/drei';
+import { OrbitControls, Html, Sphere, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import { type BiblicalLocation } from '@/data/biblicalLocations';
+
+// Procedurally build an Earth-like texture (offline, no assets needed).
+// Uses a simplified equirectangular landmass map covering major continents,
+// then paints oceans, land, deserts, ice caps, and a soft cloud layer.
+function buildEarthTextures() {
+  const W = 1024;
+  const H = 512;
+
+  // Rough continent outlines as ellipses in lat/lng space.
+  // Each: [centerLng, centerLat, halfW(lng), halfH(lat), rotationDeg]
+  const continents: [number, number, number, number, number][] = [
+    // Africa
+    [20, 5, 22, 32, 0],
+    [25, -15, 18, 22, -10],
+    // Europe
+    [15, 50, 25, 13, 0],
+    [40, 58, 22, 12, 0],
+    // Asia
+    [85, 45, 55, 25, 0],
+    [105, 30, 35, 22, 0],
+    [130, 55, 25, 18, 0],
+    // India
+    [78, 18, 12, 14, 0],
+    // Arabia
+    [45, 22, 12, 14, 0],
+    // Southeast Asia / Indonesia
+    [115, -2, 18, 8, 10],
+    // Australia
+    [134, -25, 18, 12, 0],
+    // North America
+    [-100, 45, 35, 22, 0],
+    [-95, 30, 22, 14, 0],
+    [-80, 18, 12, 10, 20],
+    // South America
+    [-60, -15, 18, 28, -8],
+    [-72, -40, 8, 12, 0],
+    // Greenland
+    [-40, 72, 12, 10, 0],
+    // UK / Scandinavia hint
+    [-3, 54, 5, 6, 0],
+    [18, 65, 8, 8, 0],
+    // Japan
+    [138, 38, 4, 8, 20],
+    // Madagascar
+    [47, -20, 3, 8, 0],
+  ];
+
+  function isLand(lng: number, lat: number): number {
+    let v = 0;
+    for (const [cx, cy, hw, hh, rot] of continents) {
+      const r = (rot * Math.PI) / 180;
+      let dx = lng - cx;
+      // wrap longitude
+      if (dx > 180) dx -= 360;
+      if (dx < -180) dx += 360;
+      const dy = lat - cy;
+      const rx = dx * Math.cos(r) + dy * Math.sin(r);
+      const ry = -dx * Math.sin(r) + dy * Math.cos(r);
+      const d = (rx * rx) / (hw * hw) + (ry * ry) / (hh * hh);
+      if (d < 1) v = Math.max(v, 1 - d);
+    }
+    return v; // 0 = ocean, >0 = land strength
+  }
+
+  // Cheap value-noise for terrain variation
+  const noiseSeed = (x: number, y: number) => {
+    const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+    return s - Math.floor(s);
+  };
+  const smoothNoise = (x: number, y: number) => {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const a = noiseSeed(xi, yi);
+    const b = noiseSeed(xi + 1, yi);
+    const c = noiseSeed(xi, yi + 1);
+    const d = noiseSeed(xi + 1, yi + 1);
+    const u = xf * xf * (3 - 2 * xf);
+    const v = yf * yf * (3 - 2 * yf);
+    return a * (1 - u) * (1 - v) + b * u * (1 - v) + c * (1 - u) * v + d * u * v;
+  };
+  const fbm = (x: number, y: number) => {
+    let v = 0, amp = 0.5, freq = 1;
+    for (let i = 0; i < 4; i++) {
+      v += smoothNoise(x * freq, y * freq) * amp;
+      amp *= 0.5;
+      freq *= 2;
+    }
+    return v;
+  };
+
+  // Color (diffuse) canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+  const img = ctx.createImageData(W, H);
+
+  // Bump canvas (grayscale heightmap)
+  const bumpCanvas = document.createElement('canvas');
+  bumpCanvas.width = W; bumpCanvas.height = H;
+  const bctx = bumpCanvas.getContext('2d')!;
+  const bimg = bctx.createImageData(W, H);
+
+  // Specular canvas (water shines, land matte)
+  const specCanvas = document.createElement('canvas');
+  specCanvas.width = W; specCanvas.height = H;
+  const sctx = specCanvas.getContext('2d')!;
+  const simg = sctx.createImageData(W, H);
+
+  for (let y = 0; y < H; y++) {
+    const lat = 90 - (y / H) * 180;
+    for (let x = 0; x < W; x++) {
+      const lng = (x / W) * 360 - 180;
+      const i = (y * W + x) * 4;
+
+      const land = isLand(lng, lat);
+      const n = fbm(x * 0.04, y * 0.04);
+      const landMask = land + (n - 0.5) * 0.25;
+
+      let r: number, g: number, b: number, height: number, spec: number;
+
+      if (landMask < 0.05) {
+        // Ocean — depth shading
+        const depth = Math.min(1, 0.05 - landMask + 0.3);
+        r = 18 + depth * 10;
+        g = 55 + depth * 30;
+        b = 110 + depth * 60;
+        height = 60;
+        spec = 230;
+      } else {
+        // Land — biome by latitude + noise
+        const absLat = Math.abs(lat);
+        const arid = fbm(x * 0.02 + 100, y * 0.02 + 50);
+        if (absLat > 70) {
+          // Polar ice
+          r = 235; g = 240; b = 245;
+          spec = 180;
+        } else if (absLat > 55) {
+          // Tundra / boreal
+          r = 110 + n * 30; g = 120 + n * 30; b = 95 + n * 20;
+          spec = 60;
+        } else if (absLat < 30 && arid > 0.55) {
+          // Desert belt
+          r = 200 + n * 30; g = 170 + n * 25; b = 110 + n * 20;
+          spec = 50;
+        } else if (absLat < 15) {
+          // Tropical
+          r = 50 + n * 30; g = 110 + n * 40; b = 45 + n * 25;
+          spec = 60;
+        } else {
+          // Temperate
+          r = 80 + n * 35; g = 130 + n * 40; b = 70 + n * 25;
+          spec = 55;
+        }
+        height = 140 + n * 90 + landMask * 30;
+      }
+
+      img.data[i] = r; img.data[i + 1] = g; img.data[i + 2] = b; img.data[i + 3] = 255;
+      bimg.data[i] = bimg.data[i + 1] = bimg.data[i + 2] = height; bimg.data[i + 3] = 255;
+      simg.data[i] = simg.data[i + 1] = simg.data[i + 2] = spec; simg.data[i + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(img, 0, 0);
+  bctx.putImageData(bimg, 0, 0);
+  sctx.putImageData(simg, 0, 0);
+
+  // Clouds — separate transparent texture
+  const cloudCanvas = document.createElement('canvas');
+  cloudCanvas.width = W; cloudCanvas.height = H;
+  const cctx = cloudCanvas.getContext('2d')!;
+  const cimg = cctx.createImageData(W, H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      const c = fbm(x * 0.03 + 500, y * 0.03 + 500);
+      const a = Math.max(0, c - 0.55) * 2.6;
+      cimg.data[i] = 255; cimg.data[i + 1] = 255; cimg.data[i + 2] = 255;
+      cimg.data[i + 3] = Math.min(255, a * 220);
+    }
+  }
+  cctx.putImageData(cimg, 0, 0);
+
+  const make = (cv: HTMLCanvasElement) => {
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    return t;
+  };
+  const earth = make(canvas);
+  const bump = new THREE.CanvasTexture(bumpCanvas);
+  const spec = new THREE.CanvasTexture(specCanvas);
+  const clouds = make(cloudCanvas);
+  return { earth, bump, spec, clouds };
+}
 
 // Convert lat/lng to 3D sphere position
 function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
