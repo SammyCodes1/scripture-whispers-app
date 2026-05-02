@@ -186,6 +186,9 @@ export default function BibleMaps() {
                 ))}
               </div>
             </div>
+
+            {/* Modern + historical pictures from Wikipedia (cached offline) */}
+            <LocationImageGallery location={selectedLocation} />
           </motion.div>
         )}
       </AnimatePresence>
