@@ -60,6 +60,24 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
+            urlPattern: /^https:\/\/en\.wikipedia\.org\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "wikipedia-api",
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/upload\.wikimedia\.org\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "wikimedia-images",
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/.*supabase\.co\/.*/i,
             handler: "NetworkFirst",
             options: {
