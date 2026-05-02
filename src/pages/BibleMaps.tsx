@@ -1,9 +1,12 @@
 import { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search } from 'lucide-react';
+import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search, Download, Check } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
 import BibleGlobe from '@/components/BibleGlobe';
+import LocationImageGallery from '@/components/LocationImageGallery';
 import { Input } from '@/components/ui/input';
+import { usePreDownloadAllImages } from '@/hooks/useLocationImages';
+import { toast } from 'sonner';
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   all: <Globe2 size={14} />,
   city: <MapPin size={14} />,
@@ -17,6 +20,7 @@ export default function BibleMaps() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { progress, download } = usePreDownloadAllImages();
 
   const filteredLocations = useMemo(() => {
     let locs = selectedCategory === 'all'
@@ -34,6 +38,28 @@ export default function BibleMaps() {
     return locs;
   }, [selectedCategory, searchQuery]);
 
+  // Auto-dive into the first match while typing a search.
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    if (q.trim().length >= 2) {
+      const match = BIBLICAL_LOCATIONS.find(l =>
+        l.name.toLowerCase().includes(q.toLowerCase()) ||
+        l.modernName?.toLowerCase().includes(q.toLowerCase())
+      );
+      if (match) setSelectedLocation(match);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    try {
+      toast.info('Downloading images for offline use…');
+      await download();
+      toast.success('All location images saved for offline use!');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Download failed');
+    }
+  };
+
   return (
     <div className="fade-in space-y-5">
       <div>
@@ -41,15 +67,34 @@ export default function BibleMaps() {
         <p className="text-sm text-muted-foreground mt-1">Explore biblical locations on an interactive 3D globe</p>
       </div>
 
-      {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-        <Input
-          placeholder="Search locations, verses…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 rounded-xl bg-secondary/40 border-border/60"
-        />
+      {/* Search bar + offline download */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <Input
+            placeholder="Search locations, verses…"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-9 rounded-xl bg-secondary/40 border-border/60"
+          />
+        </div>
+        <button
+          onClick={handleDownloadAll}
+          disabled={progress.running}
+          title="Save all location images for offline use"
+          className="flex items-center gap-1.5 px-3 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all disabled:opacity-60 whitespace-nowrap"
+        >
+          {progress.running ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              {progress.current}/{progress.total}
+            </>
+          ) : progress.total > 0 && progress.current === progress.total ? (
+            <><Check size={14} /> Saved</>
+          ) : (
+            <><Download size={14} /> Offline</>
+          )}
+        </button>
       </div>
 
       {/* Category filter */}
@@ -141,6 +186,9 @@ export default function BibleMaps() {
                 ))}
               </div>
             </div>
+
+            {/* Modern + historical pictures from Wikipedia (cached offline) */}
+            <LocationImageGallery location={selectedLocation} />
           </motion.div>
         )}
       </AnimatePresence>
