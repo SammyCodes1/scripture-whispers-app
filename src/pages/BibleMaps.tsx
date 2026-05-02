@@ -20,6 +20,7 @@ export default function BibleMaps() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { progress, download } = usePreDownloadAllImages();
 
   const filteredLocations = useMemo(() => {
     let locs = selectedCategory === 'all'
@@ -36,6 +37,28 @@ export default function BibleMaps() {
     }
     return locs;
   }, [selectedCategory, searchQuery]);
+
+  // Auto-dive into the first match while typing a search.
+  const handleSearch = (q: string) => {
+    setSearchQuery(q);
+    if (q.trim().length >= 2) {
+      const match = BIBLICAL_LOCATIONS.find(l =>
+        l.name.toLowerCase().includes(q.toLowerCase()) ||
+        l.modernName?.toLowerCase().includes(q.toLowerCase())
+      );
+      if (match) setSelectedLocation(match);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    try {
+      toast.info('Downloading images for offline use…');
+      await download();
+      toast.success('All location images saved for offline use!');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Download failed');
+    }
+  };
 
   return (
     <div className="fade-in space-y-5">
