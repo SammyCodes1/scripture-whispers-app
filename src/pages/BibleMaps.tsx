@@ -1,9 +1,12 @@
 import { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search } from 'lucide-react';
+import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search, Download, Check } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
 import BibleGlobe from '@/components/BibleGlobe';
+import LocationImageGallery from '@/components/LocationImageGallery';
 import { Input } from '@/components/ui/input';
+import { usePreDownloadAllImages } from '@/hooks/useLocationImages';
+import { toast } from 'sonner';
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   all: <Globe2 size={14} />,
   city: <MapPin size={14} />,
