@@ -209,24 +209,49 @@ function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector
   );
 }
 
-function Globe() {
+function Earth() {
   const globeRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Mesh>(null);
+  const textures = useMemo(() => buildEarthTextures(), []);
 
   useFrame((_, delta) => {
-    if (globeRef.current) {
-      globeRef.current.rotation.y += delta * 0.05;
-    }
+    if (globeRef.current) globeRef.current.rotation.y += delta * 0.04;
+    if (cloudsRef.current) cloudsRef.current.rotation.y += delta * 0.055;
   });
 
   return (
-    <Sphere ref={globeRef} args={[2, 64, 64]}>
-      <meshStandardMaterial
-        color="#8B7355"
-        roughness={0.8}
-        metalness={0.1}
-        wireframe={false}
-      />
-    </Sphere>
+    <group>
+      <mesh ref={globeRef}>
+        <sphereGeometry args={[2, 96, 96]} />
+        <meshPhongMaterial
+          map={textures.earth}
+          bumpMap={textures.bump}
+          bumpScale={0.06}
+          specularMap={textures.spec}
+          specular={new THREE.Color('#3a5878')}
+          shininess={18}
+        />
+      </mesh>
+      <mesh ref={cloudsRef}>
+        <sphereGeometry args={[2.03, 64, 64]} />
+        <meshPhongMaterial
+          map={textures.clouds}
+          transparent
+          opacity={0.55}
+          depthWrite={false}
+        />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[2.12, 64, 64]} />
+        <meshBasicMaterial
+          color="#6ab4ff"
+          transparent
+          opacity={0.12}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
   );
 }
 
