@@ -400,7 +400,7 @@ export default function BibleGlobe({ locations, selectedLocation, onSelectLocati
         <OrbitControls
           enableZoom
           enablePan={false}
-          minDistance={3}
+          minDistance={2.4}
           maxDistance={8}
           enableDamping
           dampingFactor={0.05}
