@@ -8,6 +8,10 @@ export interface BiblicalLocation {
   significance: string;
   verses: string[];
   category: 'city' | 'mountain' | 'river' | 'region' | 'sea';
+  /** Wikipedia article title for modern photos */
+  wikiModern?: string;
+  /** Wikipedia article title for historical/biblical context */
+  wikiHistorical?: string;
 }
 
 export const BIBLICAL_LOCATIONS: BiblicalLocation[] = [
