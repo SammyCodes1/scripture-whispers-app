@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle, ArrowRight } from 'lucide-react';
+import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle, ArrowRight, Globe2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture', gradient: 'from-primary/15 to-primary/5' },
+  { icon: Globe2, label: 'Bible Maps', path: '/maps', desc: '3D biblical places', gradient: 'from-accent/15 to-primary/10' },
   { icon: Search, label: 'Search', path: '/search', desc: 'Find verses', gradient: 'from-accent/15 to-accent/5' },
   { icon: Lightbulb, label: 'Topics', path: '/topics', desc: 'Study by topic', gradient: 'from-primary/10 to-accent/10' },
   { icon: MessageSquare, label: 'Community', path: '/community', desc: 'Share ideas', gradient: 'from-accent/10 to-primary/10' },
