@@ -8,8 +8,8 @@ import NotificationBell from '@/components/NotificationBell';
 const NAV_ITEMS = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/read', icon: BookOpen, label: 'Read' },
-  { path: '/maps', icon: Globe2, label: 'Maps' },
   { path: '/search', icon: Search, label: 'Search' },
+  { path: '/maps', icon: Globe2, label: 'Maps' },
   { path: '/community', icon: MessageSquare, label: 'Community' },
 ];
 
