@@ -59,6 +59,25 @@ export default function Index() {
         </div>
       </motion.section>
 
+      {/* Biblical Map */}
+      <motion.section variants={fadeUp}>
+        <Link
+          to="/maps"
+          className="group relative flex items-center gap-4 rounded-2xl bg-gradient-to-br from-accent/25 to-primary/10 border border-accent/30 p-5 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-[0.99] overflow-hidden"
+        >
+          <div className="absolute inset-y-0 right-0 w-32 bg-primary/5 rounded-l-full translate-x-10" />
+          <div className="relative p-3.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+            <Globe2 size={28} />
+          </div>
+          <div className="relative flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-0.5 font-medium">Explore Scripture</p>
+            <p className="font-display text-lg font-bold text-card-foreground">Biblical Map</p>
+            <p className="text-sm text-muted-foreground truncate">Interactive 3D globe with biblical locations</p>
+          </div>
+          <ArrowRight size={18} className="relative text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+        </Link>
+      </motion.section>
+
       {/* Continue Reading */}
       {lastRead && (
         <motion.section variants={fadeUp}>
