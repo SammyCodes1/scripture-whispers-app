@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle, ArrowRight } from 'lucide-react';
+import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle, ArrowRight, Globe2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDailyVerse } from '@/data/bibleData';
 import { getDailyTopic, TOPICS } from '@/data/topicsData';
