@@ -124,31 +124,39 @@ export function useLocationImages(locationId: string | null, wikiModern?: string
       // 2. If no meta and online, fetch
       if (!meta && navigator.onLine) {
         const [modern, historical] = await Promise.all([
-          wikiModern ? fetchWikiImages(wikiModern, 4) : Promise.resolve([]),
-          wikiHistorical ? fetchWikiImages(wikiHistorical, 4) : Promise.resolve([]),
+          wikiModern ? fetchWikiImages(wikiModern, 3) : Promise.resolve([]),
+          wikiHistorical ? fetchWikiImages(wikiHistorical, 3) : Promise.resolve([]),
         ]);
         meta = { modern, historical, fetchedAt: Date.now() };
         await idbSet(META_STORE, locationId, meta);
       }
       if (!meta) { if (!cancelled) { setImages([]); setLoading(false); } return; }
 
-      // 3. Resolve blobs (cached or fetch+cache)
+      // 3. Resolve blobs in parallel for fast loading
       const all = [
         ...meta.modern.map(m => ({ ...m, era: 'modern' as const })),
         ...meta.historical.map(m => ({ ...m, era: 'historical' as const })),
       ];
-      const resolved: LocationImage[] = [];
-      for (const item of all) {
+      // Show metadata immediately with direct URLs, then swap in cached blobs
+      const initial: LocationImage[] = all.map(item => ({
+        url: item.url,
+        title: item.title,
+        description: item.description,
+        era: item.era,
+        blobUrl: item.url,
+      }));
+      if (!cancelled) setImages(initial);
+
+      await Promise.all(all.map(async (item, idx) => {
         const blob = await cacheImageBlob(item.url);
-        resolved.push({
-          url: item.url,
-          title: item.title,
-          description: item.description,
-          era: item.era,
-          blobUrl: blob ? URL.createObjectURL(blob) : item.url,
+        if (!blob || cancelled) return;
+        const blobUrl = URL.createObjectURL(blob);
+        setImages(prev => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], blobUrl };
+          return next;
         });
-        if (!cancelled) setImages([...resolved]);
-      }
+      }));
       if (!cancelled) setLoading(false);
     })();
 
