@@ -49,8 +49,8 @@ async function idbSet(store: string, key: string, value: unknown): Promise<void>
 
 // Fetch images for a single Wikipedia article via the public REST API.
 // No API key required, CORS-enabled.
-async function fetchWikiImages(title: string, max = 6): Promise<{ url: string; title: string; description?: string }[]> {
-  const api = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=images&imlimit=30&titles=${encodeURIComponent(title)}`;
+async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; title: string; description?: string }[]> {
+  const api = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=images&imlimit=15&titles=${encodeURIComponent(title)}`;
   const res = await fetch(api);
   if (!res.ok) return [];
   const data = await res.json();
@@ -68,8 +68,8 @@ async function fetchWikiImages(title: string, max = 6): Promise<{ url: string; t
   }
   if (!fileNames.length) return [];
 
-  // Resolve URLs via imageinfo
-  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&titles=${encodeURIComponent(fileNames.join('|'))}`;
+  // Resolve URLs via imageinfo - request 400px thumbnails to drastically reduce download size
+  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&titles=${encodeURIComponent(fileNames.join('|'))}`;
   const ir = await fetch(infoApi);
   if (!ir.ok) return [];
   const idata = await ir.json();
@@ -80,7 +80,7 @@ async function fetchWikiImages(title: string, max = 6): Promise<{ url: string; t
     if (!info?.url) continue;
     const desc = info.extmetadata?.ImageDescription?.value as string | undefined;
     out.push({
-      url: info.url,
+      url: info.thumburl || info.url,
       title: (p.title as string).replace(/^File:/, '').replace(/\.(jpg|jpeg|png)$/i, ''),
       description: desc?.replace(/<[^>]+>/g, '').slice(0, 160),
     });
@@ -124,31 +124,39 @@ export function useLocationImages(locationId: string | null, wikiModern?: string
       // 2. If no meta and online, fetch
       if (!meta && navigator.onLine) {
         const [modern, historical] = await Promise.all([
-          wikiModern ? fetchWikiImages(wikiModern, 4) : Promise.resolve([]),
-          wikiHistorical ? fetchWikiImages(wikiHistorical, 4) : Promise.resolve([]),
+          wikiModern ? fetchWikiImages(wikiModern, 3) : Promise.resolve([]),
+          wikiHistorical ? fetchWikiImages(wikiHistorical, 3) : Promise.resolve([]),
         ]);
         meta = { modern, historical, fetchedAt: Date.now() };
         await idbSet(META_STORE, locationId, meta);
       }
       if (!meta) { if (!cancelled) { setImages([]); setLoading(false); } return; }
 
-      // 3. Resolve blobs (cached or fetch+cache)
+      // 3. Resolve blobs in parallel for fast loading
       const all = [
         ...meta.modern.map(m => ({ ...m, era: 'modern' as const })),
         ...meta.historical.map(m => ({ ...m, era: 'historical' as const })),
       ];
-      const resolved: LocationImage[] = [];
-      for (const item of all) {
+      // Show metadata immediately with direct URLs, then swap in cached blobs
+      const initial: LocationImage[] = all.map(item => ({
+        url: item.url,
+        title: item.title,
+        description: item.description,
+        era: item.era,
+        blobUrl: item.url,
+      }));
+      if (!cancelled) setImages(initial);
+
+      await Promise.all(all.map(async (item, idx) => {
         const blob = await cacheImageBlob(item.url);
-        resolved.push({
-          url: item.url,
-          title: item.title,
-          description: item.description,
-          era: item.era,
-          blobUrl: blob ? URL.createObjectURL(blob) : item.url,
+        if (!blob || cancelled) return;
+        const blobUrl = URL.createObjectURL(blob);
+        setImages(prev => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], blobUrl };
+          return next;
         });
-        if (!cancelled) setImages([...resolved]);
-      }
+      }));
       if (!cancelled) setLoading(false);
     })();
 
@@ -172,25 +180,35 @@ export function usePreDownloadAllImages() {
     }
     setProgress({ current: 0, total: BIBLICAL_LOCATIONS.length, running: true });
 
-    for (let i = 0; i < BIBLICAL_LOCATIONS.length; i++) {
-      const loc = BIBLICAL_LOCATIONS[i];
-      try {
-        let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
-        if (!meta) {
-          const [modern, historical] = await Promise.all([
-            loc.wikiModern ? fetchWikiImages(loc.wikiModern, 3) : Promise.resolve([]),
-            loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 3) : Promise.resolve([]),
-          ]);
-          meta = { modern, historical, fetchedAt: Date.now() };
-          await idbSet(META_STORE, loc.id, meta);
+    let completed = 0;
+    const CONCURRENCY = 5;
+    const queue = [...BIBLICAL_LOCATIONS];
+
+    const worker = async () => {
+      while (queue.length) {
+        const loc = queue.shift();
+        if (!loc) break;
+        try {
+          let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
+          if (!meta) {
+            const [modern, historical] = await Promise.all([
+              loc.wikiModern ? fetchWikiImages(loc.wikiModern, 2) : Promise.resolve([]),
+              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 2) : Promise.resolve([]),
+            ]);
+            meta = { modern, historical, fetchedAt: Date.now() };
+            await idbSet(META_STORE, loc.id, meta);
+          }
+          const all = [...meta.modern, ...meta.historical];
+          await Promise.all(all.map(im => cacheImageBlob(im.url)));
+        } catch (err) {
+          console.warn('Failed to pre-download for', loc.id, err);
         }
-        const all = [...meta.modern, ...meta.historical];
-        await Promise.all(all.map(im => cacheImageBlob(im.url)));
-      } catch (err) {
-        console.warn('Failed to pre-download for', loc.id, err);
+        completed++;
+        setProgress({ current: completed, total: BIBLICAL_LOCATIONS.length, running: true });
       }
-      setProgress({ current: i + 1, total: BIBLICAL_LOCATIONS.length, running: true });
-    }
+    };
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, worker));
     setProgress(p => ({ ...p, running: false }));
   }, []);
 
