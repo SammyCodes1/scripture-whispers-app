@@ -167,6 +167,21 @@ export function useLocationImages(locationId: string | null, wikiModern?: string
 }
 
 // Pre-download all locations' images for full offline access.
+// Resumable: progress is persisted to localStorage and auto-resumes on next launch.
+const RESUME_KEY = 'hw-map-images-download-active';
+
+async function isLocationFullyCached(locId: string): Promise<boolean> {
+  const meta = await idbGet<MetaEntry>(META_STORE, locId);
+  if (!meta) return false;
+  const all = [...meta.modern, ...meta.historical];
+  if (!all.length) return true;
+  for (const im of all) {
+    const blob = await idbGet<Blob>(STORE, im.url);
+    if (!blob) return false;
+  }
+  return true;
+}
+
 export function usePreDownloadAllImages() {
   const [progress, setProgress] = useState<{ current: number; total: number; running: boolean }>({
     current: 0,
@@ -174,15 +189,20 @@ export function usePreDownloadAllImages() {
     running: false,
   });
 
-  const download = useCallback(async () => {
+  const runDownload = useCallback(async () => {
     if (!navigator.onLine) {
       throw new Error('You need to be online to pre-download images.');
     }
-    setProgress({ current: 0, total: BIBLICAL_LOCATIONS.length, running: true });
+    // Mark download as active so it resumes after app close
+    try { localStorage.setItem(RESUME_KEY, '1'); } catch {}
 
-    let completed = 0;
+    // Pre-count already-cached so progress reflects resume position
+    const cachedFlags = await Promise.all(BIBLICAL_LOCATIONS.map(l => isLocationFullyCached(l.id)));
+    let completed = cachedFlags.filter(Boolean).length;
+    setProgress({ current: completed, total: BIBLICAL_LOCATIONS.length, running: true });
+
     const CONCURRENCY = 5;
-    const queue = [...BIBLICAL_LOCATIONS];
+    const queue = BIBLICAL_LOCATIONS.filter((_, i) => !cachedFlags[i]);
 
     const worker = async () => {
       while (queue.length) {
@@ -209,8 +229,29 @@ export function usePreDownloadAllImages() {
     };
 
     await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+    try { localStorage.removeItem(RESUME_KEY); } catch {}
     setProgress(p => ({ ...p, running: false }));
   }, []);
 
-  return { progress, download };
+  // Auto-resume: if a download was active when the app last closed, continue silently when back online.
+  useEffect(() => {
+    let shouldResume = false;
+    try { shouldResume = localStorage.getItem(RESUME_KEY) === '1'; } catch {}
+    if (!shouldResume) return;
+
+    const tryResume = () => {
+      if (navigator.onLine) {
+        runDownload().catch(err => console.warn('Resume download failed:', err));
+      }
+    };
+    // Small delay so it doesn't compete with initial page render
+    const t = setTimeout(tryResume, 1500);
+    const onOnline = () => tryResume();
+    window.addEventListener('online', onOnline);
+    return () => { clearTimeout(t); window.removeEventListener('online', onOnline); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { progress, download: runDownload };
 }
+
