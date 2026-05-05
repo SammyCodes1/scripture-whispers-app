@@ -378,14 +378,19 @@ interface BibleGlobeProps {
 }
 
 export default function BibleGlobe({ locations, selectedLocation, onSelectLocation }: BibleGlobeProps) {
+  const isMobile = useIsMobile();
   return (
-    <div className="w-full h-[400px] sm:h-[500px] rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-b from-[#0a1428] to-[#020617]">
-      <Canvas camera={{ position: [0, 1, 5], fov: 50 }}>
+    <div className="w-full h-[320px] xs:h-[380px] sm:h-[500px] rounded-2xl overflow-hidden border border-border/60 bg-gradient-to-b from-[#0a1428] to-[#020617] touch-none">
+      <Canvas
+        camera={{ position: [0, 1, 5], fov: isMobile ? 55 : 50 }}
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
+        performance={{ min: 0.5 }}
+      >
         <ambientLight intensity={0.35} />
         <directionalLight position={[5, 3, 5]} intensity={1.2} />
         <pointLight position={[-5, -5, -5]} intensity={0.2} color="#5a8fd6" />
 
-        <Stars radius={50} depth={30} count={1500} factor={2} fade speed={0.5} />
+        <Stars radius={50} depth={30} count={isMobile ? 600 : 1500} factor={2} fade speed={0.5} />
         <Earth />
 
         {locations.map((loc) => (
@@ -405,7 +410,8 @@ export default function BibleGlobe({ locations, selectedLocation, onSelectLocati
           maxDistance={8}
           enableDamping
           dampingFactor={0.05}
-          rotateSpeed={0.5}
+          rotateSpeed={isMobile ? 0.6 : 0.5}
+          zoomSpeed={isMobile ? 0.7 : 1}
         />
       </Canvas>
     </div>
