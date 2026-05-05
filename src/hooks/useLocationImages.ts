@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { BIBLICAL_LOCATIONS } from '@/data/biblicalLocations';
 
 // Lightweight IndexedDB wrapper for caching location images as blobs.
@@ -183,29 +183,64 @@ async function isLocationFullyCached(locId: string): Promise<boolean> {
 }
 
 export function usePreDownloadAllImages() {
-  const [progress, setProgress] = useState<{ current: number; total: number; running: boolean }>({
+  const [progress, setProgress] = useState<{
+    current: number;
+    total: number;
+    running: boolean;
+    paused: boolean;
+    hasResumable: boolean;
+  }>({
     current: 0,
     total: 0,
     running: false,
+    paused: false,
+    hasResumable: false,
   });
 
+  const pausedRef = useRef(false);
+  const runningRef = useRef(false);
+
+  // On mount, compute initial cached count + whether a previous download is resumable
+  useEffect(() => {
+    (async () => {
+      const cachedFlags = await Promise.all(BIBLICAL_LOCATIONS.map(l => isLocationFullyCached(l.id)));
+      const completed = cachedFlags.filter(Boolean).length;
+      let resumable = false;
+      try { resumable = localStorage.getItem(RESUME_KEY) === '1'; } catch {}
+      setProgress(p => ({
+        ...p,
+        current: completed,
+        total: BIBLICAL_LOCATIONS.length,
+        hasResumable: resumable && completed < BIBLICAL_LOCATIONS.length,
+      }));
+    })();
+  }, []);
+
   const runDownload = useCallback(async () => {
+    if (runningRef.current) return;
     if (!navigator.onLine) {
       throw new Error('You need to be online to pre-download images.');
     }
-    // Mark download as active so it resumes after app close
+    runningRef.current = true;
+    pausedRef.current = false;
     try { localStorage.setItem(RESUME_KEY, '1'); } catch {}
 
-    // Pre-count already-cached so progress reflects resume position
     const cachedFlags = await Promise.all(BIBLICAL_LOCATIONS.map(l => isLocationFullyCached(l.id)));
     let completed = cachedFlags.filter(Boolean).length;
-    setProgress({ current: completed, total: BIBLICAL_LOCATIONS.length, running: true });
+    setProgress({
+      current: completed,
+      total: BIBLICAL_LOCATIONS.length,
+      running: true,
+      paused: false,
+      hasResumable: true,
+    });
 
     const CONCURRENCY = 5;
     const queue = BIBLICAL_LOCATIONS.filter((_, i) => !cachedFlags[i]);
 
     const worker = async () => {
       while (queue.length) {
+        if (pausedRef.current) return;
         const loc = queue.shift();
         if (!loc) break;
         try {
@@ -224,27 +259,44 @@ export function usePreDownloadAllImages() {
           console.warn('Failed to pre-download for', loc.id, err);
         }
         completed++;
-        setProgress({ current: completed, total: BIBLICAL_LOCATIONS.length, running: true });
+        setProgress(p => ({ ...p, current: completed, running: true, paused: false }));
       }
     };
 
     await Promise.all(Array.from({ length: CONCURRENCY }, worker));
-    try { localStorage.removeItem(RESUME_KEY); } catch {}
-    setProgress(p => ({ ...p, running: false }));
+    runningRef.current = false;
+
+    if (pausedRef.current) {
+      // Paused mid-flight — keep resume flag so it can continue later
+      setProgress(p => ({ ...p, running: false, paused: true, hasResumable: true }));
+    } else {
+      try { localStorage.removeItem(RESUME_KEY); } catch {}
+      setProgress(p => ({ ...p, running: false, paused: false, hasResumable: false }));
+    }
   }, []);
 
-  // Auto-resume: if a download was active when the app last closed, continue silently when back online.
+  const pause = useCallback(() => {
+    if (!runningRef.current) return;
+    pausedRef.current = true;
+    setProgress(p => ({ ...p, paused: true }));
+  }, []);
+
+  const resume = useCallback(() => {
+    if (runningRef.current) return;
+    runDownload().catch(err => console.warn('Resume failed:', err));
+  }, [runDownload]);
+
+  // Auto-resume on launch if previously active and online — but only if user hasn't explicitly paused.
   useEffect(() => {
     let shouldResume = false;
     try { shouldResume = localStorage.getItem(RESUME_KEY) === '1'; } catch {}
     if (!shouldResume) return;
 
     const tryResume = () => {
-      if (navigator.onLine) {
+      if (navigator.onLine && !runningRef.current && !pausedRef.current) {
         runDownload().catch(err => console.warn('Resume download failed:', err));
       }
     };
-    // Small delay so it doesn't compete with initial page render
     const t = setTimeout(tryResume, 1500);
     const onOnline = () => tryResume();
     window.addEventListener('online', onOnline);
@@ -252,6 +304,6 @@ export function usePreDownloadAllImages() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { progress, download: runDownload };
+  return { progress, download: runDownload, pause, resume };
 }
 
