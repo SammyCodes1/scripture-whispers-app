@@ -68,8 +68,8 @@ async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; t
   }
   if (!fileNames.length) return [];
 
-  // Resolve URLs via imageinfo
-  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&titles=${encodeURIComponent(fileNames.join('|'))}`;
+  // Resolve URLs via imageinfo - request 400px thumbnails to drastically reduce download size
+  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&titles=${encodeURIComponent(fileNames.join('|'))}`;
   const ir = await fetch(infoApi);
   if (!ir.ok) return [];
   const idata = await ir.json();
@@ -80,7 +80,7 @@ async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; t
     if (!info?.url) continue;
     const desc = info.extmetadata?.ImageDescription?.value as string | undefined;
     out.push({
-      url: info.url,
+      url: info.thumburl || info.url,
       title: (p.title as string).replace(/^File:/, '').replace(/\.(jpg|jpeg|png)$/i, ''),
       description: desc?.replace(/<[^>]+>/g, '').slice(0, 160),
     });
