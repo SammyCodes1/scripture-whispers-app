@@ -78,24 +78,66 @@ export default function BibleMaps() {
             className="pl-9 rounded-xl bg-secondary/40 border-border/60"
           />
         </div>
-        <button
-          onClick={handleDownloadAll}
-          disabled={progress.running}
-          title="Save all location images for offline use"
-          className="flex items-center gap-1.5 px-3 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all disabled:opacity-60 whitespace-nowrap"
-        >
-          {progress.running ? (
-            <>
-              <Loader2 size={14} className="animate-spin" />
-              {progress.current}/{progress.total}
-            </>
-          ) : progress.total > 0 && progress.current === progress.total ? (
-            <><Check size={14} /> Saved</>
-          ) : (
-            <><Download size={14} /> Offline</>
-          )}
-        </button>
+        {progress.running ? (
+          <button
+            onClick={pause}
+            title="Pause download"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-semibold hover:bg-amber-500/25 transition-all whitespace-nowrap"
+          >
+            <Pause size={14} />
+            <span className="tabular-nums">{progress.current}/{progress.total}</span>
+          </button>
+        ) : progress.paused || progress.hasResumable ? (
+          <button
+            onClick={resume}
+            title="Resume download"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all whitespace-nowrap"
+          >
+            <Play size={14} />
+            <span className="tabular-nums">Resume {progress.current}/{progress.total}</span>
+          </button>
+        ) : progress.total > 0 && progress.current === progress.total ? (
+          <button
+            onClick={handleDownloadAll}
+            title="All images saved for offline use"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-semibold whitespace-nowrap"
+          >
+            <Check size={14} /> Saved
+          </button>
+        ) : (
+          <button
+            onClick={handleDownloadAll}
+            title="Save all location images for offline use"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all whitespace-nowrap"
+          >
+            <Download size={14} /> Offline
+          </button>
+        )}
       </div>
+
+      {/* Resume status banner */}
+      {(progress.running || progress.paused || progress.hasResumable) && progress.total > 0 && (
+        <div className="rounded-xl border border-border/60 bg-secondary/30 px-3 py-2 text-xs flex items-center gap-2">
+          {progress.running ? (
+            <Loader2 size={14} className="animate-spin text-primary shrink-0" />
+          ) : (
+            <Pause size={14} className="text-amber-500 shrink-0" />
+          )}
+          <div className="flex-1">
+            <p className="font-medium text-foreground">
+              {progress.running
+                ? `Downloading map images… ${progress.current} of ${progress.total}`
+                : `Paused at ${progress.current} of ${progress.total} — will resume when you tap Resume`}
+            </p>
+            <div className="mt-1 h-1 w-full bg-secondary rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Category filter */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
