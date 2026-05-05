@@ -1,6 +1,6 @@
 import { useState, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search, Download, Check } from 'lucide-react';
+import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search, Download, Check, Pause, Play } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
 import BibleGlobe from '@/components/BibleGlobe';
 import LocationImageGallery from '@/components/LocationImageGallery';
