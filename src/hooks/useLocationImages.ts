@@ -49,8 +49,8 @@ async function idbSet(store: string, key: string, value: unknown): Promise<void>
 
 // Fetch images for a single Wikipedia article via the public REST API.
 // No API key required, CORS-enabled.
-async function fetchWikiImages(title: string, max = 6): Promise<{ url: string; title: string; description?: string }[]> {
-  const api = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=images&imlimit=30&titles=${encodeURIComponent(title)}`;
+async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; title: string; description?: string }[]> {
+  const api = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=images&imlimit=15&titles=${encodeURIComponent(title)}`;
   const res = await fetch(api);
   if (!res.ok) return [];
   const data = await res.json();
