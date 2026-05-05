@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { BIBLICAL_LOCATIONS } from '@/data/biblicalLocations';
 
 // Lightweight IndexedDB wrapper for caching location images as blobs.
