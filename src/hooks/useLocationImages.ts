@@ -180,25 +180,35 @@ export function usePreDownloadAllImages() {
     }
     setProgress({ current: 0, total: BIBLICAL_LOCATIONS.length, running: true });
 
-    for (let i = 0; i < BIBLICAL_LOCATIONS.length; i++) {
-      const loc = BIBLICAL_LOCATIONS[i];
-      try {
-        let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
-        if (!meta) {
-          const [modern, historical] = await Promise.all([
-            loc.wikiModern ? fetchWikiImages(loc.wikiModern, 3) : Promise.resolve([]),
-            loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 3) : Promise.resolve([]),
-          ]);
-          meta = { modern, historical, fetchedAt: Date.now() };
-          await idbSet(META_STORE, loc.id, meta);
+    let completed = 0;
+    const CONCURRENCY = 5;
+    const queue = [...BIBLICAL_LOCATIONS];
+
+    const worker = async () => {
+      while (queue.length) {
+        const loc = queue.shift();
+        if (!loc) break;
+        try {
+          let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
+          if (!meta) {
+            const [modern, historical] = await Promise.all([
+              loc.wikiModern ? fetchWikiImages(loc.wikiModern, 2) : Promise.resolve([]),
+              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 2) : Promise.resolve([]),
+            ]);
+            meta = { modern, historical, fetchedAt: Date.now() };
+            await idbSet(META_STORE, loc.id, meta);
+          }
+          const all = [...meta.modern, ...meta.historical];
+          await Promise.all(all.map(im => cacheImageBlob(im.url)));
+        } catch (err) {
+          console.warn('Failed to pre-download for', loc.id, err);
         }
-        const all = [...meta.modern, ...meta.historical];
-        await Promise.all(all.map(im => cacheImageBlob(im.url)));
-      } catch (err) {
-        console.warn('Failed to pre-download for', loc.id, err);
+        completed++;
+        setProgress({ current: completed, total: BIBLICAL_LOCATIONS.length, running: true });
       }
-      setProgress({ current: i + 1, total: BIBLICAL_LOCATIONS.length, running: true });
-    }
+    };
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, worker));
     setProgress(p => ({ ...p, running: false }));
   }, []);
 
