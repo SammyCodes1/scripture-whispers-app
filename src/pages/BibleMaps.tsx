@@ -247,16 +247,16 @@ export default function BibleMaps() {
               key={loc.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, duration: 0.3 }}
+              transition={{ delay: Math.min(i, 10) * 0.02, duration: 0.25 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setSelectedLocation(loc)}
               className={`text-left rounded-xl border p-3 transition-all ${
                 selectedLocation?.id === loc.id
                   ? 'border-primary/40 bg-primary/5 shadow-sm'
-                  : 'border-border/60 bg-card hover:shadow-md'
+                  : 'border-border/60 bg-card hover:shadow-md active:bg-secondary/40'
               }`}
             >
-              <p className="font-display font-bold text-sm text-card-foreground">{loc.name}</p>
+              <p className="font-display font-bold text-sm text-card-foreground line-clamp-1">{loc.name}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5 capitalize">{loc.category}</p>
             </motion.button>
           ))}
