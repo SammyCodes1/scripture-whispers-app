@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import { type BiblicalLocation } from '@/data/biblicalLocations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Procedurally build an Earth-like texture (offline, no assets needed).
 // Uses a simplified equirectangular landmass map covering major continents,
