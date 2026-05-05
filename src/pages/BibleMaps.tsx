@@ -20,7 +20,7 @@ export default function BibleMaps() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { progress, download } = usePreDownloadAllImages();
+  const { progress, download, pause, resume } = usePreDownloadAllImages();
 
   const filteredLocations = useMemo(() => {
     let locs = selectedCategory === 'all'
