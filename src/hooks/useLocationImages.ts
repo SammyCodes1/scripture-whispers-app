@@ -258,8 +258,8 @@ export function usePreDownloadAllImages() {
           let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
           if (!meta) {
             const [modern, historical] = await Promise.all([
-              loc.wikiModern ? fetchWikiImages(loc.wikiModern, 2) : Promise.resolve([]),
-              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 2) : Promise.resolve([]),
+              loc.wikiModern ? fetchWikiImages(loc.wikiModern, BULK_PER_ERA) : Promise.resolve([]),
+              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, BULK_PER_ERA) : Promise.resolve([]),
             ]);
             meta = { modern, historical, fetchedAt: Date.now() };
             await idbSet(META_STORE, loc.id, meta);
