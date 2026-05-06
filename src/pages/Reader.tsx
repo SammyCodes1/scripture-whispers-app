@@ -217,10 +217,10 @@ export default function Reader() {
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
             <ReadingStats />
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-4 sm:mb-5">
               {(['OT', 'NT'] as const).map(t => (
                 <button key={t} onClick={() => setTestament(t)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                  className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-95 ${
                     testament === t ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary/60 text-secondary-foreground hover:bg-secondary'
                   }`}
                 >
@@ -228,7 +228,7 @@ export default function Reader() {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
               {books.map(book => {
                 const stats = bookStats[book.name];
                 const readCount = stats?.read || 0;
@@ -238,19 +238,19 @@ export default function Reader() {
                     key={book.name}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
-                    className={`text-left rounded-xl bg-card border p-3.5 hover:shadow-md transition-all ${isComplete ? 'border-green-500/40' : 'border-border/60'}`}
+                    className={`text-left rounded-xl bg-card border p-3 sm:p-3.5 hover:shadow-md transition-all ${isComplete ? 'border-green-500/40' : 'border-border/60'}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-display font-bold text-[13px] sm:text-sm text-card-foreground truncate min-w-0">{book.name}</p>
                       {isComplete ? (
-                        <CheckCircle2 size={14} className="text-green-500" />
+                        <CheckCircle2 size={14} className="text-green-500 shrink-0" />
                       ) : readCount > 0 ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 whitespace-nowrap tabular-nums">
                           {readCount}/{book.chapters}
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{book.chapters} chapters</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{book.chapters} chapters</p>
                     {readCount > 0 && (
                       <div className="mt-2 h-1 rounded-full bg-border overflow-hidden">
                         <motion.div
