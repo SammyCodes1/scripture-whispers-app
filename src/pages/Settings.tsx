@@ -20,26 +20,26 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="fade-in space-y-6">
-      <h2 className="font-display text-xl font-bold text-foreground">Settings</h2>
+    <div className="fade-in space-y-5 sm:space-y-6">
+      <h2 className="font-display text-lg sm:text-xl font-bold text-foreground tracking-tight">Settings</h2>
 
       {/* Theme Selection */}
       <section>
-        <h3 className="font-display text-base font-bold text-foreground mb-3">App Theme</h3>
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-3">App Theme</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {THEMES.map(t => (
             <button
               key={t.id}
               onClick={() => setTheme(t.id)}
-              className={`flex items-center gap-2 rounded-xl border p-3 transition-all ${
+              className={`flex items-center gap-2 rounded-xl border p-2.5 sm:p-3 transition-all text-left active:scale-[0.98] ${
                 theme === t.id
                   ? 'border-primary bg-primary/10 ring-2 ring-primary'
                   : 'border-border bg-card hover:shadow-md'
               }`}
             >
-              <span className="text-xl">{t.emoji}</span>
-              <span className="text-sm font-medium text-card-foreground flex-1 text-left">{t.name}</span>
-              {theme === t.id && <Check size={16} className="text-primary" />}
+              <span className="text-lg sm:text-xl shrink-0">{t.emoji}</span>
+              <span className="text-xs sm:text-sm font-medium text-card-foreground flex-1 truncate">{t.name}</span>
+              {theme === t.id && <Check size={16} className="text-primary shrink-0" />}
             </button>
           ))}
         </div>
@@ -47,13 +47,13 @@ export default function SettingsPage() {
 
       {/* Bible Version */}
       <section>
-        <h3 className="font-display text-base font-bold text-foreground mb-3">Bible Version</h3>
-        <div className="flex flex-wrap gap-2">
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-3">Bible Version</h3>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {BIBLE_VERSIONS.map(v => (
             <button
               key={v.id}
               onClick={() => setVersion(v.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 ${
                 version === v.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
@@ -68,15 +68,15 @@ export default function SettingsPage() {
 
       {/* Font Size */}
       <section>
-        <h3 className="font-display text-base font-bold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-3 flex items-center gap-2">
           <Type size={18} /> Font Size
         </h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {FONT_SIZES.map(f => (
             <button
               key={f.id}
               onClick={() => setFontSize(f.id)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 ${
                 fontSize === f.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
@@ -86,20 +86,25 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Preview: <span style={{ fontSize: FONT_SIZES.find(f => f.id === fontSize)?.value, fontFamily: FONT_FAMILIES.find(f => f.id === fontFamily)?.value }}>The Lord is my shepherd.</span></p>
+        <p className="text-xs text-muted-foreground mt-2 leading-relaxed break-words">
+          Preview:{' '}
+          <span style={{ fontSize: FONT_SIZES.find(f => f.id === fontSize)?.value, fontFamily: FONT_FAMILIES.find(f => f.id === fontFamily)?.value }}>
+            The Lord is my shepherd.
+          </span>
+        </p>
       </section>
 
       {/* Font Family */}
       <section>
-        <h3 className="font-display text-base font-bold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-3 flex items-center gap-2">
           <Type size={18} /> Font Family
         </h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {FONT_FAMILIES.map(f => (
             <button
               key={f.id}
               onClick={() => setFontFamily(f.id)}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 active:scale-95 ${
                 fontFamily === f.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
@@ -126,35 +131,35 @@ export default function SettingsPage() {
       <AdminAnnouncementPanel />
 
       {/* Delete Account */}
-      <section className="border-t border-border pt-6">
-        <h3 className="font-display text-base font-bold text-foreground mb-2">Danger Zone</h3>
-        <p className="text-sm text-muted-foreground mb-3">
+      <section className="border-t border-border pt-5 sm:pt-6">
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-2">Danger Zone</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed">
           Delete all your data including bookmarks, highlights, and community posts.
         </p>
 
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-xs sm:text-sm font-medium hover:opacity-90 transition active:scale-95"
           >
             <Trash2 size={16} />
             Delete Account Data
           </button>
         ) : (
-          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-4 space-y-3">
-            <p className="text-sm font-medium text-foreground">
+          <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-3 sm:p-4 space-y-3">
+            <p className="text-sm font-medium text-foreground leading-relaxed">
               Are you sure? This action cannot be undone.
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition"
+                className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs sm:text-sm font-medium hover:opacity-90 transition active:scale-95"
               >
                 Yes, delete everything
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium"
+                className="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-xs sm:text-sm font-medium active:scale-95"
               >
                 Cancel
               </button>
