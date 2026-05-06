@@ -151,21 +151,22 @@ export default function Reader() {
   return (
     <div className="fade-in">
       {/* Header bar */}
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
         {view !== 'books' && (
           <button
             onClick={() => { stop(); setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
-            className="p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
+            aria-label="Back"
+            className="shrink-0 p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
           >
             <ChevronLeft size={20} />
           </button>
         )}
-        <h2 className="font-display text-xl font-bold text-foreground tracking-tight">
+        <h2 className="font-display text-base sm:text-xl font-bold text-foreground tracking-tight truncate min-w-0">
           {view === 'books' && 'Select a Book'}
           {view === 'chapters' && selectedBook}
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
           {view === 'reading' && verses.length > 0 && (
             <button
               onClick={toggle}
@@ -178,7 +179,7 @@ export default function Reader() {
           <div className="relative" ref={versionRef}>
             <button
               onClick={() => setShowVersionPicker(prev => !prev)}
-              className="flex items-center gap-1 text-xs bg-secondary/80 text-secondary-foreground px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95"
+              className="flex items-center gap-1 text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
             >
               {version.toUpperCase()}
               <ChevronDown size={12} />
@@ -191,18 +192,18 @@ export default function Reader() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px]"
+                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px] max-w-[calc(100vw-2rem)]"
                 >
                   {BIBLE_VERSIONS.map(v => (
                     <button
                       key={v.id}
                       onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                      className={`w-full text-left px-3 sm:px-4 py-2.5 text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 transition-colors ${
                         version === v.id ? 'bg-primary/10 text-primary font-semibold' : 'text-card-foreground'
                       }`}
                     >
-                      <span>{v.name}</span>
-                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                      <span className="truncate">{v.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">{v.full}</span>
                     </button>
                   ))}
                 </motion.div>
