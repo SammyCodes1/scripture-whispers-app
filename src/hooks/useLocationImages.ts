@@ -246,7 +246,7 @@ export function usePreDownloadAllImages() {
       hasResumable: true,
     });
 
-    const CONCURRENCY = 5;
+    const CONCURRENCY = LIGHT_MODE ? 8 : 5;
     const queue = BIBLICAL_LOCATIONS.filter((_, i) => !cachedFlags[i]);
 
     const worker = async () => {
