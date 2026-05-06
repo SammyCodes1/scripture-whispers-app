@@ -1,6 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { BIBLICAL_LOCATIONS } from '@/data/biblicalLocations';
 
+// Detect mobile / slow connections so we can shrink the download payload aggressively.
+const IS_MOBILE = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const CONN: any = typeof navigator !== 'undefined' ? (navigator as any).connection : undefined;
+const SAVE_DATA = !!CONN?.saveData;
+const SLOW_NET = CONN?.effectiveType ? /2g|3g/.test(CONN.effectiveType) : false;
+const LIGHT_MODE = IS_MOBILE || SAVE_DATA || SLOW_NET;
+// Thumbnail width: tiny on mobile/slow, modest on desktop.
+const THUMB_W = LIGHT_MODE ? 240 : 400;
+// Images per era per location during bulk pre-download.
+const BULK_PER_ERA = LIGHT_MODE ? 1 : 2;
+
 // Lightweight IndexedDB wrapper for caching location images as blobs.
 const DB_NAME = 'hw-location-images';
 const STORE = 'images';
