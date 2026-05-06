@@ -1,6 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { BIBLICAL_LOCATIONS } from '@/data/biblicalLocations';
 
+// Detect mobile / slow connections so we can shrink the download payload aggressively.
+const IS_MOBILE = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const CONN: any = typeof navigator !== 'undefined' ? (navigator as any).connection : undefined;
+const SAVE_DATA = !!CONN?.saveData;
+const SLOW_NET = CONN?.effectiveType ? /2g|3g/.test(CONN.effectiveType) : false;
+const LIGHT_MODE = IS_MOBILE || SAVE_DATA || SLOW_NET;
+// Thumbnail width: tiny on mobile/slow, modest on desktop.
+const THUMB_W = LIGHT_MODE ? 240 : 400;
+// Images per era per location during bulk pre-download.
+const BULK_PER_ERA = LIGHT_MODE ? 1 : 2;
+
 // Lightweight IndexedDB wrapper for caching location images as blobs.
 const DB_NAME = 'hw-location-images';
 const STORE = 'images';
@@ -69,7 +80,7 @@ async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; t
   if (!fileNames.length) return [];
 
   // Resolve URLs via imageinfo - request 400px thumbnails to drastically reduce download size
-  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&titles=${encodeURIComponent(fileNames.join('|'))}`;
+  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=${THUMB_W}&titles=${encodeURIComponent(fileNames.join('|'))}`;
   const ir = await fetch(infoApi);
   if (!ir.ok) return [];
   const idata = await ir.json();
@@ -235,7 +246,7 @@ export function usePreDownloadAllImages() {
       hasResumable: true,
     });
 
-    const CONCURRENCY = 5;
+    const CONCURRENCY = LIGHT_MODE ? 8 : 5;
     const queue = BIBLICAL_LOCATIONS.filter((_, i) => !cachedFlags[i]);
 
     const worker = async () => {
@@ -247,8 +258,8 @@ export function usePreDownloadAllImages() {
           let meta = await idbGet<MetaEntry>(META_STORE, loc.id);
           if (!meta) {
             const [modern, historical] = await Promise.all([
-              loc.wikiModern ? fetchWikiImages(loc.wikiModern, 2) : Promise.resolve([]),
-              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, 2) : Promise.resolve([]),
+              loc.wikiModern ? fetchWikiImages(loc.wikiModern, BULK_PER_ERA) : Promise.resolve([]),
+              loc.wikiHistorical ? fetchWikiImages(loc.wikiHistorical, BULK_PER_ERA) : Promise.resolve([]),
             ]);
             meta = { modern, historical, fetchedAt: Date.now() };
             await idbSet(META_STORE, loc.id, meta);
