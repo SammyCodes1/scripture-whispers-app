@@ -270,7 +270,7 @@ export default function Reader() {
 
         {view === 'chapters' && currentBook && (
           <motion.div key="chapters" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-            <div className="grid grid-cols-5 sm:grid-cols-8 gap-2.5">
+            <div className="grid grid-cols-5 xs:grid-cols-6 sm:grid-cols-8 gap-2 sm:gap-2.5">
               {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => {
                 const read = isChapterRead(selectedBook, ch);
                 return (
@@ -278,7 +278,7 @@ export default function Reader() {
                     key={ch}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => { setSelectedChapter(ch); setView('reading'); }}
-                    className={`aspect-square rounded-xl border flex items-center justify-center font-display font-bold text-sm transition-all relative ${
+                    className={`aspect-square rounded-xl border flex items-center justify-center font-display font-bold text-[13px] sm:text-sm transition-all relative tabular-nums ${
                       read
                         ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
                         : 'bg-card border-border/60 text-card-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary'
