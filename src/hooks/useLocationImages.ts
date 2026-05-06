@@ -80,7 +80,7 @@ async function fetchWikiImages(title: string, max = 3): Promise<{ url: string; t
   if (!fileNames.length) return [];
 
   // Resolve URLs via imageinfo - request 400px thumbnails to drastically reduce download size
-  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400&titles=${encodeURIComponent(fileNames.join('|'))}`;
+  const infoApi = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=${THUMB_W}&titles=${encodeURIComponent(fileNames.join('|'))}`;
   const ir = await fetch(infoApi);
   if (!ir.ok) return [];
   const idata = await ir.json();
