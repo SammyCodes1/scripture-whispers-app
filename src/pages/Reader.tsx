@@ -151,21 +151,22 @@ export default function Reader() {
   return (
     <div className="fade-in">
       {/* Header bar */}
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-5">
         {view !== 'books' && (
           <button
             onClick={() => { stop(); setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
-            className="p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
+            aria-label="Back"
+            className="shrink-0 p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
           >
             <ChevronLeft size={20} />
           </button>
         )}
-        <h2 className="font-display text-xl font-bold text-foreground tracking-tight">
+        <h2 className="font-display text-base sm:text-xl font-bold text-foreground tracking-tight truncate min-w-0">
           {view === 'books' && 'Select a Book'}
           {view === 'chapters' && selectedBook}
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
           {view === 'reading' && verses.length > 0 && (
             <button
               onClick={toggle}
@@ -178,7 +179,7 @@ export default function Reader() {
           <div className="relative" ref={versionRef}>
             <button
               onClick={() => setShowVersionPicker(prev => !prev)}
-              className="flex items-center gap-1 text-xs bg-secondary/80 text-secondary-foreground px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95"
+              className="flex items-center gap-1 text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
             >
               {version.toUpperCase()}
               <ChevronDown size={12} />
@@ -191,18 +192,18 @@ export default function Reader() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px]"
+                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px] max-w-[calc(100vw-2rem)]"
                 >
                   {BIBLE_VERSIONS.map(v => (
                     <button
                       key={v.id}
                       onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                      className={`w-full text-left px-3 sm:px-4 py-2.5 text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 transition-colors ${
                         version === v.id ? 'bg-primary/10 text-primary font-semibold' : 'text-card-foreground'
                       }`}
                     >
-                      <span>{v.name}</span>
-                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                      <span className="truncate">{v.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">{v.full}</span>
                     </button>
                   ))}
                 </motion.div>
@@ -216,10 +217,10 @@ export default function Reader() {
         {view === 'books' && (
           <motion.div key="books" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
             <ReadingStats />
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-4 sm:mb-5">
               {(['OT', 'NT'] as const).map(t => (
                 <button key={t} onClick={() => setTestament(t)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                  className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-95 ${
                     testament === t ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-secondary/60 text-secondary-foreground hover:bg-secondary'
                   }`}
                 >
@@ -227,7 +228,7 @@ export default function Reader() {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
               {books.map(book => {
                 const stats = bookStats[book.name];
                 const readCount = stats?.read || 0;
@@ -237,19 +238,19 @@ export default function Reader() {
                     key={book.name}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => { setSelectedBook(book.name); setView('chapters'); }}
-                    className={`text-left rounded-xl bg-card border p-3.5 hover:shadow-md transition-all ${isComplete ? 'border-green-500/40' : 'border-border/60'}`}
+                    className={`text-left rounded-xl bg-card border p-3 sm:p-3.5 hover:shadow-md transition-all ${isComplete ? 'border-green-500/40' : 'border-border/60'}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <p className="font-display font-bold text-sm text-card-foreground">{book.name}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-display font-bold text-[13px] sm:text-sm text-card-foreground truncate min-w-0">{book.name}</p>
                       {isComplete ? (
-                        <CheckCircle2 size={14} className="text-green-500" />
+                        <CheckCircle2 size={14} className="text-green-500 shrink-0" />
                       ) : readCount > 0 ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold shrink-0 whitespace-nowrap tabular-nums">
                           {readCount}/{book.chapters}
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{book.chapters} chapters</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{book.chapters} chapters</p>
                     {readCount > 0 && (
                       <div className="mt-2 h-1 rounded-full bg-border overflow-hidden">
                         <motion.div
@@ -269,7 +270,7 @@ export default function Reader() {
 
         {view === 'chapters' && currentBook && (
           <motion.div key="chapters" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-            <div className="grid grid-cols-5 sm:grid-cols-8 gap-2.5">
+            <div className="grid grid-cols-5 xs:grid-cols-6 sm:grid-cols-8 gap-2 sm:gap-2.5">
               {Array.from({ length: currentBook.chapters }, (_, i) => i + 1).map(ch => {
                 const read = isChapterRead(selectedBook, ch);
                 return (
@@ -277,7 +278,7 @@ export default function Reader() {
                     key={ch}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => { setSelectedChapter(ch); setView('reading'); }}
-                    className={`aspect-square rounded-xl border flex items-center justify-center font-display font-bold text-sm transition-all relative ${
+                    className={`aspect-square rounded-xl border flex items-center justify-center font-display font-bold text-[13px] sm:text-sm transition-all relative tabular-nums ${
                       read
                         ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
                         : 'bg-card border-border/60 text-card-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary'
@@ -307,31 +308,31 @@ export default function Reader() {
                     key={i}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.01, duration: 0.3 }}
-                    className={`group flex gap-3 p-3 rounded-xl transition-colors ${
+                    transition={{ delay: Math.min(i, 20) * 0.01, duration: 0.3 }}
+                    className={`group flex gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
                   >
-                    <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
-                    <p className="verse-text text-sm flex-1 leading-relaxed">{verse.text}</p>
-                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
+                    <span className="text-[11px] sm:text-xs font-bold text-primary mt-1 min-w-[20px] sm:min-w-[24px] tabular-nums shrink-0">{verse.verse}</span>
+                    <p className="verse-text text-[15px] sm:text-base flex-1 leading-relaxed sm:leading-loose break-words min-w-0 [hyphens:auto]">{verse.text}</p>
+                    <div className="flex flex-col sm:flex-row gap-0.5 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                      <button onClick={() => openShare(i)} aria-label="Share" className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                         <Share2 size={14} />
                       </button>
-                      <button onClick={() => copyVerse(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Copy">
+                      <button onClick={() => copyVerse(i)} aria-label="Copy" className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Copy">
                         <Copy size={14} />
                       </button>
-                      <button onClick={() => saveVerse(i, 'bookmark')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'bookmark') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}>
+                      <button onClick={() => saveVerse(i, 'bookmark')} aria-label="Bookmark" className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'bookmark') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}>
                         <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
                       </button>
-                      <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`}>
+                      <button onClick={() => saveVerse(i, 'highlight')} aria-label="Highlight" className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`}>
                         <Highlighter size={14} />
                       </button>
                     </div>
                   </motion.div>
                 ))}
                 {verses.length === 0 && !loading && (
-                  <p className="text-center text-muted-foreground py-12 text-sm">No verses found for this chapter.</p>
+                  <p className="text-center text-muted-foreground py-12 text-sm px-4">No verses found for this chapter.</p>
                 )}
               </div>
             )}
