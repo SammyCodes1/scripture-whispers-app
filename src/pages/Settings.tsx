@@ -54,14 +54,16 @@ export default function SettingsPage() {
             <button
               key={v.id}
               onClick={() => setVersion(v.id)}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 ${
+              aria-pressed={version === v.id}
+              title={v.full}
+              className={`px-3 sm:px-4 min-h-[40px] py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 inline-flex items-center gap-1.5 max-w-full ${
                 version === v.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
               }`}
             >
-              <span className="font-bold">{v.name}</span>
-              <span className="text-xs opacity-70 ml-1 hidden sm:inline">({v.full})</span>
+              <span className="font-bold shrink-0">{v.name}</span>
+              <span className="text-xs opacity-70 hidden sm:inline truncate">({v.full})</span>
             </button>
           ))}
         </div>
