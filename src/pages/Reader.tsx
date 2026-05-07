@@ -193,18 +193,18 @@ export default function Reader() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px] max-w-[calc(100vw-2rem)]"
+                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[220px] max-w-[calc(100vw-2rem)]"
                 >
                   {BIBLE_VERSIONS.map(v => (
                     <button
                       key={v.id}
                       onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
-                      className={`w-full text-left px-3 sm:px-4 py-2.5 text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 transition-colors ${
+                      className={`w-full text-left px-3 sm:px-4 py-3 min-h-[44px] text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 active:bg-secondary/70 transition-colors ${
                         version === v.id ? 'bg-primary/10 text-primary font-semibold' : 'text-card-foreground'
                       }`}
                     >
-                      <span className="truncate">{v.name}</span>
-                      <span className="text-xs text-muted-foreground truncate">{v.full}</span>
+                      <span className="font-bold shrink-0">{v.name}</span>
+                      <span className="text-[11px] sm:text-xs text-muted-foreground truncate text-right">{v.full}</span>
                     </button>
                   ))}
                 </motion.div>
