@@ -179,10 +179,11 @@ export default function Reader() {
           <div className="relative" ref={versionRef}>
             <button
               onClick={() => setShowVersionPicker(prev => !prev)}
-              className="flex items-center gap-1 text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
+              className="flex items-center gap-1 min-h-[36px] text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-3 sm:px-3.5 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
+              aria-label="Change Bible version"
             >
-              {version.toUpperCase()}
-              <ChevronDown size={12} />
+              <span className="truncate max-w-[5rem]">{version.toUpperCase()}</span>
+              <ChevronDown size={12} className="shrink-0" />
             </button>
 
             <AnimatePresence>
