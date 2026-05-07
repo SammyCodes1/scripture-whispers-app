@@ -179,11 +179,10 @@ export default function Reader() {
           <div className="relative" ref={versionRef}>
             <button
               onClick={() => setShowVersionPicker(prev => !prev)}
-              className="flex items-center gap-1 min-h-[36px] text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-3 sm:px-3.5 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
-              aria-label="Change Bible version"
+              className="flex items-center gap-1 text-[11px] sm:text-xs bg-secondary/80 text-secondary-foreground px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-primary/10 hover:text-primary transition-all cursor-pointer font-semibold active:scale-95 whitespace-nowrap"
             >
-              <span className="truncate max-w-[5rem]">{version.toUpperCase()}</span>
-              <ChevronDown size={12} className="shrink-0" />
+              {version.toUpperCase()}
+              <ChevronDown size={12} />
             </button>
 
             <AnimatePresence>
@@ -193,18 +192,18 @@ export default function Reader() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[220px] max-w-[calc(100vw-2rem)]"
+                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px] max-w-[calc(100vw-2rem)]"
                 >
                   {BIBLE_VERSIONS.map(v => (
                     <button
                       key={v.id}
                       onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
-                      className={`w-full text-left px-3 sm:px-4 py-3 min-h-[44px] text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 active:bg-secondary/70 transition-colors ${
+                      className={`w-full text-left px-3 sm:px-4 py-2.5 text-sm flex items-center justify-between gap-3 hover:bg-secondary/50 transition-colors ${
                         version === v.id ? 'bg-primary/10 text-primary font-semibold' : 'text-card-foreground'
                       }`}
                     >
-                      <span className="font-bold shrink-0">{v.name}</span>
-                      <span className="text-[11px] sm:text-xs text-muted-foreground truncate text-right">{v.full}</span>
+                      <span className="truncate">{v.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">{v.full}</span>
                     </button>
                   ))}
                 </motion.div>
@@ -310,12 +309,12 @@ export default function Reader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: Math.min(i, 20) * 0.01, duration: 0.3 }}
-                    className={`group flex gap-1.5 sm:gap-3 px-1.5 py-1 sm:p-3 rounded-lg sm:rounded-xl transition-colors ${
+                    className={`group flex gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
                   >
-                    <span className="text-[10px] sm:text-xs font-bold text-primary mt-0.5 sm:mt-1 min-w-[16px] sm:min-w-[24px] tabular-nums shrink-0">{verse.verse}</span>
-                    <p className="verse-text text-[15px] sm:text-base flex-1 leading-snug sm:leading-loose break-words min-w-0 [hyphens:auto]">{verse.text}</p>
+                    <span className="text-[11px] sm:text-xs font-bold text-primary mt-1 min-w-[20px] sm:min-w-[24px] tabular-nums shrink-0">{verse.verse}</span>
+                    <p className="verse-text text-[15px] sm:text-base flex-1 leading-relaxed sm:leading-loose break-words min-w-0 [hyphens:auto]">{verse.text}</p>
                     <div className="flex flex-col sm:flex-row gap-0.5 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                       <button onClick={() => openShare(i)} aria-label="Share" className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                         <Share2 size={14} />
