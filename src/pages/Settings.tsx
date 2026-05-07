@@ -31,7 +31,8 @@ export default function SettingsPage() {
             <button
               key={t.id}
               onClick={() => setTheme(t.id)}
-              className={`flex items-center gap-2 rounded-xl border p-2.5 sm:p-3 transition-all text-left active:scale-[0.98] ${
+              aria-pressed={theme === t.id}
+              className={`flex items-center gap-2 rounded-xl border p-3 min-h-[48px] transition-all text-left active:scale-[0.98] ${
                 theme === t.id
                   ? 'border-primary bg-primary/10 ring-2 ring-primary'
                   : 'border-border bg-card hover:shadow-md'
@@ -53,14 +54,16 @@ export default function SettingsPage() {
             <button
               key={v.id}
               onClick={() => setVersion(v.id)}
-              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 ${
+              aria-pressed={version === v.id}
+              title={v.full}
+              className={`px-3 sm:px-4 min-h-[40px] py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 inline-flex items-center gap-1.5 max-w-full ${
                 version === v.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
               }`}
             >
-              <span className="font-bold">{v.name}</span>
-              <span className="text-xs opacity-70 ml-1 hidden sm:inline">({v.full})</span>
+              <span className="font-bold shrink-0">{v.name}</span>
+              <span className="text-xs opacity-70 hidden sm:inline truncate">({v.full})</span>
             </button>
           ))}
         </div>
