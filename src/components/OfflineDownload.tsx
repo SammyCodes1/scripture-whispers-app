@@ -102,8 +102,8 @@ export default function OfflineDownload() {
 
       {/* Status */}
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-card-foreground">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="text-sm text-card-foreground min-w-0">
             {isFullyCached ? (
               <span className="flex items-center gap-1.5 text-primary font-medium">
                 <CheckCircle2 size={16} /> Fully downloaded
@@ -112,7 +112,7 @@ export default function OfflineDownload() {
               `${cachedCount} / ${total} chapters cached`
             )}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[11px] sm:text-xs text-muted-foreground truncate max-w-full">
             {BIBLE_VERSIONS.find(v => v.id === selectedTranslation)?.full}
           </span>
         </div>
