@@ -31,7 +31,8 @@ export default function SettingsPage() {
             <button
               key={t.id}
               onClick={() => setTheme(t.id)}
-              className={`flex items-center gap-2 rounded-xl border p-2.5 sm:p-3 transition-all text-left active:scale-[0.98] ${
+              aria-pressed={theme === t.id}
+              className={`flex items-center gap-2 rounded-xl border p-3 min-h-[48px] transition-all text-left active:scale-[0.98] ${
                 theme === t.id
                   ? 'border-primary bg-primary/10 ring-2 ring-primary'
                   : 'border-border bg-card hover:shadow-md'
