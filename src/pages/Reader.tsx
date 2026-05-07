@@ -310,12 +310,12 @@ export default function Reader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: Math.min(i, 20) * 0.01, duration: 0.3 }}
-                    className={`group flex gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl transition-colors ${
+                    className={`group flex gap-1.5 sm:gap-3 px-1.5 py-1 sm:p-3 rounded-lg sm:rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
                   >
-                    <span className="text-[11px] sm:text-xs font-bold text-primary mt-1 min-w-[20px] sm:min-w-[24px] tabular-nums shrink-0">{verse.verse}</span>
-                    <p className="verse-text text-[15px] sm:text-base flex-1 leading-relaxed sm:leading-loose break-words min-w-0 [hyphens:auto]">{verse.text}</p>
+                    <span className="text-[10px] sm:text-xs font-bold text-primary mt-0.5 sm:mt-1 min-w-[16px] sm:min-w-[24px] tabular-nums shrink-0">{verse.verse}</span>
+                    <p className="verse-text text-[15px] sm:text-base flex-1 leading-snug sm:leading-loose break-words min-w-0 [hyphens:auto]">{verse.text}</p>
                     <div className="flex flex-col sm:flex-row gap-0.5 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                       <button onClick={() => openShare(i)} aria-label="Share" className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                         <Share2 size={14} />
