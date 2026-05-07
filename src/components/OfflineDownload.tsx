@@ -87,7 +87,9 @@ export default function OfflineDownload() {
           <button
             key={v.id}
             onClick={() => !downloading && setSelectedTranslation(v.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            aria-pressed={selectedTranslation === v.id}
+            title={v.full}
+            className={`px-3 py-2 min-h-[40px] rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 ${
               selectedTranslation === v.id
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary text-secondary-foreground hover:bg-primary/10'
