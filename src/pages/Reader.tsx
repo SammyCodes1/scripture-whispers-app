@@ -121,6 +121,21 @@ export default function Reader() {
     return () => { cancelled = true; };
   }, [selectedBook, selectedChapter, version, view]);
 
+  // Scroll to and briefly highlight the target verse after verses load
+  useEffect(() => {
+    if (!targetVerse || verses.length === 0) return;
+    const tryScroll = () => {
+      const el = verseRefs.current[targetVerse];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const clearTimer = setTimeout(() => setTargetVerse(null), 2500);
+        return () => clearTimeout(clearTimer);
+      }
+    };
+    const t = setTimeout(tryScroll, 100);
+    return () => clearTimeout(t);
+  }, [targetVerse, verses]);
+
   const saveVerse = (index: number, type: 'bookmark' | 'highlight') => {
     const verse = verses[index];
     if (!verse) return;
