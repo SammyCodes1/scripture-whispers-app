@@ -82,6 +82,11 @@ export default function Reader() {
         setSelectedChapter(ch);
         setTestament(bookExists.testament);
         setView('reading');
+        const verseParam = searchParams.get('verse');
+        if (verseParam) {
+          const v = parseInt(verseParam, 10);
+          if (v > 0) setTargetVerse(v);
+        }
         setSearchParams({}, { replace: true });
       }
     }
