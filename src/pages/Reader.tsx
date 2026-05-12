@@ -42,6 +42,8 @@ export default function Reader() {
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
   const hasRestoredRef = useRef(false);
+  const [targetVerse, setTargetVerse] = useState<number | null>(null);
+  const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
