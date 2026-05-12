@@ -28,6 +28,13 @@ interface SearchResult {
 
 export default function SearchPage() {
   const { version } = useTheme();
+  const navigate = useNavigate();
+
+  const openVerse = (ref: string) => {
+    const parsed = parseReference(ref);
+    if (!parsed) return;
+    navigate(`/read?book=${encodeURIComponent(parsed.book)}&chapter=${parsed.chapter}&verse=${parsed.verse}`);
+  };
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
