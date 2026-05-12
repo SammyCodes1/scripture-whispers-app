@@ -1,8 +1,25 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, WifiOff } from 'lucide-react';
 import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
 import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
+import { BIBLE_BOOKS } from '@/data/bibleData';
+
+function parseReference(ref: string): { book: string; chapter: number; verse: number } | null {
+  // Match "Book Name 1:2" — book may contain spaces and digits like "1 Kings"
+  const m = ref.match(/^(.+?)\s+(\d+):(\d+)/);
+  if (!m) return null;
+  const bookRaw = m[1].trim();
+  const chapter = parseInt(m[2], 10);
+  const verse = parseInt(m[3], 10);
+  // Find a matching book (case-insensitive, allow partial)
+  const book = BIBLE_BOOKS.find(b => b.name.toLowerCase() === bookRaw.toLowerCase())
+    || BIBLE_BOOKS.find(b => b.name.toLowerCase().startsWith(bookRaw.toLowerCase()))
+    || BIBLE_BOOKS.find(b => bookRaw.toLowerCase().startsWith(b.name.toLowerCase()));
+  if (!book) return null;
+  return { book: book.name, chapter, verse };
+}
 
 interface SearchResult {
   ref: string;
