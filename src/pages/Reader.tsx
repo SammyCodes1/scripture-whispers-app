@@ -327,12 +327,15 @@ export default function Reader() {
                 {verses.map((verse, i) => (
                   <motion.div
                     key={i}
+                    ref={el => { verseRefs.current[verse.verse] = el; }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
                     className={`group flex gap-3 p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
-                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
+                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
+                      targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
+                    }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
                     <p className="verse-text text-sm flex-1 leading-relaxed">{verse.text}</p>
