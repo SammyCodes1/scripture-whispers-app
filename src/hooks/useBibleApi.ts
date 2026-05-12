@@ -2,6 +2,9 @@
 const PRIMARY_API = 'https://dailybible.ca';
 // Fallback API for WEB, BBE (same response format)
 const FALLBACK_API = 'https://bible-api.com';
+// MSG (The Message) is served via our edge function which proxies API.Bible
+const MSG_FN_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/bible-msg`;
+const MSG_HEADERS = { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string };
 
 // Translations served by the fallback API
 const FALLBACK_TRANSLATIONS = ['web', 'bbe'];
