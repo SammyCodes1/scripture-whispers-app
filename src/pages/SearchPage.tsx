@@ -139,10 +139,14 @@ export default function SearchPage() {
           </p>
           <div className="space-y-2">
             {results.map((r, i) => (
-              <div key={i} className="rounded-xl bg-card border border-border p-3 sm:p-4">
+              <button
+                key={i}
+                onClick={() => openVerse(r.ref)}
+                className="w-full text-left rounded-xl bg-card border border-border p-3 sm:p-4 hover:border-primary/50 hover:bg-secondary/40 transition-all active:scale-[0.99]"
+              >
                 <p className="text-[11px] sm:text-xs font-bold text-primary mb-1 break-words">{r.ref}</p>
                 <p className="verse-text text-[13px] sm:text-sm leading-relaxed break-words">{r.text}</p>
-              </div>
+              </button>
             ))}
             {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8 px-4 leading-relaxed">
