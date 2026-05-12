@@ -83,6 +83,12 @@ export async function fetchChapter(
   translation: string = 'kjv',
   signal?: AbortSignal
 ): Promise<ChapterResponse> {
+  if (translation === 'msg') {
+    const url = `${MSG_FN_URL}?action=chapter&book=${encodeURIComponent(book)}&chapter=${chapter}`;
+    const res = await fetch(url, { signal, headers: MSG_HEADERS });
+    if (!res.ok) throw new Error(`Failed to fetch chapter: ${res.status}`);
+    return res.json();
+  }
   const apiBase = resolveContentApiBase(book, translation);
   const reference = `${book} ${chapter}`;
   const url = buildUrl(apiBase, reference, translation);
@@ -95,6 +101,12 @@ export async function fetchChapter(
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
+  if (translation === 'msg') {
+    const url = `${MSG_FN_URL}?action=search&q=${encodeURIComponent(query)}&limit=${limit}`;
+    const res = await fetch(url, { headers: MSG_HEADERS });
+    if (!res.ok) throw new Error(`Failed to search: ${res.status}`);
+    return res.json();
+  }
   const apiBase = getApiBase(translation);
   if (apiBase === FALLBACK_API) {
     const url = `${PRIMARY_API}/api/search?q=${encodeURIComponent(query)}&translation=kjv&limit=${limit}`;
@@ -109,6 +121,12 @@ export async function searchBible(query: string, translation: string = 'kjv', li
 }
 
 export async function fetchVerse(ref: string, translation: string = 'kjv', signal?: AbortSignal): Promise<ChapterResponse> {
+  if (translation === 'msg') {
+    const url = `${MSG_FN_URL}?action=verse&ref=${encodeURIComponent(ref)}`;
+    const res = await fetch(url, { signal, headers: MSG_HEADERS });
+    if (!res.ok) throw new Error(`Failed to fetch verse: ${res.status}`);
+    return res.json();
+  }
   const book = getBookFromReference(ref);
   const apiBase = resolveContentApiBase(book, translation);
   const url = buildUrl(apiBase, ref, translation);
