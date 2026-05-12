@@ -42,6 +42,8 @@ export default function Reader() {
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
   const hasRestoredRef = useRef(false);
+  const [targetVerse, setTargetVerse] = useState<number | null>(null);
+  const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
@@ -80,6 +82,11 @@ export default function Reader() {
         setSelectedChapter(ch);
         setTestament(bookExists.testament);
         setView('reading');
+        const verseParam = searchParams.get('verse');
+        if (verseParam) {
+          const v = parseInt(verseParam, 10);
+          if (v > 0) setTargetVerse(v);
+        }
         setSearchParams({}, { replace: true });
       }
     }
@@ -113,6 +120,21 @@ export default function Reader() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [selectedBook, selectedChapter, version, view]);
+
+  // Scroll to and briefly highlight the target verse after verses load
+  useEffect(() => {
+    if (!targetVerse || verses.length === 0) return;
+    const tryScroll = () => {
+      const el = verseRefs.current[targetVerse];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const clearTimer = setTimeout(() => setTargetVerse(null), 2500);
+        return () => clearTimeout(clearTimer);
+      }
+    };
+    const t = setTimeout(tryScroll, 100);
+    return () => clearTimeout(t);
+  }, [targetVerse, verses]);
 
   const saveVerse = (index: number, type: 'bookmark' | 'highlight') => {
     const verse = verses[index];
@@ -305,12 +327,15 @@ export default function Reader() {
                 {verses.map((verse, i) => (
                   <motion.div
                     key={i}
+                    ref={el => { verseRefs.current[verse.verse] = el; }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
                     className={`group flex gap-3 p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
-                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
+                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
+                      targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
+                    }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
                     <p className="verse-text text-sm flex-1 leading-relaxed">{verse.text}</p>

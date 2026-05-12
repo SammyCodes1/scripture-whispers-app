@@ -1,8 +1,25 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, WifiOff } from 'lucide-react';
 import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
 import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
+import { BIBLE_BOOKS } from '@/data/bibleData';
+
+function parseReference(ref: string): { book: string; chapter: number; verse: number } | null {
+  // Match "Book Name 1:2" — book may contain spaces and digits like "1 Kings"
+  const m = ref.match(/^(.+?)\s+(\d+):(\d+)/);
+  if (!m) return null;
+  const bookRaw = m[1].trim();
+  const chapter = parseInt(m[2], 10);
+  const verse = parseInt(m[3], 10);
+  // Find a matching book (case-insensitive, allow partial)
+  const book = BIBLE_BOOKS.find(b => b.name.toLowerCase() === bookRaw.toLowerCase())
+    || BIBLE_BOOKS.find(b => b.name.toLowerCase().startsWith(bookRaw.toLowerCase()))
+    || BIBLE_BOOKS.find(b => bookRaw.toLowerCase().startsWith(b.name.toLowerCase()));
+  if (!book) return null;
+  return { book: book.name, chapter, verse };
+}
 
 interface SearchResult {
   ref: string;
@@ -11,6 +28,13 @@ interface SearchResult {
 
 export default function SearchPage() {
   const { version } = useTheme();
+  const navigate = useNavigate();
+
+  const openVerse = (ref: string) => {
+    const parsed = parseReference(ref);
+    if (!parsed) return;
+    navigate(`/read?book=${encodeURIComponent(parsed.book)}&chapter=${parsed.chapter}&verse=${parsed.verse}`);
+  };
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -115,10 +139,14 @@ export default function SearchPage() {
           </p>
           <div className="space-y-2">
             {results.map((r, i) => (
-              <div key={i} className="rounded-xl bg-card border border-border p-3 sm:p-4">
+              <button
+                key={i}
+                onClick={() => openVerse(r.ref)}
+                className="w-full text-left rounded-xl bg-card border border-border p-3 sm:p-4 hover:border-primary/50 hover:bg-secondary/40 transition-all active:scale-[0.99]"
+              >
                 <p className="text-[11px] sm:text-xs font-bold text-primary mb-1 break-words">{r.ref}</p>
                 <p className="verse-text text-[13px] sm:text-sm leading-relaxed break-words">{r.text}</p>
-              </div>
+              </button>
             ))}
             {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8 px-4 leading-relaxed">
