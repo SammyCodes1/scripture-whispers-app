@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2, StickyNote } from 'lucide-react';
+import VerseNoteModal from '@/components/VerseNoteModal';
+import { useNotes } from '@/hooks/useNotes';
 
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
@@ -41,6 +43,8 @@ export default function Reader() {
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
+  const [noteVerse, setNoteVerse] = useState<{ ref: string; text: string } | null>(null);
+  const { getNote } = useNotes();
   const hasRestoredRef = useRef(false);
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -352,6 +356,19 @@ export default function Reader() {
                       <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`}>
                         <Highlighter size={14} />
                       </button>
+                      {(() => {
+                        const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                        const hasNote = !!getNote(ref);
+                        return (
+                          <button
+                            onClick={() => setNoteVerse({ ref, text: verse.text })}
+                            title={hasNote ? 'Edit note' : 'Add note'}
+                            className={`p-1.5 rounded-lg transition-all ${hasNote ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'}`}
+                          >
+                            <StickyNote size={14} fill={hasNote ? 'currentColor' : 'none'} />
+                          </button>
+                        );
+                      })()}
                     </div>
                   </motion.div>
                 ))}
@@ -367,6 +384,14 @@ export default function Reader() {
       {shareVerse && (
         <VerseShareCard reference={shareVerse.ref} text={shareVerse.text} version={version} onClose={() => setShareVerse(null)} />
       )}
+
+      <VerseNoteModal
+        open={!!noteVerse}
+        reference={noteVerse?.ref ?? ''}
+        verseText={noteVerse?.text ?? ''}
+        onClose={() => setNoteVerse(null)}
+      />
+       
     </div>
   );
 }
