@@ -329,14 +329,18 @@ export default function Reader() {
               </div>
             ) : (
               <div className="space-y-0.5">
-                {verses.map((verse, i) => (
+                {verses.map((verse, i) => {
+                  const verseRef = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
+                  const verseNote = getNote(verseRef);
+                  const isExpanded = expandedNoteRef === verseRef;
+                  return (
                   <motion.div
                     key={i}
                     ref={el => { verseRefs.current[verse.verse] = el; }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
-                    className={`group flex gap-3 p-3 rounded-xl transition-colors ${
+                    className={`group flex flex-wrap gap-3 p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
                       targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
