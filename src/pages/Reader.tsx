@@ -347,7 +347,12 @@ export default function Reader() {
                     }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
-                    <p className="verse-text text-sm flex-1 leading-relaxed">{verse.text}</p>
+                    <p
+                      className={`verse-text text-sm flex-1 leading-relaxed ${verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
+                      onClick={() => verseNote && setExpandedNoteRef(isExpanded ? null : verseRef)}
+                    >
+                      {verse.text}
+                    </p>
                     <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                         <Share2 size={14} />
@@ -361,22 +366,45 @@ export default function Reader() {
                       <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`}>
                         <Highlighter size={14} />
                       </button>
-                      {(() => {
-                        const ref = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
-                        const hasNote = !!getNote(ref);
-                        return (
-                          <button
-                            onClick={() => setNoteVerse({ ref, text: verse.text })}
-                            title={hasNote ? 'Edit note' : 'Add note'}
-                            className={`p-1.5 rounded-lg transition-all ${hasNote ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'}`}
-                          >
-                            <StickyNote size={14} fill={hasNote ? 'currentColor' : 'none'} />
-                          </button>
-                        );
-                      })()}
+                      <button
+                        onClick={() => setNoteVerse({ ref: verseRef, text: verse.text })}
+                        title={verseNote ? 'Edit note' : 'Add note'}
+                        className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'}`}
+                      >
+                        <StickyNote size={14} fill={verseNote ? 'currentColor' : 'none'} />
+                      </button>
                     </div>
+                    <AnimatePresence initial={false}>
+                      {isExpanded && verseNote && (
+                        <motion.div
+                          key="note"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="w-full overflow-hidden"
+                        >
+                          <div className="mt-2 ml-[36px] rounded-lg border-l-4 border-l-amber-500 bg-amber-500/10 p-3">
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                <StickyNote size={12} />
+                                <span className="text-[10px] font-bold uppercase tracking-wide">Your Note</span>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setNoteVerse({ ref: verseRef, text: verse.text }); }}
+                                className="text-[10px] font-semibold text-primary hover:underline"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                            <p className="text-xs leading-relaxed text-foreground whitespace-pre-wrap">{verseNote.note}</p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
-                ))}
+                  );
+                })}
                 {verses.length === 0 && !loading && (
                   <p className="text-center text-muted-foreground py-12 text-sm">No verses found for this chapter.</p>
                 )}
