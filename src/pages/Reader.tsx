@@ -353,7 +353,7 @@ export default function Reader() {
                     >
                       {verse.text}
                     </p>
-                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div className={`flex gap-0.5 shrink-0 transition-opacity ${verseNote ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                       <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                         <Share2 size={14} />
                       </button>
