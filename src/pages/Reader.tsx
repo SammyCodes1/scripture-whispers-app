@@ -44,6 +44,7 @@ export default function Reader() {
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
   const [noteVerse, setNoteVerse] = useState<{ ref: string; text: string } | null>(null);
+  const [expandedNoteRef, setExpandedNoteRef] = useState<string | null>(null);
   const { getNote } = useNotes();
   const hasRestoredRef = useRef(false);
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
