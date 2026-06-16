@@ -354,7 +354,7 @@ export default function Reader() {
                       {verse.text}
                     </p>
                     <div className="flex gap-0.5 shrink-0">
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="hidden sm:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
                           <Share2 size={14} />
                         </button>
@@ -371,7 +371,7 @@ export default function Reader() {
                       <button
                         onClick={() => setNoteVerse({ ref: verseRef, text: verse.text })}
                         title={verseNote ? 'Edit note' : 'Add note'}
-                        className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10 opacity-100' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 opacity-0 group-hover:opacity-100'}`}
+                        className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10 opacity-100' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 opacity-0 group-hover:opacity-100 max-sm:hidden'}`}
                       >
                         <StickyNote size={14} fill={verseNote ? 'currentColor' : 'none'} />
                       </button>
