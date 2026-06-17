@@ -49,6 +49,49 @@ export default function Reader() {
   const hasRestoredRef = useRef(false);
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+
+  const toggleSelectVerse = (verseNum: number) => {
+    setSelectedVerses(prev => {
+      const next = new Set(prev);
+      if (next.has(verseNum)) next.delete(verseNum); else next.add(verseNum);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedVerses(new Set());
+  };
+
+  const copySelectedVerses = () => {
+    if (selectedVerses.size === 0) {
+      toast.info('Select at least one verse');
+      return;
+    }
+    const chosen = verses
+      .filter(v => selectedVerses.has(v.verse))
+      .sort((a, b) => a.verse - b.verse);
+    if (chosen.length === 0) return;
+    const nums = chosen.map(v => v.verse);
+    // Build a compact reference like "John 3:16-18, 20"
+    const ranges: string[] = [];
+    let start = nums[0], prev = nums[0];
+    for (let i = 1; i < nums.length; i++) {
+      if (nums[i] === prev + 1) { prev = nums[i]; continue; }
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      start = nums[i]; prev = nums[i];
+    }
+    ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+    const book = chosen[0].book_name;
+    const chapter = chosen[0].chapter;
+    const header = `${book} ${chapter}:${ranges.join(', ')} (${version.toUpperCase()})`;
+    const body = chosen.map(v => `${v.verse} ${v.text.trim()}`).join(' ');
+    navigator.clipboard.writeText(`${header}\n${body}`);
+    toast.success(`Copied ${chosen.length} verse${chosen.length > 1 ? 's' : ''}`);
+    exitSelectMode();
+  };
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
