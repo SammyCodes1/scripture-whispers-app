@@ -385,6 +385,7 @@ export default function Reader() {
                   const verseRef = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
                   const verseNote = getNote(verseRef);
                   const isExpanded = expandedNoteRef === verseRef;
+                  const isSelected = selectedVerses.has(verse.verse);
                   return (
                   <motion.div
                     key={i}
@@ -392,16 +393,19 @@ export default function Reader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
+                    onClick={selectMode ? () => toggleSelectVerse(verse.verse) : undefined}
                     className={`group flex flex-wrap gap-3 p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
                       targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
+                    } ${selectMode ? 'cursor-pointer' : ''} ${
+                      isSelected ? 'bg-primary/15 ring-2 ring-primary' : ''
                     }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
                     <p
-                      className={`verse-text text-sm flex-1 leading-relaxed ${verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
-                      onClick={() => verseNote && setExpandedNoteRef(isExpanded ? null : verseRef)}
+                      className={`verse-text text-sm flex-1 leading-relaxed ${!selectMode && verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
+                      onClick={(e) => { if (selectMode) return; if (verseNote) { e.stopPropagation(); setExpandedNoteRef(isExpanded ? null : verseRef); } }}
                     >
                       {verse.text}
                     </p>
