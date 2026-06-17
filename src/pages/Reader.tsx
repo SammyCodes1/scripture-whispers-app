@@ -278,6 +278,7 @@ export default function Reader() {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
           {view === 'reading' && verses.length > 0 && (
             <button
               onClick={() => { if (selectMode) exitSelectMode(); else setSelectMode(true); }}
