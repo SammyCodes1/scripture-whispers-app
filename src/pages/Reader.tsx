@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2, StickyNote } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2, StickyNote, CheckSquare, X } from 'lucide-react';
 import VerseNoteModal from '@/components/VerseNoteModal';
 import { useNotes } from '@/hooks/useNotes';
 
@@ -49,6 +49,49 @@ export default function Reader() {
   const hasRestoredRef = useRef(false);
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+
+  const toggleSelectVerse = (verseNum: number) => {
+    setSelectedVerses(prev => {
+      const next = new Set(prev);
+      if (next.has(verseNum)) next.delete(verseNum); else next.add(verseNum);
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedVerses(new Set());
+  };
+
+  const copySelectedVerses = () => {
+    if (selectedVerses.size === 0) {
+      toast.info('Select at least one verse');
+      return;
+    }
+    const chosen = verses
+      .filter(v => selectedVerses.has(v.verse))
+      .sort((a, b) => a.verse - b.verse);
+    if (chosen.length === 0) return;
+    const nums = chosen.map(v => v.verse);
+    // Build a compact reference like "John 3:16-18, 20"
+    const ranges: string[] = [];
+    let start = nums[0], prev = nums[0];
+    for (let i = 1; i < nums.length; i++) {
+      if (nums[i] === prev + 1) { prev = nums[i]; continue; }
+      ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+      start = nums[i]; prev = nums[i];
+    }
+    ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+    const book = chosen[0].book_name;
+    const chapter = chosen[0].chapter;
+    const header = `${book} ${chapter}:${ranges.join(', ')} (${version.toUpperCase()})`;
+    const body = chosen.map(v => `${v.verse} ${v.text.trim()}`).join(' ');
+    navigator.clipboard.writeText(`${header}\n${body}`);
+    toast.success(`Copied ${chosen.length} verse${chosen.length > 1 ? 's' : ''}`);
+    exitSelectMode();
+  };
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
@@ -236,6 +279,15 @@ export default function Reader() {
               )}
             </AnimatePresence>
           </div>
+          {view === 'reading' && verses.length > 0 && (
+            <button
+              onClick={() => { if (selectMode) exitSelectMode(); else setSelectMode(true); }}
+              className={`p-2 rounded-xl transition-all active:scale-95 ${selectMode ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-secondary/80 text-muted-foreground'}`}
+              title={selectMode ? 'Cancel selection' : 'Select multiple verses'}
+            >
+              {selectMode ? <X size={18} /> : <CheckSquare size={18} />}
+            </button>
+          )}
         </div>
       </div>
 
@@ -333,6 +385,7 @@ export default function Reader() {
                   const verseRef = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
                   const verseNote = getNote(verseRef);
                   const isExpanded = expandedNoteRef === verseRef;
+                  const isSelected = selectedVerses.has(verse.verse);
                   return (
                   <motion.div
                     key={i}
@@ -340,16 +393,19 @@ export default function Reader() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
+                    onClick={selectMode ? () => toggleSelectVerse(verse.verse) : undefined}
                     className={`group flex flex-wrap gap-3 p-3 rounded-xl transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
                     } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
                       targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
+                    } ${selectMode ? 'cursor-pointer' : ''} ${
+                      isSelected ? 'bg-primary/15 ring-2 ring-primary' : ''
                     }`}
                   >
                     <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
                     <p
-                      className={`verse-text text-sm flex-1 leading-relaxed ${verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
-                      onClick={() => verseNote && setExpandedNoteRef(isExpanded ? null : verseRef)}
+                      className={`verse-text text-sm flex-1 leading-relaxed ${!selectMode && verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
+                      onClick={(e) => { if (selectMode) return; if (verseNote) { e.stopPropagation(); setExpandedNoteRef(isExpanded ? null : verseRef); } }}
                     >
                       {verse.text}
                     </p>
@@ -426,7 +482,50 @@ export default function Reader() {
         verseText={noteVerse?.text ?? ''}
         onClose={() => setNoteVerse(null)}
       />
-       
+
+      <AnimatePresence>
+        {selectMode && view === 'reading' && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md"
+          >
+            <div className="flex items-center gap-2 bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-xl px-3 py-2">
+              <span className="text-sm font-semibold text-foreground px-2">
+                {selectedVerses.size} selected
+              </span>
+              <div className="ml-auto flex items-center gap-1.5">
+                {selectedVerses.size > 0 && (
+                  <button
+                    onClick={() => setSelectedVerses(new Set())}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-lg hover:bg-secondary/60 transition-all"
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  onClick={copySelectedVerses}
+                  disabled={selectedVerses.size === 0}
+                  className="flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95"
+                >
+                  <Copy size={14} />
+                  Copy
+                </button>
+                <button
+                  onClick={exitSelectMode}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+                  title="Cancel"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
