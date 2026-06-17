@@ -65,17 +65,13 @@ export default function Reader() {
     setSelectedVerses(new Set());
   };
 
-  const copySelectedVerses = () => {
-    if (selectedVerses.size === 0) {
-      toast.info('Select at least one verse');
-      return;
-    }
+  const buildSelection = () => {
+    if (selectedVerses.size === 0) return null;
     const chosen = verses
       .filter(v => selectedVerses.has(v.verse))
       .sort((a, b) => a.verse - b.verse);
-    if (chosen.length === 0) return;
+    if (chosen.length === 0) return null;
     const nums = chosen.map(v => v.verse);
-    // Build a compact reference like "John 3:16-18, 20"
     const ranges: string[] = [];
     let start = nums[0], prev = nums[0];
     for (let i = 1; i < nums.length; i++) {
@@ -86,12 +82,28 @@ export default function Reader() {
     ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
     const book = chosen[0].book_name;
     const chapter = chosen[0].chapter;
-    const header = `${book} ${chapter}:${ranges.join(', ')} (${version.toUpperCase()})`;
-    const body = chosen.map(v => `${v.verse} ${v.text.trim()}`).join(' ');
-    navigator.clipboard.writeText(`${header}\n${body}`);
-    toast.success(`Copied ${chosen.length} verse${chosen.length > 1 ? 's' : ''}`);
+    const ref = `${book} ${chapter}:${ranges.join(', ')}`;
+    const text = chosen.length === 1
+      ? chosen[0].text.trim()
+      : chosen.map(v => `${v.verse} ${v.text.trim()}`).join(' ');
+    return { ref, text, count: chosen.length };
+  };
+
+  const copySelectedVerses = () => {
+    const sel = buildSelection();
+    if (!sel) { toast.info('Select at least one verse'); return; }
+    navigator.clipboard.writeText(`${sel.ref} (${version.toUpperCase()})\n${sel.text}`);
+    toast.success(`Copied ${sel.count} verse${sel.count > 1 ? 's' : ''}`);
     exitSelectMode();
   };
+
+  const shareSelectedVerses = () => {
+    const sel = buildSelection();
+    if (!sel) { toast.info('Select at least one verse'); return; }
+    setShareVerse({ ref: sel.ref, text: sel.text });
+    exitSelectMode();
+  };
+
 
   const books = BIBLE_BOOKS.filter(b => b.testament === testament);
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook);
@@ -508,10 +520,18 @@ export default function Reader() {
                 <button
                   onClick={copySelectedVerses}
                   disabled={selectedVerses.size === 0}
-                  className="flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95"
+                  className="flex items-center gap-1.5 text-sm font-semibold bg-secondary text-secondary-foreground px-3 py-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-all active:scale-95"
                 >
                   <Copy size={14} />
                   Copy
+                </button>
+                <button
+                  onClick={shareSelectedVerses}
+                  disabled={selectedVerses.size === 0}
+                  className="flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95"
+                >
+                  <Share2 size={14} />
+                  Share
                 </button>
                 <button
                   onClick={exitSelectMode}
