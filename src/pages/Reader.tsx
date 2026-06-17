@@ -482,7 +482,50 @@ export default function Reader() {
         verseText={noteVerse?.text ?? ''}
         onClose={() => setNoteVerse(null)}
       />
-       
+
+      <AnimatePresence>
+        {selectMode && view === 'reading' && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md"
+          >
+            <div className="flex items-center gap-2 bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-xl px-3 py-2">
+              <span className="text-sm font-semibold text-foreground px-2">
+                {selectedVerses.size} selected
+              </span>
+              <div className="ml-auto flex items-center gap-1.5">
+                {selectedVerses.size > 0 && (
+                  <button
+                    onClick={() => setSelectedVerses(new Set())}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-lg hover:bg-secondary/60 transition-all"
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  onClick={copySelectedVerses}
+                  disabled={selectedVerses.size === 0}
+                  className="flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95"
+                >
+                  <Copy size={14} />
+                  Copy
+                </button>
+                <button
+                  onClick={exitSelectMode}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+                  title="Cancel"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
