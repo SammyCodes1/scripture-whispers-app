@@ -278,7 +278,15 @@ export default function Reader() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          {view === 'reading' && verses.length > 0 && (
+            <button
+              onClick={() => { if (selectMode) exitSelectMode(); else setSelectMode(true); }}
+              className={`p-2 rounded-xl transition-all active:scale-95 ${selectMode ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-secondary/80 text-muted-foreground'}`}
+              title={selectMode ? 'Cancel selection' : 'Select multiple verses'}
+            >
+              {selectMode ? <X size={18} /> : <CheckSquare size={18} />}
+            </button>
+          )}
         </div>
       </div>
 
