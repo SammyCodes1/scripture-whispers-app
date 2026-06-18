@@ -114,15 +114,15 @@ export default function Index() {
             <div className="p-1.5 rounded-lg bg-primary/10">
               <Flame size={16} className="text-primary" />
             </div>
-            <p className="text-[11px] uppercase tracking-[0.15em] text-accent-foreground/60 font-medium">Today's Confession</p>
+            <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground font-medium">Today's Confession</p>
           </div>
-          <p className="font-display text-base font-bold text-accent-foreground">{dailyConfession.title}</p>
-          <p className="text-sm leading-relaxed text-accent-foreground/85">{dailyConfession.confession}</p>
+          <p className="font-display text-base font-bold text-foreground">{dailyConfession.title}</p>
+          <p className="text-sm leading-relaxed text-foreground/90">{dailyConfession.confession}</p>
           <p className="text-xs italic text-muted-foreground">📖 {dailyConfession.scriptureRef}</p>
 
           <div className="border-t border-border/40 pt-4 mt-4">
-            <p className="text-[11px] uppercase tracking-[0.15em] text-accent-foreground/60 mb-2 font-medium">🙏 Today's Prayer</p>
-            <p className="text-sm leading-relaxed text-accent-foreground/85">{dailyPrayer.prayer}</p>
+            <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-2 font-medium">🙏 Today's Prayer</p>
+            <p className="text-sm leading-relaxed text-foreground/90">{dailyPrayer.prayer}</p>
             <p className="text-xs italic text-muted-foreground mt-1">📖 {dailyPrayer.scriptureRef}</p>
           </div>
 
