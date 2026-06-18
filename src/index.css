@@ -170,17 +170,17 @@
 
   [data-theme="royal"] {
     --background: 270 25% 10%;
-    --foreground: 45 40% 90%;
+    --foreground: 45 40% 96%;
     --card: 270 22% 14%;
-    --card-foreground: 45 40% 90%;
+    --card-foreground: 45 40% 96%;
     --popover: 270 22% 14%;
-    --popover-foreground: 45 40% 90%;
+    --popover-foreground: 45 40% 96%;
     --primary: 45 85% 55%;
     --primary-foreground: 270 25% 10%;
     --secondary: 270 18% 20%;
-    --secondary-foreground: 45 30% 85%;
+    --secondary-foreground: 45 30% 92%;
     --muted: 270 15% 18%;
-    --muted-foreground: 270 10% 50%;
+    --muted-foreground: 270 10% 70%;
     --accent: 35 80% 50%;
     --accent-foreground: 270 25% 10%;
     --destructive: 0 70% 50%;
