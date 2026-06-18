@@ -11,6 +11,8 @@ export const THEMES = [
   { id: 'royal', name: 'Royal', emoji: '👑' },
   { id: 'sunset', name: 'Sunset', emoji: '🌅' },
   { id: 'marble', name: 'Marble', emoji: '🏛️' },
+  { id: 'ios-glass-light', name: 'iOS Glass Light', emoji: '🫧' },
+  { id: 'ios-glass-dark', name: 'iOS Glass Dark', emoji: '🌌' },
 ] as const;
 
 export const BIBLE_VERSIONS = [
