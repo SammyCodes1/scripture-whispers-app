@@ -82,7 +82,7 @@ export default function BibleMaps() {
           <button
             onClick={pause}
             title="Pause download"
-            className="flex items-center gap-1.5 px-3 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs font-semibold hover:bg-amber-500/25 transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-amber-500/15 text-amber-500 text-xs font-semibold hover:bg-amber-500/25 transition-all whitespace-nowrap"
           >
             <Pause size={14} />
             <span className="tabular-nums">{progress.current}/{progress.total}</span>
@@ -100,7 +100,7 @@ export default function BibleMaps() {
           <button
             onClick={handleDownloadAll}
             title="All images saved for offline use"
-            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-semibold whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-500 text-xs font-semibold whitespace-nowrap"
           >
             <Check size={14} /> Saved
           </button>
