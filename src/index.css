@@ -234,6 +234,52 @@
     --ring: 210 15% 35%;
   }
 
+  /* iOS 26 Liquid Glass — Light */
+  [data-theme="ios-glass-light"] {
+    --background: 220 60% 97%;
+    --foreground: 220 25% 12%;
+    --card: 220 50% 100%;
+    --card-foreground: 220 25% 12%;
+    --popover: 220 50% 100%;
+    --popover-foreground: 220 25% 12%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 30% 94%;
+    --secondary-foreground: 220 25% 12%;
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 12% 42%;
+    --accent: 280 85% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 30% 90%;
+    --input: 220 30% 90%;
+    --ring: 211 100% 50%;
+  }
+
+  /* iOS 26 Liquid Glass — Dark */
+  [data-theme="ios-glass-dark"] {
+    --background: 230 25% 7%;
+    --foreground: 220 15% 95%;
+    --card: 230 22% 12%;
+    --card-foreground: 220 15% 95%;
+    --popover: 230 22% 12%;
+    --popover-foreground: 220 15% 95%;
+    --primary: 211 100% 60%;
+    --primary-foreground: 230 25% 8%;
+    --secondary: 230 18% 18%;
+    --secondary-foreground: 220 15% 92%;
+    --muted: 230 15% 16%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 280 90% 70%;
+    --accent-foreground: 230 25% 8%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 18% 20%;
+    --input: 230 18% 20%;
+    --ring: 211 100% 60%;
+  }
+
   * {
     @apply border-border;
   }
@@ -243,6 +289,39 @@
     font-family: 'Lora', serif;
     transition: background-color 0.4s ease, color 0.4s ease;
   }
+
+  /* Liquid Glass iridescent backdrop */
+  [data-theme="ios-glass-light"] body {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 12% 18%, hsla(211, 100%, 70%, 0.28) 0px, transparent 55%),
+      radial-gradient(at 88% 22%, hsla(280, 90%, 78%, 0.25) 0px, transparent 55%),
+      radial-gradient(at 75% 90%, hsla(180, 90%, 70%, 0.22) 0px, transparent 55%),
+      radial-gradient(at 20% 85%, hsla(330, 90%, 78%, 0.22) 0px, transparent 55%);
+    background-attachment: fixed;
+  }
+
+  [data-theme="ios-glass-dark"] body {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 15% 20%, hsla(211, 100%, 50%, 0.30) 0px, transparent 55%),
+      radial-gradient(at 85% 15%, hsla(280, 90%, 55%, 0.28) 0px, transparent 55%),
+      radial-gradient(at 80% 88%, hsla(190, 90%, 50%, 0.22) 0px, transparent 55%),
+      radial-gradient(at 18% 82%, hsla(330, 80%, 55%, 0.22) 0px, transparent 55%);
+    background-attachment: fixed;
+  }
+
+  [data-theme="ios-glass-light"] .glass-card,
+  [data-theme="ios-glass-dark"] .glass-card {
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    background-color: hsl(var(--card) / 0.55);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.15) inset,
+      0 8px 32px -8px hsl(220 50% 10% / 0.18);
+  }
+
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Cormorant Garamond', serif;
