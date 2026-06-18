@@ -148,17 +148,17 @@
 
   [data-theme="ocean"] {
     --background: 205 40% 12%;
-    --foreground: 200 20% 92%;
+    --foreground: 200 20% 96%;
     --card: 205 35% 16%;
-    --card-foreground: 200 20% 92%;
+    --card-foreground: 200 20% 96%;
     --popover: 205 35% 16%;
-    --popover-foreground: 200 20% 92%;
+    --popover-foreground: 200 20% 96%;
     --primary: 190 75% 48%;
     --primary-foreground: 205 40% 8%;
     --secondary: 205 30% 22%;
-    --secondary-foreground: 200 20% 88%;
+    --secondary-foreground: 200 20% 93%;
     --muted: 205 25% 20%;
-    --muted-foreground: 200 15% 55%;
+    --muted-foreground: 200 15% 70%;
     --accent: 170 60% 45%;
     --accent-foreground: 205 40% 8%;
     --destructive: 0 70% 50%;
