@@ -456,7 +456,7 @@ export default function Reader() {
                         >
                           <div className="mt-2 ml-[36px] rounded-lg border-l-4 border-l-amber-500 bg-amber-500/10 p-3">
                             <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                              <div className="flex items-center gap-1.5 text-amber-500">
                                 <StickyNote size={12} />
                                 <span className="text-[10px] font-bold uppercase tracking-wide">Your Note</span>
                               </div>
