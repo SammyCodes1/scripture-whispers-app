@@ -100,7 +100,7 @@ export default function BibleMaps() {
           <button
             onClick={handleDownloadAll}
             title="All images saved for offline use"
-            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-xs font-semibold whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-500 text-xs font-semibold whitespace-nowrap"
           >
             <Check size={14} /> Saved
           </button>
