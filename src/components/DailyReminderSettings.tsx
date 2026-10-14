@@ -74,8 +74,8 @@ export default function DailyReminderSettings() {
 
         <p className="text-[11px] text-muted-foreground">
           {settings.enabled
-            ? `You'll be reminded daily at ${String(settings.hour).padStart(2, '0')}:${String(settings.minute).padStart(2, '0')} to read.`
-            : 'Enable to get a daily notification to keep your streak going.'}
+            ? `While HolyWord is open, you'll be notified at ${String(settings.hour).padStart(2, '0')}:${String(settings.minute).padStart(2, '0')}.`
+            : 'Enable to get a notification while the app is open, so you can keep your streak going.'}
         </p>
       </div>
     </section>

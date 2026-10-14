@@ -2,6 +2,60 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
+const REMINDER_KEY = 'hw-daily-reminder';
+const LAST_SHOWN_KEY = 'hw-reminder-last-shown';
+
+function localDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** Fires the reminder on every page while the app is open. Settings only stores the time. */
+export function DailyReminderWatcher() {
+  useEffect(() => {
+    const check = () => {
+      let settings: ReminderSettings | null = null;
+      try {
+        const raw = localStorage.getItem(REMINDER_KEY);
+        settings = raw ? JSON.parse(raw) : null;
+      } catch {
+        return;
+      }
+      if (!settings?.enabled) return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+      const now = new Date();
+      const today = localDate(now);
+      const lastShown = localStorage.getItem(LAST_SHOWN_KEY);
+      const minute = now.getMinutes();
+      if (
+        lastShown !== today &&
+        now.getHours() === settings.hour &&
+        minute >= settings.minute &&
+        minute < settings.minute + 2
+      ) {
+        new Notification('📖 HolyWord', {
+          body: 'Time for your daily Bible reading! Keep your streak going 🔥',
+          icon: '/favicon.ico',
+        });
+        localStorage.setItem(LAST_SHOWN_KEY, today);
+      }
+    };
+
+    check();
+    const interval = setInterval(check, 30_000);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, []);
+
+  return null;
+}
+
 interface ReminderSettings {
   enabled: boolean;
   hour: number; // 0-23
@@ -44,35 +98,6 @@ export function useDailyReminder() {
   const updateTime = useCallback((hour: number, minute: number) => {
     setSettings(prev => ({ ...prev, hour, minute }));
   }, [setSettings]);
-
-  // Check & fire notification
-  useEffect(() => {
-    if (!settings.enabled) return;
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-
-    const check = () => {
-      const now = new Date();
-      const lastShown = localStorage.getItem('hw-reminder-last-shown');
-      const today = now.toISOString().split('T')[0];
-
-      if (
-        lastShown !== today &&
-        now.getHours() === settings.hour &&
-        now.getMinutes() >= settings.minute &&
-        now.getMinutes() < settings.minute + 2
-      ) {
-        new Notification('📖 HolyWord', {
-          body: 'Time for your daily Bible reading! Keep your streak going 🔥',
-          icon: '/favicon.ico',
-        });
-        localStorage.setItem('hw-reminder-last-shown', today);
-      }
-    };
-
-    check();
-    const interval = setInterval(check, 60_000); // check every minute
-    return () => clearInterval(interval);
-  }, [settings]);
 
   return { settings, enableReminder, disableReminder, updateTime };
 }

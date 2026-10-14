@@ -4,22 +4,9 @@ import { Search, Loader2, WifiOff } from 'lucide-react';
 import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
 import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
-import { BIBLE_BOOKS } from '@/data/bibleData';
+import { parseVerseRef } from '@/lib/verseRef';
 
-function parseReference(ref: string): { book: string; chapter: number; verse: number } | null {
-  // Match "Book Name 1:2" — book may contain spaces and digits like "1 Kings"
-  const m = ref.match(/^(.+?)\s+(\d+):(\d+)/);
-  if (!m) return null;
-  const bookRaw = m[1].trim();
-  const chapter = parseInt(m[2], 10);
-  const verse = parseInt(m[3], 10);
-  // Find a matching book (case-insensitive, allow partial)
-  const book = BIBLE_BOOKS.find(b => b.name.toLowerCase() === bookRaw.toLowerCase())
-    || BIBLE_BOOKS.find(b => b.name.toLowerCase().startsWith(bookRaw.toLowerCase()))
-    || BIBLE_BOOKS.find(b => bookRaw.toLowerCase().startsWith(b.name.toLowerCase()));
-  if (!book) return null;
-  return { book: book.name, chapter, verse };
-}
+const CACHED_SEARCH_VERSIONS = new Set(['web', 'bbe']);
 
 interface SearchResult {
   ref: string;
@@ -31,7 +18,7 @@ export default function SearchPage() {
   const navigate = useNavigate();
 
   const openVerse = (ref: string) => {
-    const parsed = parseReference(ref);
+    const parsed = parseVerseRef(ref);
     if (!parsed) return;
     navigate(`/read?book=${encodeURIComponent(parsed.book)}&chapter=${parsed.chapter}&verse=${parsed.verse}`);
   };
@@ -41,37 +28,52 @@ export default function SearchPage() {
   const [searched, setSearched] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [searchedOffline, setSearchedOffline] = useState(false);
+  const [needsDownload, setNeedsDownload] = useState(false);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  const applyOfflineResults = (mapped: SearchResult[], count: number, downloaded: boolean) => {
+    setResults(mapped);
+    setTotalCount(count);
+    setSearchedOffline(true);
+    setNeedsDownload(!downloaded && count === 0);
+  };
+
+  const handleSearch = async (term?: string) => {
+    const q = (term ?? query).trim();
+    if (!q) return;
+    if (term) setQuery(term);
     setLoading(true);
     setSearched(true);
     setSearchedOffline(false);
+    setNeedsDownload(false);
 
-    // Try online search first
+    const mapOffline = (results: { reference: string; text: string }[]) =>
+      results.map(r => ({ ref: r.reference, text: r.text }));
+
     try {
-      const data = await searchBible(query.trim(), version, 50);
-      const mapped = (data.results || []).map((r: ApiSearchResult) => ({
-        ref: r.reference || `${r.book_name} ${r.chapter}:${r.verse}`,
-        text: r.text,
-      }));
-      setResults(mapped);
-      setTotalCount(data.count || mapped.length);
-    } catch {
-      // Online failed — try offline search
-      try {
-        const offlineData = await searchCachedBible(query.trim(), version, 50);
-        const mapped = offlineData.results.map(r => ({
-          ref: r.reference,
-          text: r.text,
-        }));
-        setResults(mapped);
-        setTotalCount(offlineData.count);
-        setSearchedOffline(true);
-      } catch {
-        setResults([]);
-        setTotalCount(0);
+      if (CACHED_SEARCH_VERSIONS.has(version)) {
+        const [offlineData, downloaded] = await Promise.all([
+          searchCachedBible(q, version, 50),
+          isFullyDownloaded(version),
+        ]);
+        applyOfflineResults(mapOffline(offlineData.results), offlineData.count, downloaded);
+      } else {
+        try {
+          const data = await searchBible(q, version, 50);
+          const mapped = (data.results || []).map((r: ApiSearchResult) => ({
+            ref: r.reference || `${r.book_name} ${r.chapter}:${r.verse}`,
+            text: r.text,
+          }));
+          setResults(mapped);
+          setTotalCount(data.count || mapped.length);
+        } catch {
+          const offlineData = await searchCachedBible(q, version, 50);
+          const downloaded = await isFullyDownloaded(version);
+          applyOfflineResults(mapOffline(offlineData.results), offlineData.count, downloaded);
+        }
       }
+    } catch {
+      setResults([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -91,13 +93,13 @@ export default function SearchPage() {
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            onKeyDown={e => { if (e.key === 'Enter') void handleSearch(); }}
             placeholder="Search by verse, keyword, or topic..."
             className="w-full rounded-lg bg-card border border-input pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <button
-          onClick={handleSearch}
+          onClick={() => { void handleSearch(); }}
           disabled={loading}
           className="shrink-0 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition disabled:opacity-50 active:scale-95"
         >
@@ -115,7 +117,7 @@ export default function SearchPage() {
             {['love', 'faith', 'peace', 'strength', 'forgiveness', 'hope', 'prayer'].map(term => (
               <button
                 key={term}
-                onClick={() => { setQuery(term); }}
+                onClick={() => { void handleSearch(term); }}
                 className="px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground text-xs hover:bg-primary hover:text-primary-foreground transition-colors active:scale-95"
               >
                 {term}
@@ -150,7 +152,9 @@ export default function SearchPage() {
             ))}
             {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8 px-4 leading-relaxed">
-                No verses found. Try a different keyword{!searchedOffline ? '' : ' or download the Bible for offline search'}.
+                {needsDownload
+                  ? `Download ${versionName} in Settings to search it. This version is searched from the chapters saved on this device.`
+                  : 'No verses found. Try a different keyword.'}
               </p>
             )}
           </div>

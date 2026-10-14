@@ -108,11 +108,9 @@ export async function searchBible(query: string, translation: string = 'kjv', li
     return res.json();
   }
   const apiBase = getApiBase(translation);
+  // bible-api.com has no search. Callers search the downloaded WEB or BBE text.
   if (apiBase === FALLBACK_API) {
-    const url = `${PRIMARY_API}/api/search?q=${encodeURIComponent(query)}&translation=kjv&limit=${limit}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to search: ${res.status}`);
-    return res.json();
+    throw new Error('OFFLINE_SEARCH_ONLY');
   }
   const url = `${PRIMARY_API}/api/search?q=${encodeURIComponent(query)}&translation=${translation}&limit=${limit}`;
   const res = await fetch(url);

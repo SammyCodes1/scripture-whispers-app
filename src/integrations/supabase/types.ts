@@ -103,6 +103,85 @@ export type Database = {
         }
         Relationships: []
       }
+      post_likes: {
+        Row: {
+          created_at: string
+          device_id: string
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
+      prayer_marks: {
+        Row: {
+          created_at: string
+          device_id: string
+          prayer_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          prayer_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          prayer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_marks_prayer_id_fkey"
+            columns: ["prayer_id"]
+            isOneToOne: false
+            referencedRelation: "prayer_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      },
+      prayer_requests: {
+        Row: {
+          author_name: string
+          created_at: string
+          device_id: string | null
+          id: string
+          prayed_count: number
+          request: string
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          prayed_count?: number
+          request: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          prayed_count?: number
+          request?: string
+        }
+        Relationships: []
+      },
       notifications: {
         Row: {
           actor_name: string
@@ -227,7 +306,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrement_legacy_post_like: {
+        Args: {
+          p_post_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

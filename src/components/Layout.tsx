@@ -143,14 +143,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Bottom navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/50 bg-background/90 backdrop-blur-lg">
-        <div className="flex items-center justify-around max-w-4xl mx-auto h-16 px-2">
+        <div className="flex items-center max-w-4xl mx-auto h-16 px-1">
           {NAV_ITEMS.map(item => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all active:scale-95 ${
+                className={`relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 rounded-xl transition-all active:scale-95 sm:px-2 ${
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -162,7 +162,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   />
                 )}
                 <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-                <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
+                <span className={`max-w-full truncate text-[10px] ${isActive ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
               </Link>
             );
           })}

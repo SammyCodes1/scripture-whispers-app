@@ -2,20 +2,42 @@ import { useState } from 'react';
 import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/contexts/ThemeContext';
 import { Trash2, Check, Type } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import DailyReminderSettings from '@/components/DailyReminderSettings';
 import VoiceSettings from '@/components/VoiceSettings';
 import AudioSpeedSettings from '@/components/AudioSpeedSettings';
 import OfflineDownload from '@/components/OfflineDownload';
 import AdminAnnouncementPanel from '@/components/AdminAnnouncementPanel';
 
+function deleteDatabase(name: string) {
+  return new Promise<void>((resolve) => {
+    const request = indexedDB.deleteDatabase(name);
+    request.onsuccess = () => resolve();
+    request.onerror = () => resolve();
+    request.onblocked = () => resolve();
+  });
+}
+
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    const deviceId = localStorage.getItem('hw-device-id');
+    if (deviceId) {
+      const { error } = await supabase.from('community_posts').delete().eq('device_id', deviceId);
+      if (error) toast.error('Community posts on the server could not be deleted. Local data will still be cleared.');
+      const { error: prayerError } = await supabase.from('prayer_requests').delete().eq('device_id', deviceId);
+      if (prayerError && prayerError.code !== 'PGRST205' && prayerError.code !== '42P01') {
+        toast.error('Prayers on the server could not be deleted. Local data will still be cleared.');
+      }
+    }
+    await Promise.all([
+      'holyword-bible-cache',
+      'hw-offline-files',
+      'hw-location-images',
+    ].map(deleteDatabase));
     localStorage.clear();
-    toast.success('All data has been deleted');
-    setShowDeleteConfirm(false);
     window.location.reload();
   };
 
@@ -134,7 +156,7 @@ export default function SettingsPage() {
       <section className="border-t border-border pt-5 sm:pt-6">
         <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-2">Danger Zone</h3>
         <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed">
-          Delete all your data including bookmarks, highlights, and community posts.
+          Deletes bookmarks, highlights, notes, offline Bibles, saved map images, and community posts from this device.
         </p>
 
         {!showDeleteConfirm ? (

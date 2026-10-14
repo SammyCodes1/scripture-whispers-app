@@ -10,6 +10,7 @@ export default function AdminAnnouncementPanel() {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [secret, setSecret] = useState('');
   const [sending, setSending] = useState(false);
 
   const handleUnlock = () => {
@@ -25,17 +26,28 @@ export default function AdminAnnouncementPanel() {
       toast.error('Subject and message are required');
       return;
     }
+    if (!secret.trim()) {
+      toast.error('Enter the broadcast secret');
+      return;
+    }
     setSending(true);
     try {
-      const { error } = await supabase.from('announcements').insert({
-        subject: subject.trim(),
-        message: message.trim(),
-        sender_email: ADMIN_EMAIL,
+      const { data, error } = await supabase.functions.invoke('broadcast-announcement', {
+        body: {
+          subject: subject.trim(),
+          message: message.trim(),
+          sender_email: ADMIN_EMAIL,
+          secret: secret.trim(),
+        },
       });
-      if (error) throw error;
+      if (error || (data && typeof data === 'object' && 'error' in data && data.error)) {
+        toast.error('Announcement was rejected. Check the secret, and confirm BROADCAST_SECRET is set on the server.');
+        return;
+      }
       toast.success('Announcement sent to all users!');
       setSubject('');
       setMessage('');
+      setSecret('');
     } catch {
       toast.error('Failed to send announcement');
     } finally {
@@ -85,9 +97,20 @@ export default function AdminAnnouncementPanel() {
             rows={3}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           />
+          <input
+            type="password"
+            value={secret}
+            onChange={e => setSecret(e.target.value)}
+            placeholder="Broadcast secret"
+            autoComplete="off"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            The secret stays in this box. It is checked by the server and is not saved in the app.
+          </p>
           <button
             onClick={handleSend}
-            disabled={sending || !subject.trim() || !message.trim()}
+            disabled={sending || !subject.trim() || !message.trim() || !secret.trim()}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
           >
             <Send size={16} />

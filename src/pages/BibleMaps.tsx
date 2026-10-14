@@ -1,4 +1,6 @@
 import { useState, useMemo, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { versePath } from '@/lib/verseRef';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Mountain, Waves, Globe2, Loader2, X, BookOpen, Search, Download, Check, Pause, Play } from 'lucide-react';
 import { BIBLICAL_LOCATIONS, LOCATION_CATEGORIES, type BiblicalLocation } from '@/data/biblicalLocations';
@@ -17,6 +19,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function BibleMaps() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<BiblicalLocation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,18 +40,6 @@ export default function BibleMaps() {
     }
     return locs;
   }, [selectedCategory, searchQuery]);
-
-  // Auto-dive into the first match while typing a search.
-  const handleSearch = (q: string) => {
-    setSearchQuery(q);
-    if (q.trim().length >= 2) {
-      const match = BIBLICAL_LOCATIONS.find(l =>
-        l.name.toLowerCase().includes(q.toLowerCase()) ||
-        l.modernName?.toLowerCase().includes(q.toLowerCase())
-      );
-      if (match) setSelectedLocation(match);
-    }
-  };
 
   const handleDownloadAll = async () => {
     try {
@@ -74,7 +65,7 @@ export default function BibleMaps() {
           <Input
             placeholder="Search locations, verses…"
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 rounded-xl bg-secondary/40 border-border/60"
           />
         </div>
@@ -221,11 +212,26 @@ export default function BibleMaps() {
                 <BookOpen size={12} /> Key Verses
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {selectedLocation.verses.map(v => (
-                  <span key={v} className="text-xs px-2.5 py-1 bg-secondary/60 text-secondary-foreground rounded-full font-medium">
-                    {v}
-                  </span>
-                ))}
+                {selectedLocation.verses.map(v => {
+                  const path = versePath(v);
+                  if (!path) {
+                    return (
+                      <span key={v} className="text-xs px-2.5 py-1 bg-secondary/60 text-secondary-foreground rounded-full font-medium">
+                        {v}
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => navigate(path)}
+                      className="text-xs px-2.5 py-1 bg-secondary/60 text-secondary-foreground rounded-full font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      {v}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

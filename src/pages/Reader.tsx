@@ -51,6 +51,9 @@ export default function Reader() {
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [selectMode, setSelectMode] = useState(false);
   const [selectedVerses, setSelectedVerses] = useState<Set<number>>(new Set());
+  const [compareVersion, setCompareVersion] = useLocalStorage<string>('hw-compare-version', '');
+  const [compareTexts, setCompareTexts] = useState<Record<number, string>>({});
+  const [compareLoading, setCompareLoading] = useState(false);
 
   const toggleSelectVerse = (verseNum: number) => {
     setSelectedVerses(prev => {
@@ -181,6 +184,36 @@ export default function Reader() {
     return () => { cancelled = true; };
   }, [selectedBook, selectedChapter, version, view]);
 
+  useEffect(() => {
+    if (compareVersion && compareVersion === version) setCompareVersion('');
+  }, [compareVersion, version, setCompareVersion]);
+
+  useEffect(() => {
+    if (!selectedBook || !selectedChapter || view !== 'reading' || !compareVersion || compareVersion === version) {
+      setCompareTexts({});
+      setCompareLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setCompareLoading(true);
+    fetchChapterCached(selectedBook, selectedChapter, compareVersion)
+      .then(data => {
+        if (cancelled) return;
+        const next: Record<number, string> = {};
+        for (const item of data.verses || []) next[item.verse] = item.text;
+        setCompareTexts(next);
+      })
+      .catch(err => {
+        if (!cancelled) {
+          console.error('Comparison load error:', err);
+          setCompareTexts({});
+          toast.error('Could not load the comparison.');
+        }
+      })
+      .finally(() => { if (!cancelled) setCompareLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedBook, selectedChapter, compareVersion, version, view]);
+
   // Scroll to and briefly highlight the target verse after verses load
   useEffect(() => {
     if (!targetVerse || verses.length === 0) return;
@@ -220,7 +253,11 @@ export default function Reader() {
   const copyVerse = (index: number) => {
     const verse = verses[index];
     if (!verse) return;
-    navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse}\n${verse.text}`);
+    const other = compareVersion ? compareTexts[verse.verse] : '';
+    const body = other
+      ? `${verse.text.trim()}\n\n${compareVersion.toUpperCase()}\n${other.trim()}`
+      : verse.text;
+    navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse} (${version.toUpperCase()})\n${body}`);
     toast.success('Verse copied to clipboard');
   };
 
@@ -233,21 +270,21 @@ export default function Reader() {
   return (
     <div className="fade-in">
       {/* Header bar */}
-      <div className="flex items-center gap-2 mb-5">
+      <div className="mb-5 flex min-w-0 items-center gap-2">
         {view !== 'books' && (
           <button
             onClick={() => { stop(); setView(view === 'reading' ? 'chapters' : 'books'); setVerses([]); }}
-            className="p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
+            className="shrink-0 p-2 rounded-xl hover:bg-secondary/80 text-foreground transition-all active:scale-95"
           >
             <ChevronLeft size={20} />
           </button>
         )}
-        <h2 className="font-display text-xl font-bold text-foreground tracking-tight">
+        <h2 className="min-w-0 flex-1 truncate font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
           {view === 'books' && 'Select a Book'}
           {view === 'chapters' && selectedBook}
           {view === 'reading' && `${selectedBook} ${selectedChapter}`}
         </h2>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           {view === 'reading' && verses.length > 0 && (
             <button
               onClick={toggle}
@@ -302,6 +339,34 @@ export default function Reader() {
           )}
         </div>
       </div>
+
+      {view === 'reading' && (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-medium text-muted-foreground">Compare</span>
+          <button
+            type="button"
+            onClick={() => setCompareVersion('')}
+            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
+              !compareVersion ? 'bg-primary text-primary-foreground' : 'bg-secondary/70 text-secondary-foreground'
+            }`}
+          >
+            Off
+          </button>
+          {BIBLE_VERSIONS.filter(item => item.id !== version).map(item => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setCompareVersion(item.id)}
+              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition active:scale-95 ${
+                compareVersion === item.id ? 'bg-primary text-primary-foreground' : 'bg-secondary/70 text-secondary-foreground'
+              }`}
+            >
+              {item.name}
+            </button>
+          ))}
+          {compareLoading && <span className="text-[11px] text-muted-foreground">Loading…</span>}
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {view === 'books' && (
@@ -392,7 +457,7 @@ export default function Reader() {
                 <Loader2 className="animate-spin text-primary" size={32} />
               </div>
             ) : (
-              <div className="space-y-0.5">
+              <div className={`space-y-0.5 ${selectMode ? 'pb-28' : ''}`}>
                 {verses.map((verse, i) => {
                   const verseRef = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
                   const verseNote = getNote(verseRef);
@@ -406,44 +471,65 @@ export default function Reader() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.01, duration: 0.3 }}
                     onClick={selectMode ? () => toggleSelectVerse(verse.verse) : undefined}
-                    className={`group flex flex-wrap gap-3 p-3 rounded-xl transition-colors ${
+                    className={`group flex w-full min-w-0 max-w-full flex-wrap gap-3 rounded-xl p-3 transition-colors ${
                       isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
-                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-primary/30' : ''} ${
-                      targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-primary/50' : ''
+                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-inset ring-primary/30' : ''} ${
+                      targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-inset ring-primary/50' : ''
                     } ${selectMode ? 'cursor-pointer' : ''} ${
-                      isSelected ? 'bg-primary/15 ring-2 ring-primary' : ''
+                      isSelected ? 'bg-primary/15 ring-2 ring-inset ring-primary' : ''
                     }`}
                   >
-                    <span className="text-xs font-bold text-primary mt-1 min-w-[24px] tabular-nums">{verse.verse}</span>
-                    <p
-                      className={`verse-text text-sm flex-1 leading-relaxed ${!selectMode && verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
-                      onClick={(e) => { if (selectMode) return; if (verseNote) { e.stopPropagation(); setExpandedNoteRef(isExpanded ? null : verseRef); } }}
-                    >
-                      {verse.text}
-                    </p>
-                    <div className="flex gap-0.5 shrink-0">
-                      <div className="hidden sm:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image">
+                    <span className="mt-1 min-w-[24px] shrink-0 text-xs font-bold tabular-nums text-primary">{verse.verse}</span>
+                    <div className={`min-w-0 flex-1 basis-0 ${compareVersion ? 'sm:grid sm:grid-cols-2 sm:gap-4' : ''}`}>
+                      <div className="min-w-0">
+                        {compareVersion && (
+                          <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-primary">{version.toUpperCase()}</p>
+                        )}
+                        <p
+                          className={`verse-text break-words text-sm leading-relaxed ${!selectMode && verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
+                          onClick={(e) => { if (selectMode) return; if (verseNote) { e.stopPropagation(); setExpandedNoteRef(isExpanded ? null : verseRef); } }}
+                        >
+                          {verse.text}
+                        </p>
+                      </div>
+                      {compareVersion && (
+                        <div className="mt-2 min-w-0 border-t border-border/50 pt-2 sm:mt-0 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+                          <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{compareVersion.toUpperCase()}</p>
+                          <p className="verse-text break-words text-sm leading-relaxed text-muted-foreground">
+                            {compareTexts[verse.verse] || (compareLoading ? '…' : 'This verse is not in that translation.')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {!selectMode && (
+                      <div
+                        className={`flex w-full basis-full justify-end gap-0.5 sm:w-auto sm:basis-auto sm:shrink-0 ${
+                          verseNote ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100'
+                        }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button onClick={() => openShare(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Share as image" aria-label="Share verse">
                           <Share2 size={14} />
                         </button>
-                        <button onClick={() => copyVerse(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Copy">
+                        <button onClick={() => copyVerse(i)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all" title="Copy" aria-label="Copy verse">
                           <Copy size={14} />
                         </button>
-                        <button onClick={() => saveVerse(i, 'bookmark')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'bookmark') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`}>
+                        <button onClick={() => saveVerse(i, 'bookmark')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'bookmark') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`} title="Bookmark" aria-label="Bookmark verse">
                           <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
                         </button>
-                        <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`}>
+                        <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`} title="Highlight" aria-label="Highlight verse">
                           <Highlighter size={14} />
                         </button>
+                        <button
+                          onClick={() => setNoteVerse({ ref: verseRef, text: verse.text })}
+                          title={verseNote ? 'Edit note' : 'Add note'}
+                          aria-label={verseNote ? 'Edit note' : 'Add note'}
+                          className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'}`}
+                        >
+                          <StickyNote size={14} fill={verseNote ? 'currentColor' : 'none'} />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setNoteVerse({ ref: verseRef, text: verse.text })}
-                        title={verseNote ? 'Edit note' : 'Add note'}
-                        className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10 opacity-100' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 opacity-0 group-hover:opacity-100 max-sm:hidden'}`}
-                      >
-                        <StickyNote size={14} fill={verseNote ? 'currentColor' : 'none'} />
-                      </button>
-                    </div>
+                    )}
                     <AnimatePresence initial={false}>
                       {isExpanded && verseNote && (
                         <motion.div
@@ -502,17 +588,59 @@ export default function Reader() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md"
+            className="fixed inset-x-3 bottom-20 z-50 mx-auto w-auto max-w-md"
           >
-            <div className="flex items-center gap-2 bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-xl px-3 py-2">
-              <span className="text-sm font-semibold text-foreground px-2">
-                {selectedVerses.size} selected
-              </span>
-              <div className="ml-auto flex items-center gap-1.5">
+            <div className="rounded-2xl border border-border/60 bg-card/95 px-3 py-2.5 shadow-xl backdrop-blur-xl">
+              <div className="flex items-center gap-2">
+                <span className="min-w-0 truncate text-sm font-semibold text-foreground">
+                  {selectedVerses.size} selected
+                </span>
+                <div className="ml-auto hidden items-center gap-1.5 sm:flex">
+                  {selectedVerses.size > 0 && (
+                    <button
+                      onClick={() => setSelectedVerses(new Set())}
+                      className="rounded-lg px-2 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary/60 hover:text-foreground"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    onClick={copySelectedVerses}
+                    disabled={selectedVerses.size === 0}
+                    className="flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-sm font-semibold text-secondary-foreground transition-all hover:bg-secondary/80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Copy size={14} />
+                    Copy
+                  </button>
+                  <button
+                    onClick={shareSelectedVerses}
+                    disabled={selectedVerses.size === 0}
+                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Share2 size={14} />
+                    Share
+                  </button>
+                  <button
+                    onClick={exitSelectMode}
+                    className="rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-secondary/60 hover:text-foreground"
+                    title="Cancel"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                <button
+                  onClick={exitSelectMode}
+                  className="ml-auto shrink-0 rounded-lg p-1.5 text-muted-foreground transition-all hover:bg-secondary/60 hover:text-foreground sm:hidden"
+                  title="Cancel"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className={`mt-2 grid gap-1.5 sm:hidden ${selectedVerses.size > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {selectedVerses.size > 0 && (
                   <button
                     onClick={() => setSelectedVerses(new Set())}
-                    className="text-xs font-semibold text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-lg hover:bg-secondary/60 transition-all"
+                    className="min-w-0 rounded-lg px-2 py-2 text-xs font-semibold text-muted-foreground transition-all hover:bg-secondary/60 hover:text-foreground"
                   >
                     Clear
                   </button>
@@ -520,25 +648,18 @@ export default function Reader() {
                 <button
                   onClick={copySelectedVerses}
                   disabled={selectedVerses.size === 0}
-                  className="flex items-center gap-1.5 text-sm font-semibold bg-secondary text-secondary-foreground px-3 py-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/80 transition-all active:scale-95"
+                  className="flex min-w-0 items-center justify-center gap-1.5 rounded-lg bg-secondary px-2 py-2 text-xs font-semibold text-secondary-foreground transition-all hover:bg-secondary/80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Copy size={14} />
+                  <Copy size={14} className="shrink-0" />
                   Copy
                 </button>
                 <button
                   onClick={shareSelectedVerses}
                   disabled={selectedVerses.size === 0}
-                  className="flex items-center gap-1.5 text-sm font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-all active:scale-95"
+                  className="flex min-w-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-2 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Share2 size={14} />
+                  <Share2 size={14} className="shrink-0" />
                   Share
-                </button>
-                <button
-                  onClick={exitSelectMode}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
-                  title="Cancel"
-                >
-                  <X size={16} />
                 </button>
               </div>
             </div>

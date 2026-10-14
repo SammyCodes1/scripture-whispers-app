@@ -2,10 +2,12 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp, Search, TrendingUp, X } from 'lucide-react';
 import { TOPICS } from '@/data/topicsData';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { versePath } from '@/lib/verseRef';
 import { useTopicSearchTracking } from '@/hooks/useTopicSearchTracking';
 
 export default function Topics() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTopic = searchParams.get('t') || '';
   const [expandedId, setExpandedId] = useState<string>(initialTopic);
@@ -128,7 +130,15 @@ export default function Topics() {
                     >
                       <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2 sm:space-y-3 border-t border-border pt-3">
                         {topic.verses.map((verse, i) => (
-                          <div key={i} className="rounded-lg bg-background p-3">
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              const path = versePath(verse.ref);
+                              if (path) navigate(path);
+                            }}
+                            className="block w-full rounded-lg bg-background p-3 text-left hover:bg-secondary/40 transition-colors"
+                          >
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-[11px] sm:text-xs font-bold text-primary break-words">{verse.ref}</span>
                               <span className={`text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${
@@ -140,7 +150,7 @@ export default function Topics() {
                               </span>
                             </div>
                             <p className="verse-text text-[13px] sm:text-sm leading-relaxed break-words">{verse.text}</p>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </motion.div>

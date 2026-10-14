@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { toast } from 'sonner';
 import AuthorProfile from '@/components/AuthorProfile';
+import PrayerWall from '@/components/PrayerWall';
 import { useAvatars } from '@/hooks/useAvatars';
 import { cachePosts, getCachedPosts, cacheComments, getCachedComments, isOffline, enqueue, processQueue, getQueueCount, storeOfflineFile } from '@/hooks/useCommunityCache';
 interface Comment {
@@ -23,6 +24,7 @@ interface Post {
   image_url: string | null;
   device_id: string | null;
   created_at: string;
+  comment_count?: number;
   comments?: Comment[];
 }
 
@@ -49,6 +51,7 @@ export default function Community() {
     } catch { return new Set(); }
   });
   const [profileAuthor, setProfileAuthor] = useState<string | null>(null);
+  const [section, setSection] = useState<'ideas' | 'prayers'>('ideas');
   const { avatars, refresh: refreshAvatars } = useAvatars();
 
   useEffect(() => {
@@ -95,12 +98,20 @@ export default function Community() {
   const loadPosts = async () => {
     const { data, error } = await supabase
       .from('community_posts')
-      .select('*')
+      .select('*, community_comments(count)')
       .order('created_at', { ascending: false });
     if (error) console.error('Error loading posts:', error);
     else {
-      setPosts(data || []);
-      cachePosts(data || []);
+      const mapped = (data || []).map((row) => {
+        const counted = row as typeof row & { community_comments?: { count: number }[] };
+        const { community_comments, ...post } = counted;
+        return {
+          ...post,
+          comment_count: community_comments?.[0]?.count ?? 0,
+        };
+      });
+      setPosts(mapped);
+      cachePosts(mapped);
     }
     setLoading(false);
   };
@@ -248,22 +259,28 @@ export default function Community() {
 
   const toggleLike = async (post: Post) => {
     const isLiked = likedPosts.has(post.id);
-    const newLikes = isLiked ? post.likes - 1 : post.likes + 1;
-    const newLikedPosts = new Set(likedPosts);
-    if (isLiked) newLikedPosts.delete(post.id);
-    else newLikedPosts.add(post.id);
-    setLikedPosts(newLikedPosts);
-    localStorage.setItem('hw-liked-posts', JSON.stringify([...newLikedPosts]));
+    const deviceId = getDeviceId();
+    const newLikes = Math.max(0, post.likes + (isLiked ? -1 : 1));
+    const previousLiked = likedPosts;
+    const nextLiked = new Set(likedPosts);
+    if (isLiked) nextLiked.delete(post.id);
+    else nextLiked.add(post.id);
+    setLikedPosts(nextLiked);
+    localStorage.setItem('hw-liked-posts', JSON.stringify([...nextLiked]));
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likes: newLikes } : p));
 
-    // Update local state optimistically
-    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likes: Math.max(0, newLikes) } : p));
+    const revert = () => {
+      setLikedPosts(previousLiked);
+      localStorage.setItem('hw-liked-posts', JSON.stringify([...previousLiked]));
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, likes: post.likes } : p));
+    };
 
     if (isOffline()) {
       enqueue({
         type: 'like',
         postId: post.id,
         postTitle: post.title,
-        newLikes: Math.max(0, newLikes),
+        newLikes,
         unlike: isLiked,
         postDeviceId: post.device_id,
         timestamp: Date.now(),
@@ -272,16 +289,45 @@ export default function Community() {
       return;
     }
 
-    await supabase.from('community_posts').update({ likes: Math.max(0, newLikes) }).eq('id', post.id);
-
-    if (!isLiked && post.device_id && post.device_id !== getDeviceId()) {
-      await supabase.from('notifications').insert({
-        device_id: post.device_id,
+    if (isLiked) {
+      const { data, error } = await supabase
+        .from('post_likes')
+        .delete()
+        .eq('post_id', post.id)
+        .eq('device_id', deviceId)
+        .select('post_id');
+      if (error) {
+        revert();
+        toast.error('Could not update like. Apply the latest database migration.');
+        return;
+      }
+      if (!data || data.length === 0) {
+        const { error: legacyError } = await supabase.rpc('decrement_legacy_post_like', { p_post_id: post.id });
+        if (legacyError) {
+          revert();
+          toast.error('Could not update like. Apply the latest database migration.');
+          return;
+        }
+      }
+    } else {
+      const { error } = await supabase.from('post_likes').insert({
         post_id: post.id,
-        type: 'like',
-        actor_name: 'Someone',
-        message: `Someone liked your post "${post.title}"`,
-      } as any);
+        device_id: deviceId,
+      });
+      if (error && error.code !== '23505') {
+        revert();
+        toast.error('Could not update like. Apply the latest database migration.');
+        return;
+      }
+      if (!error && post.device_id && post.device_id !== deviceId) {
+        await supabase.from('notifications').insert({
+          device_id: post.device_id,
+          post_id: post.id,
+          type: 'like',
+          actor_name: 'Someone',
+          message: `Someone liked your post "${post.title}"`,
+        } as any);
+      }
     }
 
     loadPosts();
@@ -302,6 +348,7 @@ export default function Community() {
         created_at: new Date().toISOString(),
       };
       setComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), tempComment] }));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, comment_count: (p.comment_count ?? 0) + 1 } : p));
       setCommentText(prev => ({ ...prev, [postId]: '' }));
       enqueue({
         type: 'comment',
@@ -324,6 +371,16 @@ export default function Community() {
     if (error) toast.error('Failed to add comment');
     else {
       setCommentText(prev => ({ ...prev, [postId]: '' }));
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, comment_count: (p.comment_count ?? 0) + 1 } : p));
+      setComments(prev => postId in prev ? {
+        ...prev,
+        [postId]: [...prev[postId], {
+          id: `pending-${Date.now()}`,
+          author_name: commentAuthor,
+          content: text,
+          created_at: new Date().toISOString(),
+        }],
+      } : prev);
       toast.success('Comment added');
       loadComments(postId);
 
@@ -355,14 +412,6 @@ export default function Community() {
 
   const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
 
-  if (loading && posts.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-primary" size={32} />
-      </div>
-    );
-  }
-
   return (
     <div className="fade-in">
       {offline && (
@@ -371,9 +420,9 @@ export default function Community() {
           <span>You're offline — actions will sync when you reconnect.{getQueueCount() > 0 && ` (${getQueueCount()} pending)`}</span>
         </div>
       )}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="font-display text-xl font-bold text-foreground">Community</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {author.trim() && (
             <button
               onClick={() => setProfileAuthor(author.trim())}
@@ -383,15 +432,46 @@ export default function Community() {
               My Profile
             </button>
           )}
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
-          >
-            {showForm ? <X size={16} /> : <Plus size={16} />}
-            {showForm ? 'Cancel' : 'Share Idea'}
-          </button>
+          {section === 'ideas' && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition"
+            >
+              {showForm ? <X size={16} /> : <Plus size={16} />}
+              {showForm ? 'Cancel' : 'Share Idea'}
+            </button>
+          )}
         </div>
       </div>
+
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setSection('ideas')}
+          className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+            section === 'ideas' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Ideas
+        </button>
+        <button
+          type="button"
+          onClick={() => setSection('prayers')}
+          className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+            section === 'prayers' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+          }`}
+        >
+          Prayers
+        </button>
+      </div>
+
+      {section === 'prayers' ? <PrayerWall /> : (<>
+
+      {loading && posts.length === 0 ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+      ) : (<>
 
       {/* Create Post Form */}
       {showForm && (
@@ -548,7 +628,7 @@ export default function Community() {
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <MessageCircle size={16} />
-                {(comments[post.id] || []).length}
+                {post.id in comments ? comments[post.id].length : (post.comment_count ?? 0)}
               </button>
             </div>
 
@@ -586,6 +666,8 @@ export default function Community() {
           </div>
         ))}
       </div>
+      </>)}
+      </>)}
 
       {/* Author Profile Popup */}
       <AuthorProfile

@@ -19,6 +19,7 @@ export function useChapterAudio(verses: BibleVerse[]) {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
+  const runRef = useRef(0);
   const speedRef = useRef(speed);
 
   // Keep speedRef in sync so the closure always reads the latest value
@@ -33,13 +34,15 @@ export function useChapterAudio(verses: BibleVerse[]) {
   }, [selectedVoice]);
 
   const stop = useCallback(() => {
+    runRef.current += 1;
     cancelledRef.current = true;
     speechSynthesis.cancel();
     setIsPlaying(false);
     setCurrentVerseIndex(-1);
   }, []);
 
-  const speakVerse = useCallback((index: number) => {
+  const speakVerse = useCallback((index: number, run: number) => {
+    if (run !== runRef.current) return;
     if (index >= verses.length || cancelledRef.current) {
       setIsPlaying(false);
       setCurrentVerseIndex(-1);
@@ -56,26 +59,32 @@ export function useChapterAudio(verses: BibleVerse[]) {
     const voice = getVoice();
     if (voice) utt.voice = voice;
 
+    const stillCurrent = () => run === runRef.current && !cancelledRef.current;
     utt.onend = () => {
-      if (!cancelledRef.current) {
-        speakVerse(index + 1);
-      }
+      if (stillCurrent()) speakVerse(index + 1, run);
     };
-    utt.onerror = () => {
-      if (!cancelledRef.current) {
-        speakVerse(index + 1);
-      }
+    // cancel() rejects the utterance. Ignore that so a stopped verse cannot start the next one.
+    utt.onerror = (event) => {
+      if (!stillCurrent()) return;
+      if (event.error === 'interrupted' || event.error === 'canceled') return;
+      speakVerse(index + 1, run);
     };
     utteranceRef.current = utt;
     speechSynthesis.speak(utt);
   }, [verses, getVoice]);
 
   const play = useCallback((startIndex = 0) => {
-    stop();
+    const run = runRef.current + 1;
+    runRef.current = run;
+    cancelledRef.current = true;
+    speechSynthesis.cancel();
     cancelledRef.current = false;
     setIsPlaying(true);
-    setTimeout(() => speakVerse(startIndex), 100);
-  }, [stop, speakVerse]);
+    setTimeout(() => {
+      if (run !== runRef.current) return;
+      speakVerse(startIndex, run);
+    }, 100);
+  }, [speakVerse]);
 
   const toggle = useCallback(() => {
     if (isPlaying) {
@@ -87,6 +96,7 @@ export function useChapterAudio(verses: BibleVerse[]) {
 
   useEffect(() => {
     return () => {
+      runRef.current += 1;
       cancelledRef.current = true;
       speechSynthesis.cancel();
     };

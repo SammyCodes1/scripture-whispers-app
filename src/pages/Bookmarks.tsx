@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bookmark, Highlighter, Trash2, StickyNote, Pencil } from 'lucide-react';
+import { versePath } from '@/lib/verseRef';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useNotes } from '@/hooks/useNotes';
 import VerseNoteModal from '@/components/VerseNoteModal';
@@ -9,6 +11,7 @@ import { toast } from 'sonner';
 type Tab = 'bookmark' | 'highlight' | 'note';
 
 export default function BookmarksPage() {
+  const navigate = useNavigate();
   const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>('hw-saved-verses', []);
   const { notes, deleteNote } = useNotes();
   const [tab, setTab] = useState<Tab>('bookmark');
@@ -20,6 +23,11 @@ export default function BookmarksPage() {
   const remove = (id: string) => {
     setSavedVerses(prev => prev.filter(v => v.id !== id));
     toast.info('Removed');
+  };
+
+  const openRef = (ref: string) => {
+    const path = versePath(ref);
+    if (path) navigate(path);
   };
 
   const tabs: { id: Tab; label: string; icon: typeof Bookmark }[] = [
@@ -61,7 +69,13 @@ export default function BookmarksPage() {
             {sortedNotes.map(n => (
               <div key={n.id} className="rounded-xl bg-card border border-border border-l-4 border-l-amber-500 p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="text-[11px] sm:text-xs font-bold text-primary break-words flex-1">{n.ref}</p>
+                  <button
+                    type="button"
+                    onClick={() => openRef(n.ref)}
+                    className="text-left text-[11px] sm:text-xs font-bold text-primary break-words flex-1 hover:underline"
+                  >
+                    {n.ref}
+                  </button>
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => setEditing({ ref: n.ref, text: n.verseText })}
@@ -108,10 +122,14 @@ export default function BookmarksPage() {
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => openRef(verse.ref)}
+                  className="flex-1 min-w-0 text-left"
+                >
                   <p className="text-[11px] sm:text-xs font-bold text-primary mb-1 break-words">{verse.ref}</p>
                   <p className="verse-text text-[13px] sm:text-sm leading-relaxed break-words">{verse.text}</p>
-                </div>
+                </button>
                 <button
                   onClick={() => remove(verse.id)}
                   aria-label="Remove"

@@ -76,6 +76,7 @@ export interface CachedPost {
   title: string;
   content: string;
   likes: number;
+  comment_count?: number;
   image_url: string | null;
   device_id: string | null;
   created_at: string;
@@ -220,19 +221,33 @@ export async function processQueue(onDone?: () => void): Promise<number> {
   for (const action of queue) {
     try {
       if (action.type === 'like') {
-        await supabase
-          .from('community_posts')
-          .update({ likes: Math.max(0, action.newLikes) })
-          .eq('id', action.postId);
-
-        if (!action.unlike && action.postDeviceId && action.postDeviceId !== deviceId) {
-          await supabase.from('notifications').insert({
-            device_id: action.postDeviceId,
+        if (action.unlike) {
+          const { data, error } = await supabase
+            .from('post_likes')
+            .delete()
+            .eq('post_id', action.postId)
+            .eq('device_id', deviceId)
+            .select('post_id');
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            const { error: legacyError } = await supabase.rpc('decrement_legacy_post_like', { p_post_id: action.postId });
+            if (legacyError) throw legacyError;
+          }
+        } else {
+          const { error } = await supabase.from('post_likes').insert({
             post_id: action.postId,
-            type: 'like',
-            actor_name: 'Someone',
-            message: `Someone liked your post "${action.postTitle}"`,
-          } as any);
+            device_id: deviceId,
+          });
+          if (error && error.code !== '23505') throw error;
+          if (!error && action.postDeviceId && action.postDeviceId !== deviceId) {
+            await supabase.from('notifications').insert({
+              device_id: action.postDeviceId,
+              post_id: action.postId,
+              type: 'like',
+              actor_name: 'Someone',
+              message: `Someone liked your post "${action.postTitle}"`,
+            } as any);
+          }
         }
         processed++;
       } else if (action.type === 'comment') {
