@@ -23,6 +23,10 @@ export const BIBLE_VERSIONS = [
   { id: 'web', name: 'WEB', full: 'World English Bible' },
   { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
   { id: 'msg', name: 'MSG', full: 'The Message' },
+  { id: 'bsb', name: 'BSB', full: 'Berean Standard Bible' },
+  { id: 'nkjv', name: 'NKJV', full: 'New King James Version' },
+  { id: 'niv', name: 'NIV', full: 'New International Version (2011)' },
+  { id: 'amp', name: 'AMP', full: 'Amplified Bible' },
 ] as const;
 
 export const FONT_SIZES = [

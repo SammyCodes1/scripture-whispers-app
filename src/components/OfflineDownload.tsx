@@ -1,14 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, CheckCircle2, Trash2, WifiOff } from 'lucide-react';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
+import { isLicensedVersion } from '@/lib/bibleVersions';
 import { getCachedCount, getTotalChapters, clearCache } from '@/hooks/useBibleCache';
 import { getDownloadState, subscribeDownload, startGlobalDownload, cancelGlobalDownload } from '@/hooks/useDownloadManager';
 import { toast } from 'sonner';
 
+// AMP, NIV and NKJV are licensed for online use only, so they are not offered for download.
+const OFFLINE_VERSIONS = BIBLE_VERSIONS.filter(v => !isLicensedVersion(v.id));
+
 export default function OfflineDownload() {
   const { version } = useTheme();
   type BibleVersion = typeof BIBLE_VERSIONS[number]['id'];
-  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(version);
+  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(
+    isLicensedVersion(version) ? 'kjv' : version
+  );
   const [cachedCount, setCachedCount] = useState(0);
   const [dlState, setDlState] = useState(getDownloadState);
   const total = getTotalChapters();
@@ -83,7 +89,7 @@ export default function OfflineDownload() {
 
       {/* Translation picker */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {BIBLE_VERSIONS.map(v => (
+        {OFFLINE_VERSIONS.map(v => (
           <button
             key={v.id}
             onClick={() => !downloading && setSelectedTranslation(v.id)}

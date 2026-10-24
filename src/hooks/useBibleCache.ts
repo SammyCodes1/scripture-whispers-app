@@ -1,5 +1,6 @@
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { fetchChapter, type ChapterResponse, type BibleVerse } from '@/hooks/useBibleApi';
+import { isLicensedVersion } from '@/lib/bibleVersions';
 
 const DB_NAME = 'holyword-bible-cache';
 const DB_VERSION = 1;
@@ -81,8 +82,22 @@ export async function cacheChapter(book: string, chapter: number, translation: s
   }
 }
 
+// Licensed text (AMP, NIV, NKJV) is never written to IndexedDB / offline storage.
+// It is only held in memory for a short time; the server keeps the (<=14 day) cache.
+const LICENSED_MEMORY_TTL_MS = 30 * 60 * 1000;
+const licensedMemory = new Map<string, { data: ChapterResponse; at: number }>();
+
 /** Fetch with cache-first strategy */
 export async function fetchChapterCached(book: string, chapter: number, translation: string): Promise<ChapterResponse> {
+  if (isLicensedVersion(translation)) {
+    const key = cacheKey(book, chapter, translation);
+    const hit = licensedMemory.get(key);
+    if (hit && Date.now() - hit.at < LICENSED_MEMORY_TTL_MS) return hit.data;
+    const data = await fetchChapter(book, chapter, translation);
+    // Don't remember automatic fallbacks, so the licensed version is retried next time.
+    if (!data.fallback) licensedMemory.set(key, { data, at: Date.now() });
+    return data;
+  }
   const cached = await getCachedChapter(book, chapter, translation);
   if (cached) return cached;
 
@@ -136,6 +151,9 @@ export async function downloadAllChapters(
   onProgress: (p: DownloadProgress) => void,
   signal?: AbortSignal
 ): Promise<void> {
+  if (isLicensedVersion(translation)) {
+    throw new Error('Licensed versions cannot be downloaded for offline use.');
+  }
   const total = getTotalChapters();
   let downloaded = 0;
   const BATCH_SIZE = 15;

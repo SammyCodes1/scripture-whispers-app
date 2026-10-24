@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2, StickyNote, CheckSquare, X } from 'lucide-react';
+import { ChevronLeft, Bookmark, Highlighter, Loader2, Copy, Share2, Volume2, VolumeX, ChevronDown, CheckCircle2, StickyNote, CheckSquare, X, AlertCircle } from 'lucide-react';
 import VerseNoteModal from '@/components/VerseNoteModal';
 import { useNotes } from '@/hooks/useNotes';
 
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { type BibleVerse } from '@/hooks/useBibleApi';
+import { type BibleVerse, type ChapterResponse } from '@/hooks/useBibleApi';
+import CopyrightNotice from '@/components/CopyrightNotice';
+import { isLicensedVersion } from '@/lib/bibleVersions';
+import { reportFumsView } from '@/lib/fums';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import { useReadingHistory } from '@/hooks/useReadingHistory';
@@ -28,6 +31,17 @@ export interface SavedVerse {
   type: 'bookmark' | 'highlight';
   color?: string;
   createdAt: number;
+}
+
+interface PassageMeta {
+  /** Version that was actually loaded (differs from the selected one after a fallback). */
+  shown: string;
+  notice?: string;
+  fallback?: ChapterResponse['fallback'];
+}
+
+function toPassageMeta(data: ChapterResponse): PassageMeta {
+  return { shown: data.translation_id, notice: data.notice, fallback: data.fallback };
 }
 
 export default function Reader() {
@@ -54,6 +68,8 @@ export default function Reader() {
   const [compareVersion, setCompareVersion] = useLocalStorage<string>('hw-compare-version', '');
   const [compareTexts, setCompareTexts] = useState<Record<number, string>>({});
   const [compareLoading, setCompareLoading] = useState(false);
+  const [passageMeta, setPassageMeta] = useState<PassageMeta | null>(null);
+  const [compareMeta, setCompareMeta] = useState<PassageMeta | null>(null);
 
   const toggleSelectVerse = (verseNum: number) => {
     setSelectedVerses(prev => {
@@ -95,7 +111,8 @@ export default function Reader() {
   const copySelectedVerses = () => {
     const sel = buildSelection();
     if (!sel) { toast.info('Select at least one verse'); return; }
-    navigator.clipboard.writeText(`${sel.ref} (${version.toUpperCase()})\n${sel.text}`);
+    const notice = passageMeta?.notice && (isLicensedVersion(version) || passageMeta.fallback) ? `\n\n${passageMeta.notice}` : '';
+    navigator.clipboard.writeText(`${sel.ref} (${(passageMeta?.shown ?? version).toUpperCase()})\n${sel.text}${notice}`);
     toast.success(`Copied ${sel.count} verse${sel.count > 1 ? 's' : ''}`);
     exitSelectMode();
   };
@@ -170,10 +187,13 @@ export default function Reader() {
     if (!selectedBook || !selectedChapter || view !== 'reading') return;
     let cancelled = false;
     setLoading(true);
+    setPassageMeta(null);
     fetchChapterCached(selectedBook, selectedChapter, version)
       .then(data => {
         if (!cancelled && data.verses) {
           setVerses(data.verses);
+          setPassageMeta(toPassageMeta(data));
+          reportFumsView(data.fumsToken);
           recordReading();
           recordChapter(selectedBook, selectedChapter);
           savePosition(selectedBook, selectedChapter);
@@ -191,6 +211,7 @@ export default function Reader() {
   useEffect(() => {
     if (!selectedBook || !selectedChapter || view !== 'reading' || !compareVersion || compareVersion === version) {
       setCompareTexts({});
+      setCompareMeta(null);
       setCompareLoading(false);
       return;
     }
@@ -199,9 +220,18 @@ export default function Reader() {
     fetchChapterCached(selectedBook, selectedChapter, compareVersion)
       .then(data => {
         if (cancelled) return;
+        if (data.fallback) {
+          // The licensed version failed; never show substitute text under the wrong label.
+          setCompareTexts({});
+          setCompareMeta(null);
+          toast.error(`${compareVersion.toUpperCase()} isn't available right now. ${data.fallback.message}`);
+          return;
+        }
         const next: Record<number, string> = {};
         for (const item of data.verses || []) next[item.verse] = item.text;
         setCompareTexts(next);
+        setCompareMeta(toPassageMeta(data));
+        reportFumsView(data.fumsToken);
       })
       .catch(err => {
         if (!cancelled) {
@@ -257,7 +287,8 @@ export default function Reader() {
     const body = other
       ? `${verse.text.trim()}\n\n${compareVersion.toUpperCase()}\n${other.trim()}`
       : verse.text;
-    navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse} (${version.toUpperCase()})\n${body}`);
+    const notice = passageMeta?.notice && (isLicensedVersion(version) || passageMeta.fallback) ? `\n\n${passageMeta.notice}` : '';
+    navigator.clipboard.writeText(`${verse.book_name} ${verse.chapter}:${verse.verse} (${(passageMeta?.shown ?? version).toUpperCase()})\n${body}${notice}`);
     toast.success('Verse copied to clipboard');
   };
 
@@ -321,7 +352,7 @@ export default function Reader() {
                       }`}
                     >
                       <span>{v.name}</span>
-                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                      <span className="text-xs text-muted-foreground">{v.full}{isLicensedVersion(v.id) ? ' · online' : ''}</span>
                     </button>
                   ))}
                 </motion.div>
@@ -458,6 +489,14 @@ export default function Reader() {
               </div>
             ) : (
               <div className={`space-y-0.5 ${selectMode ? 'pb-28' : ''}`}>
+                {passageMeta?.fallback && (
+                  <div role="status" className="mb-3 flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs text-foreground">
+                    <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-500" />
+                    <span>
+                      {passageMeta.fallback.message} Showing the Berean Standard Bible (BSB) instead. We'll try {passageMeta.fallback.from.toUpperCase()} again next time you open a chapter.
+                    </span>
+                  </div>
+                )}
                 {verses.map((verse, i) => {
                   const verseRef = `${verse.book_name} ${verse.chapter}:${verse.verse}`;
                   const verseNote = getNote(verseRef);
@@ -563,6 +602,14 @@ export default function Reader() {
                 })}
                 {verses.length === 0 && !loading && (
                   <p className="text-center text-muted-foreground py-12 text-sm">No verses found for this chapter.</p>
+                )}
+                {verses.length > 0 && !loading && (
+                  <div className="mt-4 space-y-2 border-t border-border/50 pt-3">
+                    {passageMeta?.notice && <CopyrightNotice notice={passageMeta.notice} />}
+                    {compareVersion && compareMeta?.notice && compareMeta.shown === compareVersion && (
+                      <CopyrightNotice notice={compareMeta.notice} label={compareVersion.toUpperCase()} />
+                    )}
+                  </div>
                 )}
               </div>
             )}

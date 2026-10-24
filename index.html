@@ -20,6 +20,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- API.Bible FUMS v3 tracker: required for licensed Bible versions (AMP, NIV, NKJV). -->
+    <script type="text/javascript" src="https://pkg.api.bible/fumsV3.min.js" async onload="window.__fumsLoaded=true"></script>
+    <script>
+      window.fumsData = window.fumsData || [];
+      window.fums = window.fums || function () { window.fumsData.push(arguments); };
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

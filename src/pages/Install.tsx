@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, Smartphone, CheckCircle2, Share, Loader2, WifiOff } from 'lucide-react';
 import { BIBLE_VERSIONS } from '@/contexts/ThemeContext';
+import { isLicensedVersion } from '@/lib/bibleVersions';
 import { downloadAllChapters, getCachedCount, getTotalChapters, type DownloadProgress } from '@/hooks/useBibleCache';
 import { toast } from 'sonner';
 
@@ -8,6 +9,9 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
+
+// AMP, NIV and NKJV are licensed for online use only, so they are not offered for download.
+const OFFLINE_VERSIONS = BIBLE_VERSIONS.filter(v => !isLicensedVersion(v.id));
 
 type Step = 'pick-version' | 'downloading' | 'done' | 'install-app';
 
@@ -35,7 +39,7 @@ export default function InstallPage() {
     if (window.matchMedia('(display-mode: standalone)').matches) setInstalled(true);
 
     // Load cached counts for all versions
-    Promise.all(BIBLE_VERSIONS.map(async v => {
+    Promise.all(OFFLINE_VERSIONS.map(async v => {
       const count = await getCachedCount(v.id);
       return { id: v.id, count };
     })).then(results => {
@@ -111,7 +115,7 @@ export default function InstallPage() {
         <div className="w-full space-y-3">
           <p className="text-sm font-medium text-foreground">Choose a Bible version to download:</p>
           <div className="grid grid-cols-1 gap-2">
-            {BIBLE_VERSIONS.map(v => {
+            {OFFLINE_VERSIONS.map(v => {
               const cached = cachedCounts[v.id] || 0;
               const isComplete = cached >= total;
               return (

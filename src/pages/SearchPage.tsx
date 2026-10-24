@@ -5,6 +5,7 @@ import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
 import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
 import { parseVerseRef } from '@/lib/verseRef';
+import { isLicensedVersion } from '@/lib/bibleVersions';
 
 const CACHED_SEARCH_VERSIONS = new Set(['web', 'bbe']);
 
@@ -15,6 +16,7 @@ interface SearchResult {
 
 export default function SearchPage() {
   const { version } = useTheme();
+  const searchUnsupported = isLicensedVersion(version) || version === 'bsb';
   const navigate = useNavigate();
 
   const openVerse = (ref: string) => {
@@ -41,6 +43,7 @@ export default function SearchPage() {
     const q = (term ?? query).trim();
     if (!q) return;
     if (term) setQuery(term);
+    if (searchUnsupported) return;
     setLoading(true);
     setSearched(true);
     setSearchedOffline(false);
@@ -108,6 +111,11 @@ export default function SearchPage() {
       </div>
 
       <p className="text-[11px] sm:text-xs text-muted-foreground mb-4 break-words">Searching in {versionName}</p>
+      {searchUnsupported && (
+        <p className="mb-4 rounded-lg bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+          Keyword search isn't available for {versionName}. Switch to KJV, WEB or another version to search, then open the verse in {versionName} from the reader.
+        </p>
+      )}
 
       {/* Popular searches */}
       {!searched && (

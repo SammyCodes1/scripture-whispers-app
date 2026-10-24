@@ -1,1 +1,4 @@
 project_id = "sdnztmoelhzjbxrfhfmt"
+
+[functions.bible-versions]
+verify_jwt = false
