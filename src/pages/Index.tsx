@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Lightbulb, MessageSquare, Search, PlayCircle, ArrowRight, Globe2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,9 @@ import GlossarySection from '@/components/GlossarySection';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import { useLastRead } from '@/hooks/useLastRead';
 import { formatDistanceToNow } from 'date-fns';
+import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
+import { fetchVerse } from '@/hooks/useBibleApi';
+import { versePath } from '@/lib/verseRef';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture', gradient: 'from-primary/15 to-primary/5' },
@@ -30,11 +34,42 @@ const fadeUp = {
 };
 
 export default function Index() {
+  const { version } = useTheme();
   const dailyVerse = getDailyVerse();
   const dailyTopic = getDailyTopic();
   const dailyConfession = getDailyConfession();
   const dailyPrayer = getDailyPrayer();
   const { lastRead } = useLastRead();
+  const versionInfo = BIBLE_VERSIONS.find(item => item.id === version);
+  const readPath = versePath(dailyVerse.ref);
+  const notice = versionInfo && 'notice' in versionInfo ? versionInfo.notice : '';
+  const [verseText, setVerseText] = useState(version === 'kjv' ? dailyVerse.text : '');
+  const [verseStatus, setVerseStatus] = useState<'ready' | 'loading' | 'error'>(version === 'kjv' ? 'ready' : 'loading');
+
+  useEffect(() => {
+    if (version === 'kjv') {
+      setVerseText(dailyVerse.text);
+      setVerseStatus('ready');
+      return;
+    }
+
+    const controller = new AbortController();
+    setVerseText('');
+    setVerseStatus('loading');
+    fetchVerse(dailyVerse.ref, version, controller.signal)
+      .then(data => {
+        const body = (data.text || data.verses?.map(verse => verse.text).filter(Boolean).join(' ') || '').trim();
+        if (!body) throw new Error('empty verse');
+        setVerseText(body);
+        setVerseStatus('ready');
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setVerseStatus('error');
+      });
+    return () => controller.abort();
+  }, [version, dailyVerse.ref, dailyVerse.text]);
 
   return (
     <motion.div
@@ -51,11 +86,24 @@ export default function Index() {
         <div className="relative rounded-2xl bg-primary p-6 text-primary-foreground shadow-lg overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary-foreground/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-          <p className="text-[11px] uppercase tracking-[0.2em] mb-2 font-medium">Verse of the Day</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] mb-2 font-medium">
+            Verse of the Day · {versionInfo?.name ?? version.toUpperCase()}
+          </p>
           <blockquote className="font-display text-lg sm:text-xl leading-relaxed font-semibold mb-3 relative">
-            "{dailyVerse.text}"
+            {verseStatus === 'loading' && 'Loading this translation…'}
+            {verseStatus === 'error' && 'This translation did not load. Open the passage in the reader.'}
+            {verseStatus === 'ready' && `"${verseText}"`}
           </blockquote>
           <p className="text-sm">— {dailyVerse.ref}</p>
+          {verseStatus === 'ready' && notice && (
+            <p className="mt-3 text-[10px] leading-relaxed text-primary-foreground">{notice}</p>
+          )}
+          {readPath && (
+            <Link to={readPath} className="relative mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-foreground underline underline-offset-2">
+              Read this passage
+              <ArrowRight size={14} />
+            </Link>
+          )}
         </div>
       </motion.section>
 
