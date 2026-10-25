@@ -33,7 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const dlPct = dlState.progress ? Math.round((dlState.progress.downloaded / dlState.progress.total) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-background theme-transition flex flex-col">
+    <div className="app-shell min-h-screen bg-background theme-transition flex flex-col">
       {/* Global download progress bar */}
       {dlState.active && (
         <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-secondary">

@@ -1,15 +1,24 @@
-import { useTheme } from "next-themes";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
+const DARK_THEMES = new Set(["lights-out", "ocean", "royal", "ios-glass-dark"]);
+
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  const { theme } = useTheme();
+  const mode = DARK_THEMES.has(theme) ? "dark" : "light";
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      {...props}
+      theme={mode}
       className="toaster group"
+      style={{
+        "--normal-bg": "hsl(var(--card))",
+        "--normal-text": "hsl(var(--card-foreground))",
+        "--normal-border": "hsl(var(--border))",
+      } as React.CSSProperties}
       toastOptions={{
         classNames: {
           toast:
@@ -19,7 +28,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       }}
-      {...props}
     />
   );
 };

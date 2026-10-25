@@ -472,9 +472,9 @@ export default function Reader() {
                     transition={{ delay: i * 0.01, duration: 0.3 }}
                     onClick={selectMode ? () => toggleSelectVerse(verse.verse) : undefined}
                     className={`group flex w-full min-w-0 max-w-full flex-wrap gap-3 rounded-xl p-3 transition-colors ${
-                      isVerseSaved(i, 'highlight') ? 'bg-accent/15' : 'hover:bg-secondary/40'
-                    } ${currentVerseIndex === i ? 'bg-primary/10 ring-1 ring-inset ring-primary/30' : ''} ${
-                      targetVerse === verse.verse ? 'bg-primary/15 ring-2 ring-inset ring-primary/50' : ''
+                      isVerseSaved(i, 'highlight') ? 'verse-highlight' : 'hover:bg-secondary/40'
+                    } ${currentVerseIndex === i ? 'ring-1 ring-inset ring-primary/30' : ''} ${
+                      targetVerse === verse.verse ? 'ring-2 ring-inset ring-primary/50' : ''
                     } ${selectMode ? 'cursor-pointer' : ''} ${
                       isSelected ? 'bg-primary/15 ring-2 ring-inset ring-primary' : ''
                     }`}
@@ -486,7 +486,7 @@ export default function Reader() {
                           <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-primary">{version.toUpperCase()}</p>
                         )}
                         <p
-                          className={`verse-text break-words text-sm leading-relaxed ${!selectMode && verseNote ? 'cursor-pointer underline decoration-amber-500/40 decoration-dotted underline-offset-4' : ''}`}
+                          className={`verse-text break-words text-sm leading-relaxed ${isVerseSaved(i, 'highlight') ? 'verse-mark' : ''} ${!selectMode && verseNote ? 'cursor-pointer underline decoration-note/50 decoration-dotted underline-offset-4' : ''}`}
                           onClick={(e) => { if (selectMode) return; if (verseNote) { e.stopPropagation(); setExpandedNoteRef(isExpanded ? null : verseRef); } }}
                         >
                           {verse.text}
@@ -517,14 +517,14 @@ export default function Reader() {
                         <button onClick={() => saveVerse(i, 'bookmark')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'bookmark') ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-primary/10'}`} title="Bookmark" aria-label="Bookmark verse">
                           <Bookmark size={14} fill={isVerseSaved(i, 'bookmark') ? 'currentColor' : 'none'} />
                         </button>
-                        <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent bg-accent/15' : 'text-muted-foreground hover:text-accent hover:bg-accent/10'}`} title="Highlight" aria-label="Highlight verse">
+                        <button onClick={() => saveVerse(i, 'highlight')} className={`p-1.5 rounded-lg transition-all ${isVerseSaved(i, 'highlight') ? 'text-accent-ink bg-highlight/20' : 'text-muted-foreground hover:text-accent-ink hover:bg-highlight/15'}`} title="Highlight" aria-label="Highlight verse">
                           <Highlighter size={14} />
                         </button>
                         <button
                           onClick={() => setNoteVerse({ ref: verseRef, text: verse.text })}
                           title={verseNote ? 'Edit note' : 'Add note'}
                           aria-label={verseNote ? 'Edit note' : 'Add note'}
-                          className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-amber-500 bg-amber-500/10' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'}`}
+                          className={`p-1.5 rounded-lg transition-all ${verseNote ? 'text-note bg-note/10' : 'text-muted-foreground hover:text-note hover:bg-note/10'}`}
                         >
                           <StickyNote size={14} fill={verseNote ? 'currentColor' : 'none'} />
                         </button>
@@ -540,9 +540,9 @@ export default function Reader() {
                           transition={{ duration: 0.2 }}
                           className="w-full overflow-hidden"
                         >
-                          <div className="mt-2 ml-[36px] rounded-lg border-l-4 border-l-amber-500 bg-amber-500/10 p-3">
+                          <div className="mt-2 ml-[36px] rounded-lg border-l-4 border-l-note bg-note/10 p-3">
                             <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <div className="flex items-center gap-1.5 text-amber-500">
+                              <div className="flex items-center gap-1.5 text-note">
                                 <StickyNote size={12} />
                                 <span className="text-[10px] font-bold uppercase tracking-wide">Your Note</span>
                               </div>

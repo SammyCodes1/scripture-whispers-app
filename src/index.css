@@ -17,15 +17,20 @@
     --secondary: 35 30% 88%;
     --secondary-foreground: 20 50% 13%;
     --muted: 35 20% 90%;
-    --muted-foreground: 20 20% 46%;
+    --muted-foreground: 20 16% 34%;
     --accent: 36 60% 50%;
     --accent-foreground: 20 60% 10%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 32 58% 30%;
+    --highlight: 43 90% 44%;
+    --note: 28 72% 28%;
+    --success: 152 60% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 35 25% 85%;
     --input: 35 25% 85%;
     --ring: 4 52% 32%;
     --radius: 0.75rem;
+    color-scheme: light;
     --sidebar-background: 38 35% 95%;
     --sidebar-foreground: 20 50% 13%;
     --sidebar-primary: 4 52% 32%;
@@ -43,19 +48,24 @@
     --card-foreground: 220 30% 15%;
     --popover: 220 40% 98%;
     --popover-foreground: 220 30% 15%;
-    --primary: 220 70% 50%;
+    --primary: 220 72% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 30% 92%;
     --secondary-foreground: 220 30% 15%;
     --muted: 220 20% 93%;
-    --muted-foreground: 220 15% 46%;
+    --muted-foreground: 220 15% 36%;
     --accent: 200 80% 55%;
     --accent-foreground: 220 50% 10%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 200 70% 30%;
+    --highlight: 43 90% 44%;
+    --note: 28 72% 28%;
+    --success: 152 60% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 30% 90%;
     --input: 220 30% 90%;
-    --ring: 220 70% 50%;
+    --ring: 220 72% 40%;
+    color-scheme: light;
   }
 
   [data-theme="wooden"] {
@@ -65,19 +75,24 @@
     --card-foreground: 25 60% 12%;
     --popover: 30 30% 88%;
     --popover-foreground: 25 60% 12%;
-    --primary: 25 55% 30%;
+    --primary: 25 60% 26%;
     --primary-foreground: 30 30% 95%;
     --secondary: 30 25% 78%;
     --secondary-foreground: 25 60% 12%;
     --muted: 30 20% 80%;
-    --muted-foreground: 25 25% 40%;
+    --muted-foreground: 25 28% 26%;
     --accent: 35 60% 45%;
     --accent-foreground: 25 60% 10%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 28 55% 26%;
+    --highlight: 40 85% 40%;
+    --note: 24 70% 24%;
+    --success: 152 55% 22%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 30 20% 72%;
     --input: 30 20% 75%;
-    --ring: 25 55% 30%;
+    --ring: 25 60% 26%;
+    color-scheme: light;
   }
 
   [data-theme="lights-out"] {
@@ -95,11 +110,16 @@
     --muted-foreground: 0 0% 72%;
     --accent: 45 70% 45%;
     --accent-foreground: 0 0% 5%;
+    --accent-ink: 45 95% 70%;
+    --highlight: 46 95% 58%;
+    --note: 42 96% 70%;
+    --success: 152 55% 64%;
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 16%;
     --input: 0 0% 16%;
     --ring: 45 85% 55%;
+    color-scheme: dark;
   }
 
   [data-theme="nature"] {
@@ -109,19 +129,24 @@
     --card-foreground: 140 35% 12%;
     --popover: 130 20% 96%;
     --popover-foreground: 140 35% 12%;
-    --primary: 145 45% 32%;
+    --primary: 145 52% 25%;
     --primary-foreground: 130 20% 96%;
     --secondary: 130 18% 86%;
     --secondary-foreground: 140 35% 12%;
     --muted: 130 15% 89%;
-    --muted-foreground: 140 15% 42%;
+    --muted-foreground: 145 16% 30%;
     --accent: 85 50% 45%;
     --accent-foreground: 140 40% 10%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 110 40% 26%;
+    --highlight: 48 85% 42%;
+    --note: 28 70% 26%;
+    --success: 152 55% 22%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 130 18% 83%;
     --input: 130 18% 83%;
-    --ring: 145 45% 32%;
+    --ring: 145 52% 25%;
+    color-scheme: light;
   }
 
   [data-theme="glossy"] {
@@ -131,19 +156,24 @@
     --card-foreground: 0 0% 8%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 8%;
-    --primary: 210 80% 52%;
+    --primary: 210 82% 36%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 15% 94%;
     --secondary-foreground: 0 0% 8%;
     --muted: 210 10% 95%;
-    --muted-foreground: 210 10% 45%;
-    --accent: 210 90% 60%;
+    --muted-foreground: 210 10% 36%;
+    --accent: 210 75% 36%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 210 80% 34%;
+    --highlight: 43 90% 44%;
+    --note: 28 75% 28%;
+    --success: 152 60% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 210 15% 92%;
     --input: 210 15% 92%;
-    --ring: 210 80% 52%;
+    --ring: 210 82% 36%;
+    color-scheme: light;
   }
 
   [data-theme="ocean"] {
@@ -158,14 +188,19 @@
     --secondary: 205 30% 22%;
     --secondary-foreground: 200 20% 93%;
     --muted: 205 25% 20%;
-    --muted-foreground: 200 15% 70%;
+    --muted-foreground: 200 15% 74%;
     --accent: 170 60% 45%;
     --accent-foreground: 205 40% 8%;
-    --destructive: 0 70% 50%;
+    --accent-ink: 172 75% 66%;
+    --highlight: 46 95% 58%;
+    --note: 42 96% 70%;
+    --success: 152 55% 64%;
+    --destructive: 0 70% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 205 25% 22%;
     --input: 205 25% 22%;
     --ring: 190 75% 48%;
+    color-scheme: dark;
   }
 
   [data-theme="royal"] {
@@ -180,14 +215,19 @@
     --secondary: 270 18% 20%;
     --secondary-foreground: 45 30% 92%;
     --muted: 270 15% 18%;
-    --muted-foreground: 270 10% 70%;
+    --muted-foreground: 270 12% 74%;
     --accent: 35 80% 50%;
     --accent-foreground: 270 25% 10%;
-    --destructive: 0 70% 50%;
+    --accent-ink: 40 92% 66%;
+    --highlight: 46 95% 58%;
+    --note: 42 96% 70%;
+    --success: 152 55% 64%;
+    --destructive: 0 70% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 270 15% 22%;
     --input: 270 15% 22%;
     --ring: 45 85% 55%;
+    color-scheme: dark;
   }
 
   [data-theme="sunset"] {
@@ -197,19 +237,24 @@
     --card-foreground: 15 60% 12%;
     --popover: 25 50% 96%;
     --popover-foreground: 15 60% 12%;
-    --primary: 15 80% 48%;
-    --primary-foreground: 25 50% 96%;
+    --primary: 10 78% 36%;
+    --primary-foreground: 30 50% 98%;
     --secondary: 25 35% 85%;
     --secondary-foreground: 15 60% 12%;
     --muted: 25 25% 88%;
-    --muted-foreground: 15 25% 42%;
+    --muted-foreground: 15 28% 32%;
     --accent: 35 90% 55%;
     --accent-foreground: 15 70% 12%;
-    --destructive: 0 84% 55%;
+    --accent-ink: 18 80% 32%;
+    --highlight: 36 90% 42%;
+    --note: 16 75% 28%;
+    --success: 152 60% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 25 30% 82%;
     --input: 25 30% 82%;
-    --ring: 15 80% 48%;
+    --ring: 10 78% 36%;
+    color-scheme: light;
   }
 
   [data-theme="marble"] {
@@ -224,14 +269,19 @@
     --secondary: 210 12% 91%;
     --secondary-foreground: 210 22% 14%;
     --muted: 210 10% 93%;
-    --muted-foreground: 210 10% 46%;
-    --accent: 210 20% 50%;
-    --accent-foreground: 210 15% 96%;
-    --destructive: 0 84% 60%;
+    --muted-foreground: 210 12% 34%;
+    --accent: 210 16% 34%;
+    --accent-foreground: 210 20% 98%;
+    --accent-ink: 210 25% 32%;
+    --highlight: 43 70% 42%;
+    --note: 28 70% 28%;
+    --success: 152 55% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 210 12% 89%;
     --input: 210 12% 89%;
     --ring: 210 15% 35%;
+    color-scheme: light;
   }
 
   /* iOS 26 Liquid Glass — Light */
@@ -242,19 +292,24 @@
     --card-foreground: 220 25% 12%;
     --popover: 220 50% 100%;
     --popover-foreground: 220 25% 12%;
-    --primary: 211 100% 50%;
+    --primary: 211 96% 35%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 30% 94%;
     --secondary-foreground: 220 25% 12%;
     --muted: 220 20% 95%;
-    --muted-foreground: 220 12% 42%;
-    --accent: 280 85% 62%;
+    --muted-foreground: 220 14% 34%;
+    --accent: 272 60% 42%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --accent-ink: 262 65% 38%;
+    --highlight: 43 90% 44%;
+    --note: 28 75% 28%;
+    --success: 152 60% 24%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 30% 90%;
     --input: 220 30% 90%;
-    --ring: 211 100% 50%;
+    --ring: 211 96% 35%;
+    color-scheme: light;
   }
 
   /* iOS 26 Liquid Glass — Dark */
@@ -270,14 +325,19 @@
     --secondary: 230 18% 18%;
     --secondary-foreground: 220 15% 95%;
     --muted: 230 15% 16%;
-    --muted-foreground: 220 10% 75%;
+    --muted-foreground: 220 12% 76%;
     --accent: 280 90% 70%;
     --accent-foreground: 230 25% 8%;
-    --destructive: 0 70% 55%;
+    --accent-ink: 275 95% 76%;
+    --highlight: 46 95% 58%;
+    --note: 42 96% 70%;
+    --success: 152 55% 64%;
+    --destructive: 0 68% 48%;
     --destructive-foreground: 0 0% 100%;
     --border: 230 18% 20%;
     --input: 230 18% 20%;
     --ring: 211 100% 60%;
+    color-scheme: dark;
   }
 
   * {
@@ -311,6 +371,11 @@
     background-attachment: fixed;
   }
 
+  [data-theme="ios-glass-light"] .app-shell,
+  [data-theme="ios-glass-dark"] .app-shell {
+    background-color: transparent;
+  }
+
   [data-theme="ios-glass-light"] .glass-card,
   [data-theme="ios-glass-dark"] .glass-card {
     backdrop-filter: blur(28px) saturate(180%);
@@ -337,6 +402,26 @@
     font-family: var(--verse-font-family, 'Lora', serif);
     font-size: var(--verse-font-size, 16px);
     @apply leading-relaxed text-foreground/90;
+  }
+
+  .verse-highlight {
+    box-shadow: inset 3px 0 0 hsl(var(--highlight));
+  }
+
+  .verse-mark {
+    background-color: hsl(var(--highlight) / 0.5);
+    color: hsl(var(--foreground));
+    border-radius: 0.15em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    padding: 0.05em 0.12em;
+  }
+
+  [data-theme="lights-out"] .verse-mark,
+  [data-theme="ocean"] .verse-mark,
+  [data-theme="royal"] .verse-mark,
+  [data-theme="ios-glass-dark"] .verse-mark {
+    background-color: hsl(var(--highlight) / 0.28);
   }
 
   .heading-display {

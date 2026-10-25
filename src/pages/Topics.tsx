@@ -143,7 +143,7 @@ export default function Topics() {
                               <span className="text-[11px] sm:text-xs font-bold text-primary break-words">{verse.ref}</span>
                               <span className={`text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${
                                 verse.testament === 'OT'
-                                  ? 'bg-accent/20 text-accent-foreground'
+                                  ? 'bg-highlight/25 text-foreground'
                                   : 'bg-primary/10 text-primary'
                               }`}>
                                 {verse.testament === 'OT' ? 'Old Testament' : 'New Testament'}

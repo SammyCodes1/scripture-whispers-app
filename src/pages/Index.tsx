@@ -51,11 +51,11 @@ export default function Index() {
         <div className="relative rounded-2xl bg-primary p-6 text-primary-foreground shadow-lg overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary-foreground/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-          <p className="text-[11px] uppercase tracking-[0.2em] opacity-70 mb-2 font-medium">Verse of the Day</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] mb-2 font-medium">Verse of the Day</p>
           <blockquote className="font-display text-lg sm:text-xl leading-relaxed font-semibold mb-3 relative">
             "{dailyVerse.text}"
           </blockquote>
-          <p className="text-sm opacity-70">— {dailyVerse.ref}</p>
+          <p className="text-sm">— {dailyVerse.ref}</p>
         </div>
       </motion.section>
 
@@ -136,8 +136,8 @@ export default function Index() {
       {/* Daily Topic */}
       <motion.section variants={fadeUp}>
         <div className="rounded-2xl bg-gradient-to-br from-accent/15 to-transparent border border-accent/20 p-5">
-          <p className="text-[11px] uppercase tracking-[0.15em] text-accent-foreground/60 mb-1 font-medium">Today's Topic</p>
-          <p className="font-display text-lg font-bold text-accent-foreground">{dailyTopic}</p>
+          <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-1 font-medium">Today's Topic</p>
+          <p className="font-display text-lg font-bold text-foreground">{dailyTopic}</p>
           <Link to="/topics" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2 font-medium group">
             Explore related verses
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />

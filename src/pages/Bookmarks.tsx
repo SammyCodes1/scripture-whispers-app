@@ -67,7 +67,7 @@ export default function BookmarksPage() {
         ) : (
           <div className="space-y-2">
             {sortedNotes.map(n => (
-              <div key={n.id} className="rounded-xl bg-card border border-border border-l-4 border-l-amber-500 p-3 sm:p-4">
+              <div key={n.id} className="rounded-xl bg-card border border-border border-l-4 border-l-note p-3 sm:p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <button
                     type="button"
@@ -118,7 +118,7 @@ export default function BookmarksPage() {
             <div
               key={verse.id}
               className={`rounded-xl bg-card border border-border p-3 sm:p-4 ${
-                verse.type === 'highlight' ? 'border-l-4 border-l-accent' : ''
+                verse.type === 'highlight' ? 'verse-highlight' : ''
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -128,7 +128,7 @@ export default function BookmarksPage() {
                   className="flex-1 min-w-0 text-left"
                 >
                   <p className="text-[11px] sm:text-xs font-bold text-primary mb-1 break-words">{verse.ref}</p>
-                  <p className="verse-text text-[13px] sm:text-sm leading-relaxed break-words">{verse.text}</p>
+                  <p className={`verse-text text-[13px] sm:text-sm leading-relaxed break-words ${verse.type === 'highlight' ? 'verse-mark' : ''}`}>{verse.text}</p>
                 </button>
                 <button
                   onClick={() => remove(verse.id)}

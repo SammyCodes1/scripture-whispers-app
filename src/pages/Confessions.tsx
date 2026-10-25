@@ -71,17 +71,17 @@ export default function ConfessionsPage() {
         className="rounded-xl bg-primary p-5 text-primary-foreground shadow-lg"
       >
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs uppercase tracking-widest opacity-80">
+          <p className="text-xs uppercase tracking-widest">
             {isToday ? (tab === 'confessions' ? "Today's Confession" : "Today's Prayer") : current.title}
           </p>
-          <span className="text-xs opacity-60">Day {(selectedIndex % items.length) + 1} / {items.length}</span>
+          <span className="text-xs">Day {(selectedIndex % items.length) + 1} / {items.length}</span>
         </div>
         {isToday && <p className="font-display text-lg font-bold mb-2">{current.title}</p>}
-        <p className="text-sm leading-relaxed mb-4 opacity-95">{body}</p>
+        <p className="text-sm leading-relaxed mb-4">{body}</p>
 
         <div className="border-t border-primary-foreground/20 pt-3">
-          <p className="text-xs italic opacity-80 mb-1">"{current.scripture}"</p>
-          <p className="text-xs opacity-60">— {current.scriptureRef}</p>
+          <p className="text-xs italic mb-1">"{current.scripture}"</p>
+          <p className="text-xs">— {current.scriptureRef}</p>
         </div>
       </motion.div>
 

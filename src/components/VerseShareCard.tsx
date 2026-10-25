@@ -11,17 +11,17 @@ interface VerseShareCardProps {
 }
 
 const CARD_STYLES = [
-  { id: 'golden', label: 'Golden', bg: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', text: '#3d2000', accent: '#7c4a00' },
-  { id: 'ocean', label: 'Ocean', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#ffffff', accent: '#e0d4f7' },
-  { id: 'forest', label: 'Forest', bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', text: '#003020', accent: '#004d35' },
+  { id: 'golden', label: 'Golden', bg: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', text: '#3d2000', accent: '#4e2a00' },
+  { id: 'ocean', label: 'Ocean', bg: 'linear-gradient(135deg, #3a46b0 0%, #542a86 100%)', text: '#ffffff', accent: '#f4e9ff' },
+  { id: 'forest', label: 'Forest', bg: 'linear-gradient(135deg, #0d5c4e 0%, #146b40 100%)', text: '#f4fff8', accent: '#d5ffe6' },
   { id: 'midnight', label: 'Midnight', bg: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', text: '#e8e4f0', accent: '#a89ec9' },
   { id: 'rose', label: 'Rose', bg: 'linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)', text: '#4a0e1a', accent: '#7a1a30' },
-  { id: 'earth', label: 'Earth', bg: 'linear-gradient(135deg, #8B7355 0%, #C4A882 50%, #D4C5A9 100%)', text: '#2d1f0e', accent: '#5c4427' },
-  { id: 'royal', label: 'Royal', bg: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)', text: '#d4af37', accent: '#b8962e' },
-  { id: 'lavender', label: 'Lavender', bg: 'linear-gradient(135deg, #E8D5F5 0%, #C3AED6 50%, #A888C4 100%)', text: '#2e1a47', accent: '#4a2d6e' },
-  { id: 'flame', label: 'Flame', bg: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)', text: '#ffffff', accent: '#fff3d6' },
+  { id: 'earth', label: 'Earth', bg: 'linear-gradient(135deg, #ead7bd 0%, #f8f1e6 100%)', text: '#2d1f0e', accent: '#6a4320' },
+  { id: 'royal', label: 'Royal', bg: 'linear-gradient(135deg, #141E30 0%, #243B55 100%)', text: '#f0d78a', accent: '#f0d78a' },
+  { id: 'lavender', label: 'Lavender', bg: 'linear-gradient(135deg, #E8D5F5 0%, #C3AED6 50%, #A888C4 100%)', text: '#2e1a47', accent: '#1c1030' },
+  { id: 'flame', label: 'Flame', bg: 'linear-gradient(135deg, #8d140c 0%, #9a4508 100%)', text: '#fff8f2', accent: '#ffe4bf' },
   { id: 'arctic', label: 'Arctic', bg: 'linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)', text: '#1a2a4a', accent: '#3a5a8a' },
-  { id: 'noir', label: 'Noir', bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', text: '#e0e0e0', accent: '#888888' },
+  { id: 'noir', label: 'Noir', bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', text: '#e0e0e0', accent: '#d4d4d4' },
   { id: 'peach', label: 'Peach', bg: 'linear-gradient(135deg, #FCEABB 0%, #F8B500 100%)', text: '#3d2800', accent: '#6b4700' },
 ];
 
@@ -176,7 +176,7 @@ export default function VerseShareCard({ reference, text, version, onClose }: Ve
               <p style={{ color: style.accent, fontSize: 14, fontWeight: 700, fontFamily: 'Georgia, serif', letterSpacing: 1 }}>
                 — {reference}
               </p>
-              <p style={{ color: style.accent, fontSize: 10, marginTop: 8, opacity: 0.7 }}>
+              <p style={{ color: style.accent, fontSize: 10, marginTop: 8 }}>
                 {version.toUpperCase()} • HolyWord
               </p>
             </div>

@@ -73,7 +73,7 @@ export default function BibleMaps() {
           <button
             onClick={pause}
             title="Pause download"
-            className="flex items-center gap-1.5 px-3 rounded-xl bg-amber-500/15 text-amber-500 text-xs font-semibold hover:bg-amber-500/25 transition-all whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-note/15 text-note text-xs font-semibold hover:bg-note/25 transition-all whitespace-nowrap"
           >
             <Pause size={14} />
             <span className="tabular-nums">{progress.current}/{progress.total}</span>
@@ -91,7 +91,7 @@ export default function BibleMaps() {
           <button
             onClick={handleDownloadAll}
             title="All images saved for offline use"
-            className="flex items-center gap-1.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-500 text-xs font-semibold whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 rounded-xl bg-success/15 text-success text-xs font-semibold whitespace-nowrap"
           >
             <Check size={14} /> Saved
           </button>
@@ -112,7 +112,7 @@ export default function BibleMaps() {
           {progress.running ? (
             <Loader2 size={14} className="animate-spin text-primary shrink-0" />
           ) : (
-            <Pause size={14} className="text-amber-500 shrink-0" />
+            <Pause size={14} className="text-note shrink-0" />
           )}
           <div className="flex-1">
             <p className="font-medium text-foreground">
@@ -181,11 +181,11 @@ export default function BibleMaps() {
 
             <div className="flex items-start gap-3 mb-3">
               <div className={`p-2 rounded-xl ${
-                selectedLocation.category === 'city' ? 'bg-red-500/10 text-red-500' :
-                selectedLocation.category === 'mountain' ? 'bg-green-500/10 text-green-500' :
-                selectedLocation.category === 'river' ? 'bg-blue-500/10 text-blue-500' :
-                selectedLocation.category === 'sea' ? 'bg-cyan-500/10 text-cyan-500' :
-                'bg-amber-500/10 text-amber-500'
+                selectedLocation.category === 'city' ? 'bg-destructive/15 text-destructive' :
+                selectedLocation.category === 'mountain' ? 'bg-success/15 text-success' :
+                selectedLocation.category === 'river' ? 'bg-primary/15 text-primary' :
+                selectedLocation.category === 'sea' ? 'bg-accent-ink/15 text-accent-ink' :
+                'bg-note/15 text-note'
               }`}>
                 {selectedLocation.category === 'city' && <MapPin size={20} />}
                 {selectedLocation.category === 'mountain' && <Mountain size={20} />}
