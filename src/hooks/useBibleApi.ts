@@ -1,6 +1,6 @@
-// Primary API for KJV, ASV, DRA, Darby
+// Primary API for KJV and ASV
 const PRIMARY_API = 'https://dailybible.ca';
-// Fallback API for WEB, BBE (same response format)
+// Fallback API for WEB (same response format)
 const FALLBACK_API = 'https://bible-api.com';
 // NIV, NLT, and AMP are served via the edge function, which holds the API.Bible key.
 // The function name still says bible-msg; that path is the licensed-text proxy.
@@ -10,7 +10,7 @@ const LICENSED_HEADERS = { apikey: LICENSED_KEY, Authorization: `Bearer ${LICENS
 const LICENSED_TRANSLATIONS = new Set(['niv', 'nlt', 'amp']);
 
 // Translations served by the fallback API
-const FALLBACK_TRANSLATIONS = ['web', 'bbe'];
+const FALLBACK_TRANSLATIONS = ['web'];
 
 export function isLicensedTranslation(translation: string) {
   return LICENSED_TRANSLATIONS.has(translation);
@@ -133,7 +133,7 @@ export async function searchBible(query: string, translation: string = 'kjv', li
     return data;
   }
   const apiBase = getApiBase(translation);
-  // bible-api.com has no search. Callers search the downloaded WEB or BBE text.
+  // bible-api.com has no search. Callers search the downloaded WEB text.
   if (apiBase === FALLBACK_API) {
     throw new Error('OFFLINE_SEARCH_ONLY');
   }

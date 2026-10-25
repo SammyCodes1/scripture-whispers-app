@@ -39,10 +39,7 @@ export const BIBLE_VERSIONS = [
   },
   { id: 'kjv', name: 'KJV', full: 'King James Version' },
   { id: 'asv', name: 'ASV', full: 'American Standard Version' },
-  { id: 'darby', name: 'Darby', full: 'Darby Translation' },
-  { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
   { id: 'web', name: 'WEB', full: 'World English Bible' },
-  { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
 ] as const;
 
 /** Public-domain versions that may be stored on the device. Licensed texts stay online. */
@@ -107,7 +104,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [version, setVersionState] = useState<BibleVersionId>(() => {
     const saved = localStorage.getItem('hw-version');
     const match = BIBLE_VERSIONS.find(v => v.id === saved);
-    return match ? match.id : 'kjv';
+    if (match) return match.id;
+    localStorage.setItem('hw-version', 'kjv');
+    return 'kjv';
   });
   const [fontSize, setFontSizeState] = useState<FontSizeId>(() =>
     (localStorage.getItem('hw-font-size') as FontSizeId) || 'md'

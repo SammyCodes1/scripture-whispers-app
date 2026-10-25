@@ -6,7 +6,7 @@ import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBi
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
 import { parseVerseRef } from '@/lib/verseRef';
 
-const CACHED_SEARCH_VERSIONS = new Set(['web', 'bbe']);
+const CACHED_SEARCH_VERSIONS = new Set(['web']);
 
 interface SearchResult {
   ref: string;
