@@ -16,12 +16,6 @@ export const THEMES = [
 ] as const;
 
 export const BIBLE_VERSIONS = [
-  { id: 'kjv', name: 'KJV', full: 'King James Version' },
-  { id: 'asv', name: 'ASV', full: 'American Standard Version' },
-  { id: 'darby', name: 'Darby', full: 'Darby Translation' },
-  { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
-  { id: 'web', name: 'WEB', full: 'World English Bible' },
-  { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
   {
     id: 'niv',
     name: 'NIV',
@@ -43,6 +37,12 @@ export const BIBLE_VERSIONS = [
     licensed: true,
     notice: 'Scripture quotations taken from the Amplified® Bible, Copyright © 2015 by The Lockman Foundation. Used by permission. www.lockman.org',
   },
+  { id: 'kjv', name: 'KJV', full: 'King James Version' },
+  { id: 'asv', name: 'ASV', full: 'American Standard Version' },
+  { id: 'darby', name: 'Darby', full: 'Darby Translation' },
+  { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
+  { id: 'web', name: 'WEB', full: 'World English Bible' },
+  { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
 ] as const;
 
 /** Public-domain versions that may be stored on the device. Licensed texts stay online. */

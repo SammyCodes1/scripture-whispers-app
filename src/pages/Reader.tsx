@@ -312,18 +312,18 @@ export default function Reader() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-xl overflow-hidden min-w-[200px]"
+                  className="absolute right-0 top-full mt-2 z-50 max-h-[min(22rem,calc(100dvh-9rem))] w-[min(16rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border/60 bg-card/95 shadow-xl backdrop-blur-xl"
                 >
                   {BIBLE_VERSIONS.map(v => (
                     <button
                       key={v.id}
                       onClick={() => { setVersion(v.id); setShowVersionPicker(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-secondary/50 transition-colors ${
+                      className={`flex w-full flex-col items-start px-4 py-2.5 text-left text-sm transition-colors hover:bg-secondary/50 ${
                         version === v.id ? 'bg-primary/10 text-primary font-semibold' : 'text-card-foreground'
                       }`}
                     >
                       <span>{v.name}</span>
-                      <span className="text-xs text-muted-foreground">{v.full}</span>
+                      <span className="text-xs font-normal text-muted-foreground">{v.full}</span>
                     </button>
                   ))}
                 </motion.div>
@@ -339,6 +339,24 @@ export default function Reader() {
               {selectMode ? <X size={18} /> : <CheckSquare size={18} />}
             </button>
           )}
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center gap-2">
+        <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Version</span>
+        <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto scrollbar-hide">
+          {BIBLE_VERSIONS.map(v => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => setVersion(v.id)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition active:scale-95 ${
+                version === v.id ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+              }`}
+            >
+              {v.name}
+            </button>
+          ))}
         </div>
       </div>
 
