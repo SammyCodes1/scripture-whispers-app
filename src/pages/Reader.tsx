@@ -185,7 +185,9 @@ export default function Reader() {
   }, [selectedBook, selectedChapter, version, view]);
 
   useEffect(() => {
-    if (compareVersion && compareVersion === version) setCompareVersion('');
+    if (compareVersion && (compareVersion === version || !BIBLE_VERSIONS.some(item => item.id === compareVersion))) {
+      setCompareVersion('');
+    }
   }, [compareVersion, version, setCompareVersion]);
 
   useEffect(() => {
@@ -564,6 +566,13 @@ export default function Reader() {
                 {verses.length === 0 && !loading && (
                   <p className="text-center text-muted-foreground py-12 text-sm">No verses found for this chapter.</p>
                 )}
+                {verses.length > 0 && (() => {
+                  const current = BIBLE_VERSIONS.find(item => item.id === version);
+                  const notice = current && 'notice' in current ? current.notice : '';
+                  return notice ? (
+                    <p className="mt-8 text-[10px] leading-relaxed text-muted-foreground">{notice}</p>
+                  ) : null;
+                })()}
               </div>
             )}
           </motion.div>

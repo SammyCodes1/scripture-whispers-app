@@ -2,12 +2,32 @@
 const PRIMARY_API = 'https://dailybible.ca';
 // Fallback API for WEB, BBE (same response format)
 const FALLBACK_API = 'https://bible-api.com';
-// MSG (The Message) is served via our edge function which proxies API.Bible
-const MSG_FN_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/bible-msg`;
-const MSG_HEADERS = { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string };
+// NIV, NLT, and AMP are served via the edge function, which holds the API.Bible key.
+// The function name still says bible-msg; that path is the licensed-text proxy.
+const LICENSED_FN_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/bible-msg`;
+const LICENSED_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const LICENSED_HEADERS = { apikey: LICENSED_KEY, Authorization: `Bearer ${LICENSED_KEY}` };
+const LICENSED_TRANSLATIONS = new Set(['niv', 'nlt', 'amp']);
 
 // Translations served by the fallback API
 const FALLBACK_TRANSLATIONS = ['web', 'bbe'];
+
+export function isLicensedTranslation(translation: string) {
+  return LICENSED_TRANSLATIONS.has(translation);
+}
+
+function acknowledgeFums(fums?: string) {
+  if (!fums || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.referrerPolicy = 'no-referrer';
+  img.src = fums;
+}
+
+function withoutFums<T extends { fums?: string }>(data: T): Omit<T, 'fums'> {
+  acknowledgeFums(data.fums);
+  const { fums: _fums, ...rest } = data;
+  return rest;
+}
 
 function getApiBase(translation: string) {
   return FALLBACK_TRANSLATIONS.includes(translation) ? FALLBACK_API : PRIMARY_API;
@@ -34,6 +54,8 @@ export interface ChapterResponse {
   text: string;
   translation_id: string;
   translation_name: string;
+  /** Present only on a live licensed response. Stripped before the chapter is cached. */
+  fums?: string;
 }
 
 export interface SearchResult {
@@ -83,11 +105,11 @@ export async function fetchChapter(
   translation: string = 'kjv',
   signal?: AbortSignal
 ): Promise<ChapterResponse> {
-  if (translation === 'msg') {
-    const url = `${MSG_FN_URL}?action=chapter&book=${encodeURIComponent(book)}&chapter=${chapter}`;
-    const res = await fetch(url, { signal, headers: MSG_HEADERS });
+  if (isLicensedTranslation(translation)) {
+    const url = `${LICENSED_FN_URL}?action=chapter&translation=${encodeURIComponent(translation)}&book=${encodeURIComponent(book)}&chapter=${chapter}`;
+    const res = await fetch(url, { signal, headers: LICENSED_HEADERS });
     if (!res.ok) throw new Error(`Failed to fetch chapter: ${res.status}`);
-    return res.json();
+    return withoutFums(await res.json());
   }
   const apiBase = resolveContentApiBase(book, translation);
   const reference = `${book} ${chapter}`;
@@ -101,11 +123,14 @@ export async function fetchChapter(
 }
 
 export async function searchBible(query: string, translation: string = 'kjv', limit: number = 50): Promise<SearchResponse> {
-  if (translation === 'msg') {
-    const url = `${MSG_FN_URL}?action=search&q=${encodeURIComponent(query)}&limit=${limit}`;
-    const res = await fetch(url, { headers: MSG_HEADERS });
+  if (isLicensedTranslation(translation)) {
+    const url = `${LICENSED_FN_URL}?action=search&translation=${encodeURIComponent(translation)}&q=${encodeURIComponent(query)}&limit=${limit}`;
+    const res = await fetch(url, { headers: LICENSED_HEADERS });
     if (!res.ok) throw new Error(`Failed to search: ${res.status}`);
-    return res.json();
+    const data = await res.json();
+    acknowledgeFums(data.fums);
+    delete data.fums;
+    return data;
   }
   const apiBase = getApiBase(translation);
   // bible-api.com has no search. Callers search the downloaded WEB or BBE text.
@@ -119,11 +144,11 @@ export async function searchBible(query: string, translation: string = 'kjv', li
 }
 
 export async function fetchVerse(ref: string, translation: string = 'kjv', signal?: AbortSignal): Promise<ChapterResponse> {
-  if (translation === 'msg') {
-    const url = `${MSG_FN_URL}?action=verse&ref=${encodeURIComponent(ref)}`;
-    const res = await fetch(url, { signal, headers: MSG_HEADERS });
+  if (isLicensedTranslation(translation)) {
+    const url = `${LICENSED_FN_URL}?action=verse&translation=${encodeURIComponent(translation)}&ref=${encodeURIComponent(ref)}`;
+    const res = await fetch(url, { signal, headers: LICENSED_HEADERS });
     if (!res.ok) throw new Error(`Failed to fetch verse: ${res.status}`);
-    return res.json();
+    return withoutFums(await res.json());
   }
   const book = getBookFromReference(ref);
   const apiBase = resolveContentApiBase(book, translation);

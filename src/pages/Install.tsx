@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, Smartphone, CheckCircle2, Share, Loader2, WifiOff } from 'lucide-react';
-import { BIBLE_VERSIONS } from '@/contexts/ThemeContext';
+import { OFFLINE_VERSIONS } from '@/contexts/ThemeContext';
 import { downloadAllChapters, getCachedCount, getTotalChapters, type DownloadProgress } from '@/hooks/useBibleCache';
 import { toast } from 'sonner';
 
@@ -35,7 +35,7 @@ export default function InstallPage() {
     if (window.matchMedia('(display-mode: standalone)').matches) setInstalled(true);
 
     // Load cached counts for all versions
-    Promise.all(BIBLE_VERSIONS.map(async v => {
+    Promise.all(OFFLINE_VERSIONS.map(async v => {
       const count = await getCachedCount(v.id);
       return { id: v.id, count };
     })).then(results => {
@@ -91,7 +91,7 @@ export default function InstallPage() {
   };
 
   const pct = progress ? Math.round((progress.downloaded / progress.total) * 100) : 0;
-  const versionLabel = BIBLE_VERSIONS.find(v => v.id === selectedVersion)?.full || '';
+  const versionLabel = OFFLINE_VERSIONS.find(v => v.id === selectedVersion)?.full || '';
 
   return (
     <div className="fade-in flex flex-col items-center text-center px-4 py-8 space-y-6 max-w-md mx-auto">
@@ -111,7 +111,7 @@ export default function InstallPage() {
         <div className="w-full space-y-3">
           <p className="text-sm font-medium text-foreground">Choose a Bible version to download:</p>
           <div className="grid grid-cols-1 gap-2">
-            {BIBLE_VERSIONS.map(v => {
+            {OFFLINE_VERSIONS.map(v => {
               const cached = cachedCounts[v.id] || 0;
               const isComplete = cached >= total;
               return (

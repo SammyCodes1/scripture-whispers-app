@@ -1,12 +1,22 @@
-// Proxy for API.Bible (scripture.api.bible) used for The Message (MSG) translation.
-// Returns responses normalized to the same shape used elsewhere in the app
-// (matching dailybible.ca / bible-api.com format).
+// Proxy for API.Bible. The function path is still bible-msg.
+// NIV, NLT, and AMP are the licensed texts this app requests.
+// Returns the same shape as dailybible.ca / bible-api.com.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const API_BIBLE_KEY = Deno.env.get('API_BIBLE_KEY');
-// The Message (MSG) Bible ID on API.Bible
-const MSG_BIBLE_ID = '65eec8e0b60e656b-01';
-const API_BASE = 'https://api.scripture.api.bible/v1';
+const API_BASE = 'https://rest.api.bible/v1';
+
+const LICENSED: Record<string, { id: string; name: string }> = {
+  niv: { id: '78a9f6124f344018-01', name: 'New International Version' },
+  nlt: { id: 'd6e14a625393b4da-01', name: 'New Living Translation' },
+  amp: { id: 'a81b73293d3080c9-01', name: 'Amplified Bible' },
+};
+
+function licensedBible(translation: string) {
+  const bible = LICENSED[translation];
+  if (!bible) throw new Error(`Unknown licensed translation: ${translation}`);
+  return bible;
+}
 
 // Map full book name -> API.Bible bookId (OSIS-style 3-letter codes)
 const BOOK_ID: Record<string, string> = {
@@ -37,9 +47,9 @@ function stripHtml(s: string): string {
   return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-async function apiBibleFetch(path: string, query: Record<string, string> = {}) {
+async function apiBibleFetch(bibleId: string, path: string, query: Record<string, string> = {}) {
   const qs = new URLSearchParams(query).toString();
-  const url = `${API_BASE}/bibles/${MSG_BIBLE_ID}${path}${qs ? `?${qs}` : ''}`;
+  const url = `${API_BASE}/bibles/${bibleId}${path}${qs ? `?${qs}` : ''}`;
   const res = await fetch(url, { headers: { 'api-key': API_BIBLE_KEY! } });
   if (!res.ok) {
     const text = await res.text();
@@ -48,52 +58,59 @@ async function apiBibleFetch(path: string, query: Record<string, string> = {}) {
   return res.json();
 }
 
-async function getChapter(book: string, chapter: number) {
+function versesFromHtml(html: string, book: string, chapter: number, bookCode: string) {
+  const open = /<span\b[^>]*\bclass\s*=\s*["'][^"']*\bv\b[^"']*["'][^>]*>/gi;
+  const matches = [...html.matchAll(open)];
+  const verses = [];
+  for (let i = 0; i < matches.length; i++) {
+    const tag = matches[i][0];
+    const fromAttr = tag.match(/\bdata-number\s*=\s*["'](\d+)["']/i)?.[1];
+    const after = html.slice((matches[i].index ?? 0) + tag.length);
+    const fromText = after.match(/^(\d+)/)?.[1];
+    const num = fromAttr || fromText;
+    if (!num) continue;
+    const start = (matches[i].index ?? 0) + tag.length;
+    const end = i + 1 < matches.length ? (matches[i + 1].index ?? html.length) : html.length;
+    const text = stripHtml(html.slice(start, end).replace(/^\d+\s*<\/span>/i, ''));
+    if (!text) continue;
+    verses.push({ book_id: bookCode, book_name: book, chapter, verse: parseInt(num, 10), text });
+  }
+  return verses;
+}
+
+async function getChapter(book: string, chapter: number, translation: string) {
+  const bible = licensedBible(translation);
   const id = bookId(book);
   if (!id) throw new Error(`Unknown book: ${book}`);
-  const chapterId = `${id}.${chapter}`;
-  const data = await apiBibleFetch(`/chapters/${chapterId}/verses`);
-  const verseRefs: Array<{ id: string }> = data.data ?? [];
-
-  // Fetch all verses in parallel (chapters typically 5-50 verses)
-  const verses = await Promise.all(
-    verseRefs.map(async (v) => {
-      const verseData = await apiBibleFetch(`/verses/${v.id}`, {
-        'content-type': 'text',
-        'include-notes': 'false',
-        'include-titles': 'false',
-        'include-chapter-numbers': 'false',
-        'include-verse-numbers': 'false',
-        'include-verse-spans': 'false',
-      });
-      const d = verseData.data;
-      const verseNum = parseInt(d.id.split('.').pop()!, 10);
-      return {
-        book_id: id,
-        book_name: book,
-        chapter,
-        verse: verseNum,
-        text: stripHtml(d.content || ''),
-      };
-    })
-  );
-
+  const data = await apiBibleFetch(bible.id, `/chapters/${id}.${chapter}`, {
+    'content-type': 'html',
+    'include-notes': 'false',
+    'include-titles': 'false',
+    'include-chapter-numbers': 'false',
+    'include-verse-numbers': 'true',
+    'include-verse-spans': 'false',
+  });
+  const html = data.data?.content || '';
+  const verses = versesFromHtml(html, book, chapter, id);
+  if (verses.length === 0) throw new Error(`No verses parsed for ${book} ${chapter}`);
   verses.sort((a, b) => a.verse - b.verse);
 
   return {
     reference: `${book} ${chapter}`,
     verses,
     text: verses.map((v) => v.text).join(' '),
-    translation_id: 'msg',
-    translation_name: 'The Message',
+    translation_id: translation,
+    translation_name: bible.name,
+    fums: data.meta?.fums || '',
   };
 }
 
-async function getVerse(reference: string) {
+async function getVerse(reference: string, translation: string) {
   // reference like "John 3:16" or "John 3:16-18"
   const m = reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
   if (!m) throw new Error(`Invalid reference: ${reference}`);
   const [, book, chapStr, startStr, endStr] = m;
+  const bible = licensedBible(translation);
   const id = bookId(book);
   if (!id) throw new Error(`Unknown book: ${book}`);
   const chapter = parseInt(chapStr, 10);
@@ -102,7 +119,7 @@ async function getVerse(reference: string) {
 
   const verses = await Promise.all(
     Array.from({ length: end - start + 1 }, (_, i) => start + i).map(async (vNum) => {
-      const verseData = await apiBibleFetch(`/verses/${id}.${chapter}.${vNum}`, {
+      const verseData = await apiBibleFetch(bible.id, `/verses/${id}.${chapter}.${vNum}`, {
         'content-type': 'text',
         'include-notes': 'false',
         'include-titles': 'false',
@@ -125,13 +142,15 @@ async function getVerse(reference: string) {
     reference,
     verses,
     text: verses.map((v) => v.text).join(' '),
-    translation_id: 'msg',
-    translation_name: 'The Message',
+    translation_id: translation,
+    translation_name: bible.name,
+    fums: '',
   };
 }
 
-async function search(query: string, limit: number) {
-  const data = await apiBibleFetch(`/search`, { query, limit: String(limit) });
+async function search(query: string, limit: number, translation: string) {
+  const bible = licensedBible(translation);
+  const data = await apiBibleFetch(bible.id, `/search`, { query, limit: String(limit) });
   const verses: Array<any> = data.data?.verses ?? [];
   // Reverse book lookup id -> name
   const idToName: Record<string, string> = {};
@@ -148,7 +167,7 @@ async function search(query: string, limit: number) {
     };
   });
 
-  return { query, results, count: results.length };
+  return { query, results, count: results.length, fums: data.meta?.fums || '' };
 }
 
 Deno.serve(async (req) => {
@@ -159,19 +178,21 @@ Deno.serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action') || 'chapter';
+    const translation = url.searchParams.get('translation') || '';
+    licensedBible(translation);
 
     let result;
     if (action === 'chapter') {
       const book = url.searchParams.get('book')!;
       const chapter = parseInt(url.searchParams.get('chapter') || '1', 10);
-      result = await getChapter(book, chapter);
+      result = await getChapter(book, chapter, translation);
     } else if (action === 'verse') {
       const ref = url.searchParams.get('ref')!;
-      result = await getVerse(ref);
+      result = await getVerse(ref, translation);
     } else if (action === 'search') {
       const q = url.searchParams.get('q') || '';
       const limit = parseInt(url.searchParams.get('limit') || '50', 10);
-      result = await search(q, limit);
+      result = await search(q, limit, translation);
     } else {
       throw new Error(`Unknown action: ${action}`);
     }

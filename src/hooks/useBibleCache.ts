@@ -1,5 +1,5 @@
 import { BIBLE_BOOKS } from '@/data/bibleData';
-import { fetchChapter, type ChapterResponse, type BibleVerse } from '@/hooks/useBibleApi';
+import { fetchChapter, isLicensedTranslation, type ChapterResponse } from '@/hooks/useBibleApi';
 
 const DB_NAME = 'holyword-bible-cache';
 const DB_VERSION = 1;
@@ -81,13 +81,22 @@ export async function cacheChapter(book: string, chapter: number, translation: s
   }
 }
 
-/** Fetch with cache-first strategy */
+const LICENSE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+function isFresh(data: ChapterResponse & { cached_at?: number }, translation: string) {
+  if (!isLicensedTranslation(translation)) return true;
+  if (!data.cached_at) return false;
+  return Date.now() - data.cached_at < LICENSE_TTL_MS;
+}
+
+/** Fetch with cache-first strategy. Licensed chapters are refreshed within 30 days. */
 export async function fetchChapterCached(book: string, chapter: number, translation: string): Promise<ChapterResponse> {
   const cached = await getCachedChapter(book, chapter, translation);
-  if (cached) return cached;
+  if (cached && isFresh(cached, translation)) return cached;
 
   const data = await fetchChapter(book, chapter, translation);
-  await cacheChapter(book, chapter, translation, data);
+  const stored = isLicensedTranslation(translation) ? { ...data, cached_at: Date.now() } : data;
+  await cacheChapter(book, chapter, translation, stored);
   return data;
 }
 

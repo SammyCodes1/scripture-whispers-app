@@ -179,6 +179,21 @@ export default function VerseShareCard({ reference, text, version, onClose }: Ve
               <p style={{ color: style.accent, fontSize: 10, marginTop: 8 }}>
                 {version.toUpperCase()} • HolyWord
               </p>
+              {version === 'niv' && (
+                <p style={{ color: style.accent, fontSize: 8, marginTop: 10, maxWidth: 340, lineHeight: 1.4 }}>
+                  NIV® Copyright © Biblica, Inc.® Used by permission.
+                </p>
+              )}
+              {version === 'nlt' && (
+                <p style={{ color: style.accent, fontSize: 8, marginTop: 10, maxWidth: 340, lineHeight: 1.4 }}>
+                  NLT® Copyright © Tyndale House Foundation. Used by permission.
+                </p>
+              )}
+              {version === 'amp' && (
+                <p style={{ color: style.accent, fontSize: 8, marginTop: 10, maxWidth: 340, lineHeight: 1.4 }}>
+                  AMP® Copyright © The Lockman Foundation. Used by permission.
+                </p>
+              )}
             </div>
 
             {/* Style picker */}

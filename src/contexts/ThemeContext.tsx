@@ -22,8 +22,31 @@ export const BIBLE_VERSIONS = [
   { id: 'dra', name: 'DRA', full: 'Douay-Rheims American' },
   { id: 'web', name: 'WEB', full: 'World English Bible' },
   { id: 'bbe', name: 'BBE', full: 'Bible in Basic English' },
-  { id: 'msg', name: 'MSG', full: 'The Message' },
+  {
+    id: 'niv',
+    name: 'NIV',
+    full: 'New International Version',
+    licensed: true,
+    notice: 'Scripture taken from the Holy Bible, NEW INTERNATIONAL VERSION®, NIV®. Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by permission. All rights reserved worldwide.',
+  },
+  {
+    id: 'nlt',
+    name: 'NLT',
+    full: 'New Living Translation',
+    licensed: true,
+    notice: 'Scripture quotations are taken from the Holy Bible, New Living Translation, copyright © 1996, 2004, 2015 by Tyndale House Foundation. Used by permission of Tyndale House Publishers, Carol Stream, Illinois 60188. All rights reserved.',
+  },
+  {
+    id: 'amp',
+    name: 'AMP',
+    full: 'Amplified Bible',
+    licensed: true,
+    notice: 'Scripture quotations taken from the Amplified® Bible, Copyright © 2015 by The Lockman Foundation. Used by permission. www.lockman.org',
+  },
 ] as const;
+
+/** Public-domain versions that may be stored on the device. Licensed texts stay online. */
+export const OFFLINE_VERSIONS = BIBLE_VERSIONS.filter(v => !('licensed' in v && v.licensed));
 
 export const FONT_SIZES = [
   { id: 'xs', name: 'Extra Small', value: '13px' },
@@ -81,9 +104,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<ThemeId>(() =>
     (localStorage.getItem('hw-theme') as ThemeId) || 'classic'
   );
-  const [version, setVersionState] = useState<BibleVersionId>(() =>
-    (localStorage.getItem('hw-version') as BibleVersionId) || 'kjv'
-  );
+  const [version, setVersionState] = useState<BibleVersionId>(() => {
+    const saved = localStorage.getItem('hw-version');
+    const match = BIBLE_VERSIONS.find(v => v.id === saved);
+    return match ? match.id : 'kjv';
+  });
   const [fontSize, setFontSizeState] = useState<FontSizeId>(() =>
     (localStorage.getItem('hw-font-size') as FontSizeId) || 'md'
   );

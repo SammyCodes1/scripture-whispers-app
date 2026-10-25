@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, CheckCircle2, Trash2, WifiOff } from 'lucide-react';
-import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
+import { OFFLINE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { getCachedCount, getTotalChapters, clearCache } from '@/hooks/useBibleCache';
 import { getDownloadState, subscribeDownload, startGlobalDownload, cancelGlobalDownload } from '@/hooks/useDownloadManager';
 import { toast } from 'sonner';
 
 export default function OfflineDownload() {
   const { version } = useTheme();
-  type BibleVersion = typeof BIBLE_VERSIONS[number]['id'];
-  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(version);
+  type BibleVersion = typeof OFFLINE_VERSIONS[number]['id'];
+  const [selectedTranslation, setSelectedTranslation] = useState<BibleVersion>(
+    OFFLINE_VERSIONS.some(v => v.id === version) ? version as BibleVersion : 'kjv'
+  );
   const [cachedCount, setCachedCount] = useState(0);
   const [dlState, setDlState] = useState(getDownloadState);
   const total = getTotalChapters();
@@ -83,7 +85,7 @@ export default function OfflineDownload() {
 
       {/* Translation picker */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {BIBLE_VERSIONS.map(v => (
+        {OFFLINE_VERSIONS.map(v => (
           <button
             key={v.id}
             onClick={() => !downloading && setSelectedTranslation(v.id)}
@@ -111,7 +113,7 @@ export default function OfflineDownload() {
             )}
           </span>
           <span className="text-xs text-muted-foreground">
-            {BIBLE_VERSIONS.find(v => v.id === selectedTranslation)?.full}
+            {OFFLINE_VERSIONS.find(v => v.id === selectedTranslation)?.full}
           </span>
         </div>
 
