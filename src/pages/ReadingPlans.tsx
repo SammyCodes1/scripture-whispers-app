@@ -5,21 +5,16 @@ import { READING_PLANS, type ReadingPlan } from '@/data/readingPlansData';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { PLAN_PROGRESS_KEY, type PlanProgress } from '@/lib/planToday';
 
 type View = 'select' | 'overview' | 'day';
-
-interface PlanProgress {
-  planId: string;
-  startedAt: number;
-  completedDays: number[]; // day numbers
-}
 
 export default function ReadingPlans() {
   const navigate = useNavigate();
   const [view, setView] = useState<View>('select');
   const [selectedPlan, setSelectedPlan] = useState<ReadingPlan | null>(null);
   const [selectedDay, setSelectedDay] = useState<number>(0);
-  const [progress, setProgress] = useLocalStorage<PlanProgress[]>('hw-reading-plans', []);
+  const [progress, setProgress] = useLocalStorage<PlanProgress[]>(PLAN_PROGRESS_KEY, []);
 
   const getPlanProgress = (planId: string) => progress.find(p => p.planId === planId);
 

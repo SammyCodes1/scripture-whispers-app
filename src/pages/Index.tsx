@@ -14,6 +14,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { fetchVerse } from '@/hooks/useBibleApi';
 import { versePath } from '@/lib/verseRef';
+import { PLAN_PROGRESS_KEY, readingRange, todaysPlan, type PlanProgress } from '@/lib/planToday';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const quickActions = [
   { icon: BookOpen, label: 'Read Bible', path: '/read', desc: 'Explore Scripture', gradient: 'from-primary/15 to-primary/5' },
@@ -40,6 +42,9 @@ export default function Index() {
   const dailyConfession = getDailyConfession();
   const dailyPrayer = getDailyPrayer();
   const { lastRead } = useLastRead();
+  const [planProgress] = useLocalStorage<PlanProgress[]>(PLAN_PROGRESS_KEY, []);
+  const planToday = todaysPlan(planProgress);
+  const firstReading = planToday?.day?.readings[0];
   const versionInfo = BIBLE_VERSIONS.find(item => item.id === version);
   const readPath = versePath(dailyVerse.ref);
   const notice = versionInfo && 'notice' in versionInfo ? versionInfo.notice : '';
@@ -105,6 +110,47 @@ export default function Index() {
             </Link>
           )}
         </div>
+      </motion.section>
+
+      <motion.section variants={fadeUp}>
+        {planToday?.day && firstReading ? (
+          <div className="rounded-2xl bg-card border border-border/60 p-4">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-1 font-medium">Today's reading</p>
+            <p className="font-display text-lg font-bold text-card-foreground">
+              {planToday.plan.name} · Day {planToday.day.day}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {readingRange(planToday.day.readings)}
+              {planToday.done ? ' · Done' : ''}
+              {planToday.behind ? ' · Earlier days are still open' : ''}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Link
+                to={`/read?book=${encodeURIComponent(firstReading.book)}&chapter=${firstReading.chapter}`}
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary"
+              >
+                Read {firstReading.book} {firstReading.chapter}
+                <ArrowRight size={14} />
+              </Link>
+              <Link to="/plans" className="text-sm font-medium text-muted-foreground">
+                Open plan
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <Link
+            to="/plans"
+            className="flex items-center gap-4 rounded-2xl bg-card border border-border/60 p-4 hover:shadow-lg transition-all"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-0.5 font-medium">Today's reading</p>
+              <p className="font-display font-bold text-card-foreground">
+                {planToday?.finished ? `${planToday.plan.name} is finished` : 'Start a reading plan'}
+              </p>
+            </div>
+            <ArrowRight size={18} className="text-muted-foreground" />
+          </Link>
+        )}
       </motion.section>
 
       {/* Biblical Map */}
