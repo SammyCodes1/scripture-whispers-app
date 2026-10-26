@@ -9,6 +9,15 @@ const corsHeaders = {
 };
 
 const CODE_RE = /^[abcdefghijkmnpqrstuvwxyz23456789]{4}(?:-[abcdefghijkmnpqrstuvwxyz23456789]{4}){3}$/;
+const CODE_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789";
+
+function newCode() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let raw = "";
+  for (const byte of bytes) raw += CODE_ALPHABET[byte % CODE_ALPHABET.length];
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}`;
+}
 const TOMB_RE = /^(bookmark|highlight|note):.{1,80}$/;
 const MAX_ITEMS = 2000;
 const MAX_TOMBS = 4000;
@@ -134,11 +143,9 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") return json({ error: "Invalid request" }, 400);
-    const action = (body as Record<string, unknown>).action;
-    const code = typeof (body as Record<string, unknown>).code === "string"
-      ? (body as Record<string, unknown>).code as string
-      : "";
-    if (!CODE_RE.test(code)) return json({ error: "Invalid library code" }, 400);
+    const record = body as Record<string, unknown>;
+    const action = record.action;
+    const code = typeof record.code === "string" ? record.code : "";
 
     const url = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -148,69 +155,110 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const readRow = async () => {
-      const { data, error } = await admin
-        .from("verse_libraries")
-        .select("payload, revision")
-        .eq("code", code)
-        .maybeSingle();
+    const header = req.headers.get("Authorization") ?? "";
+    const token = header.replace(/^Bearer\s+/i, "").trim();
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    let userId: string | null = null;
+    if (token && token !== anonKey) {
+      const { data, error } = await admin.auth.getUser(token);
+      if (!error && data.user) userId = data.user.id;
+    }
+    if (!userId && !CODE_RE.test(code)) return json({ error: "Invalid library code" }, 400);
+
+    const rowFields = "code, payload, revision, user_id";
+    const rowByCode = async (libraryCode: string) => {
+      const { data, error } = await admin.from("verse_libraries").select(rowFields).eq("code", libraryCode).maybeSingle();
       if (error) throw error;
       return data;
     };
+    const rowByUser = async (id: string) => {
+      const { data, error } = await admin.from("verse_libraries").select(rowFields).eq("user_id", id).maybeSingle();
+      if (error) throw error;
+      return data;
+    };
+    const libraryFor = async () => {
+      if (!userId) return rowByCode(code);
+      const owned = await rowByUser(userId);
+      if (owned) return owned;
+      if (!CODE_RE.test(code)) return null;
+      const byCode = await rowByCode(code);
+      if (!byCode || byCode.user_id) return null;
+      const { data, error } = await admin
+        .from("verse_libraries")
+        .update({ user_id: userId })
+        .eq("code", code)
+        .is("user_id", null)
+        .select(rowFields)
+        .maybeSingle();
+      if (error) throw error;
+      return data ?? await rowByUser(userId);
+    };
+    const saved = (row: { code: string; payload: unknown; revision: number }, status = 200) =>
+      json({ empty: false, revision: row.revision, payload: row.payload, code: row.code }, status);
 
     if (action === "pull") {
-      const row = await readRow();
+      const row = await libraryFor();
       if (!row) return json({ empty: true });
-      return json({ empty: false, revision: row.revision, payload: row.payload });
+      return saved(row);
     }
 
     if (action === "delete") {
-      const { error } = await admin.from("verse_libraries").delete().eq("code", code);
+      const query = userId
+        ? admin.from("verse_libraries").delete().eq("user_id", userId)
+        : admin.from("verse_libraries").delete().eq("code", code);
+      const { error } = await query;
       if (error) throw error;
       return json({ deleted: true });
     }
 
     if (action !== "push") return json({ error: "Unknown action" }, 400);
 
-    const rawPayload = JSON.stringify((body as Record<string, unknown>).payload ?? null);
+    const rawPayload = JSON.stringify(record.payload ?? null);
     if (rawPayload.length > MAX_BODY) return json({ error: "Library is too large" }, 413);
-    const payload = sanitize((body as Record<string, unknown>).payload);
-    const baseRevision = (body as Record<string, unknown>).baseRevision;
+    const payload = sanitize(record.payload);
+    const baseRevision = record.baseRevision;
     const base = typeof baseRevision === "number" && Number.isInteger(baseRevision) ? baseRevision : null;
 
-    const existing = await readRow();
+    const existing = await libraryFor();
     if (!existing) {
+      let insertCode = newCode();
+      if (CODE_RE.test(code)) {
+        const taken = await rowByCode(code);
+        if (!taken) insertCode = code;
+      }
       const { data, error } = await admin
         .from("verse_libraries")
-        .insert({ code, payload, revision: 1 })
-        .select("payload, revision")
+        .insert({ code: insertCode, payload, revision: 1, user_id: userId })
+        .select(rowFields)
         .maybeSingle();
       if (error && error.code === "23505") {
-        const current = await readRow();
-        return json({ revision: current?.revision ?? 1, payload: current?.payload ?? payload }, 409);
+        const current = userId ? await rowByUser(userId) : await rowByCode(insertCode);
+        if (!current) throw error;
+        return saved(current, 409);
       }
       if (error || !data) throw error ?? new Error("insert failed");
-      return json({ revision: data.revision, payload: data.payload });
+      return saved(data);
     }
 
-    if (base !== existing.revision) {
-      return json({ revision: existing.revision, payload: existing.payload }, 409);
+    if (base !== Number(existing.revision)) {
+      return saved(existing, 409);
     }
 
     const next = Number(existing.revision) + 1;
     const { data, error } = await admin
       .from("verse_libraries")
       .update({ payload, revision: next, updated_at: new Date().toISOString() })
-      .eq("code", code)
+      .eq("code", existing.code)
       .eq("revision", existing.revision)
-      .select("payload, revision")
+      .select(rowFields)
       .maybeSingle();
     if (error) throw error;
     if (!data) {
-      const current = await readRow();
-      return json({ revision: current?.revision ?? existing.revision, payload: current?.payload ?? existing.payload }, 409);
+      const current = await libraryFor();
+      if (!current) throw new Error("library changed");
+      return saved(current, 409);
     }
-    return json({ revision: data.revision, payload: data.payload });
+    return saved(data);
   } catch (err) {
     console.error("verse-library", err instanceof Error ? err.message : "failed");
     return json({ error: "Could not save the library" }, 500);

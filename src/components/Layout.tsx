@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame, Globe2 } from 'lucide-react';
+import { Home, BookOpen, Search, MessageSquare, Menu, X, Bookmark, Settings, Send, Lightbulb, CalendarDays, Download, Flame, Globe2, UserRound } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDownloadState, subscribeDownload } from '@/hooks/useDownloadManager';
@@ -23,6 +24,7 @@ const MENU_ITEMS = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { email } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dlState, setDlState] = useState(getDownloadState);
 
@@ -109,6 +111,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
               <nav className="p-3 space-y-1">
+                <Link
+                  to="/sign-in"
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.98] ${
+                    location.pathname === '/sign-in'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-card-foreground hover:bg-secondary/60'
+                  }`}
+                >
+                  <UserRound size={18} />
+                  {email ? 'Account' : 'Sign in'}
+                </Link>
                 {MENU_ITEMS.map((item, i) => (
                   <motion.div
                     key={item.path}

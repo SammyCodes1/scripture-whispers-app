@@ -43,9 +43,9 @@ export default function BookmarksPage() {
         Bookmarks, Highlights &amp; Notes
       </h2>
       <p className="text-xs text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
-        These are saved with HolyWord. Keep the library code in{' '}
+        These are saved with HolyWord. Sign in, or keep the library code in{' '}
         <Link to="/settings" className="text-primary font-medium underline">Settings</Link>
-        {' '}to open them on a new phone.
+        , to open them on a new phone.
       </p>
 
       <div className="flex gap-2 mb-3 sm:mb-4 flex-wrap">

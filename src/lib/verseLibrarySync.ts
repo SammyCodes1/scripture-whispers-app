@@ -1,4 +1,5 @@
 import { HW_STORAGE_EVENT } from '@/hooks/useLocalStorage';
+import { supabase } from '@/integrations/supabase/client';
 import {
   describeLibrary,
   emptyLibrary,
@@ -29,6 +30,13 @@ let listening = false;
 let generation = 0;
 let timer = 0;
 let chain: Promise<void> = Promise.resolve();
+let authSubscription: { unsubscribe: () => void } | null = null;
+
+function adoptCode(json: Record<string, unknown>) {
+  if (typeof json.code === 'string' && LIBRARY_CODE_RE.test(json.code)) {
+    localStorage.setItem(LIBRARY_CODE_KEY, json.code);
+  }
+}
 
 function setPhase(next: LibraryPhase) {
   phase = next;
@@ -143,11 +151,18 @@ function libraryUrl() {
 async function callLibrary(body: unknown): Promise<{ status: number; json: Record<string, unknown> }> {
   const target = libraryUrl();
   if (!target) throw new Error('library unavailable');
+  let bearer = target.key;
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.access_token) bearer = data.session.access_token;
+  } catch {
+    bearer = target.key;
+  }
   const response = await fetch(target.url, {
     method: 'POST',
     headers: {
       apikey: target.key,
-      Authorization: `Bearer ${target.key}`,
+      Authorization: `Bearer ${bearer}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
@@ -158,6 +173,7 @@ async function callLibrary(body: unknown): Promise<{ status: number; json: Recor
 
 async function pull(code: string): Promise<{ payload: LibraryPayload; revision: number } | null> {
   const { status, json } = await callLibrary({ action: 'pull', code });
+  adoptCode(json);
   if (status !== 200) throw new Error('pull failed');
   if (json.empty === true) return null;
   const revision = Number(json.revision);
@@ -186,6 +202,7 @@ async function pushWithRetry() {
       baseRevision: getRevision(),
     });
     if (status === 200 && json.payload && typeof json.payload === 'object') {
+      adoptCode(json);
       setRevision(json.revision);
       const stored = sanitizePayload(json.payload);
       if (librarySignature(stored) !== librarySignature(readPayload())) writePayload(stored);
@@ -193,6 +210,7 @@ async function pushWithRetry() {
       return;
     }
     if (status === 409 && json.payload && typeof json.payload === 'object') {
+      adoptCode(json);
       writePayload(mergeLibraries(readPayload(), sanitizePayload(json.payload)));
       setRevision(json.revision);
       continue;
@@ -293,6 +311,16 @@ export function startLibrarySync() {
   window.addEventListener('storage', onNativeStorage);
   window.addEventListener('online', onOnline);
   document.addEventListener('visibilitychange', onHide);
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
+    window.setTimeout(() => {
+      if (!listening) return;
+      localStorage.removeItem(LIBRARY_REV_KEY);
+      dirty = true;
+      void enqueue(() => initialSync());
+    }, 0);
+  });
+  authSubscription = data.subscription;
   void enqueue(async () => {
     if (gen !== generation) return;
     await initialSync();
@@ -308,6 +336,8 @@ export function stopLibrarySync() {
   window.removeEventListener('storage', onNativeStorage);
   window.removeEventListener('online', onOnline);
   document.removeEventListener('visibilitychange', onHide);
+  authSubscription?.unsubscribe();
+  authSubscription = null;
   window.clearTimeout(timer);
 }
 
@@ -360,8 +390,9 @@ export function restoreLibrary(raw: string): Promise<string> {
 
 export function deleteRemoteLibrary(): Promise<boolean> {
   return enqueue(async () => {
-    const code = localStorage.getItem(LIBRARY_CODE_KEY);
-    if (!code || !LIBRARY_CODE_RE.test(code)) return true;
+    const code = localStorage.getItem(LIBRARY_CODE_KEY) ?? '';
+    const { data } = await supabase.auth.getSession();
+    if ((!code || !LIBRARY_CODE_RE.test(code)) && !data.session) return true;
     try {
       const { status } = await callLibrary({ action: 'delete', code });
       return status === 200;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { THEMES, BIBLE_VERSIONS, FONT_SIZES, FONT_FAMILIES, useTheme } from '@/contexts/ThemeContext';
-import { Trash2, Check, Type } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trash2, Check, Type, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import DailyReminderSettings from '@/components/DailyReminderSettings';
@@ -10,6 +11,8 @@ import OfflineDownload from '@/components/OfflineDownload';
 import AdminAnnouncementPanel from '@/components/AdminAnnouncementPanel';
 import LibrarySyncSettings from '@/components/LibrarySyncSettings';
 import { deleteRemoteLibrary } from '@/lib/verseLibrarySync';
+import { signOut } from '@/lib/auth';
+import { useAuth } from '@/hooks/useAuth';
 
 function deleteDatabase(name: string) {
   return new Promise<void>((resolve) => {
@@ -22,6 +25,7 @@ function deleteDatabase(name: string) {
 
 export default function SettingsPage() {
   const { theme, setTheme, version, setVersion, fontSize, setFontSize, fontFamily, setFontFamily } = useTheme();
+  const { ready, email, name } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = async () => {
@@ -50,6 +54,42 @@ export default function SettingsPage() {
   return (
     <div className="fade-in space-y-5 sm:space-y-6">
       <h2 className="font-display text-lg sm:text-xl font-bold text-foreground tracking-tight">Settings</h2>
+
+      <section>
+        <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-3">Account</h3>
+        <div className="rounded-xl bg-card border border-border p-3 sm:p-4 space-y-3">
+          {!ready ? (
+            <p className="text-sm text-muted-foreground">Checking your account…</p>
+          ) : email ? (
+            <>
+              <p className="text-sm text-foreground leading-relaxed">
+                Signed in{name ? ` as ${name}` : ''}. Your library follows this Google account.
+              </p>
+              <p className="text-xs text-muted-foreground break-all">{email}</p>
+              <button
+                type="button"
+                onClick={() => { void signOut(); }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-xs sm:text-sm font-medium active:scale-95"
+              >
+                <LogOut size={16} />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Sign in with Google and this library opens on the next phone, without copying a code.
+              </p>
+              <Link
+                to="/sign-in"
+                className="inline-flex items-center px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm font-medium active:scale-95"
+              >
+                Sign in with Google
+              </Link>
+            </>
+          )}
+        </div>
+      </section>
 
       <LibrarySyncSettings />
 
