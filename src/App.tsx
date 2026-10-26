@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Layout from "@/components/Layout";
 import { invalidateStaleCacheIfNeeded } from "@/hooks/useBibleCache";
+import { PlanAheadWatch } from "@/hooks/usePlanAhead";
 import BibleIntro from "@/components/BibleIntro";
 import Index from "./pages/Index";
 import Reader from "./pages/Reader";
@@ -55,6 +56,7 @@ const App = () => {
           <Sonner />
           <DailyReminderWatcher />
           <VerseLibrarySync />
+          <PlanAheadWatch />
           <AnnouncementModal />
           {showIntro && <BibleIntro onComplete={handleIntroComplete} />}
           <BrowserRouter>

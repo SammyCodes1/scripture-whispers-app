@@ -14,7 +14,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { fetchVerse } from '@/hooks/useBibleApi';
 import { versePath } from '@/lib/verseRef';
+import { aheadLabel } from '@/lib/planAhead';
 import { PLAN_PROGRESS_KEY, readingRange, todaysPlan, type PlanProgress } from '@/lib/planToday';
+import { usePlanAheadPhase } from '@/hooks/usePlanAhead';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const quickActions = [
@@ -44,6 +46,7 @@ export default function Index() {
   const { lastRead } = useLastRead();
   const [planProgress] = useLocalStorage<PlanProgress[]>(PLAN_PROGRESS_KEY, []);
   const planToday = todaysPlan(planProgress);
+  const planAhead = usePlanAheadPhase();
   const firstReading = planToday?.day?.readings[0];
   const versionInfo = BIBLE_VERSIONS.find(item => item.id === version);
   const readPath = versePath(dailyVerse.ref);
@@ -124,6 +127,11 @@ export default function Index() {
               {planToday.done ? ' · Done' : ''}
               {planToday.behind ? ' · Earlier days are still open' : ''}
             </p>
+            {planAhead !== 'idle' && (
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed" data-plan-ahead={planAhead}>
+                {aheadLabel(planAhead)}
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Link
                 to={`/read?book=${encodeURIComponent(firstReading.book)}&chapter=${firstReading.chapter}`}

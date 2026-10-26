@@ -45,6 +45,7 @@ export function todaysPlan(progress: PlanProgress[], now = new Date()) {
   return {
     plan: active.plan,
     day,
+    dayNumber,
     finished: !day,
     done: day ? active.item.completedDays.includes(day.day) : active.item.completedDays.length >= active.plan.totalDays,
     behind,

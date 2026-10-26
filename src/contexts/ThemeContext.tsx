@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { HW_STORAGE_EVENT } from '@/hooks/useLocalStorage';
 
 export const THEMES = [
   { id: 'classic', name: 'Classic', emoji: '📜' },
@@ -124,6 +125,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setVersion = useCallback((v: BibleVersionId) => {
     setVersionState(v);
     localStorage.setItem('hw-version', v);
+    window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: 'hw-version' }));
   }, []);
 
   const setFontSize = useCallback((f: FontSizeId) => {
