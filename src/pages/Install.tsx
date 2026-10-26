@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Download, Smartphone, CheckCircle2, Share, Loader2, WifiOff } from 'lucide-react';
-import { OFFLINE_VERSIONS } from '@/contexts/ThemeContext';
+import { BIBLE_VERSIONS, OFFLINE_VERSIONS } from '@/contexts/ThemeContext';
 import { downloadAllChapters, getCachedCount, getTotalChapters, type DownloadProgress } from '@/hooks/useBibleCache';
 import { toast } from 'sonner';
 
@@ -10,6 +10,8 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 type Step = 'pick-version' | 'downloading' | 'done' | 'install-app';
+
+const LICENSED_VERSIONS = BIBLE_VERSIONS.filter(v => 'licensed' in v && v.licensed);
 
 export default function InstallPage() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -35,7 +37,7 @@ export default function InstallPage() {
     if (window.matchMedia('(display-mode: standalone)').matches) setInstalled(true);
 
     // Load cached counts for all versions
-    Promise.all(OFFLINE_VERSIONS.map(async v => {
+    Promise.all([...OFFLINE_VERSIONS, ...LICENSED_VERSIONS].map(async v => {
       const count = await getCachedCount(v.id);
       return { id: v.id, count };
     })).then(results => {
@@ -141,11 +143,34 @@ export default function InstallPage() {
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground text-left leading-relaxed">
-            NIV, NLT, and Amplified keep each chapter you open for 30 days. They are not in this download list.
-          </p>
         </div>
       )}
+
+      <div className="w-full space-y-3 text-left">
+        <p className="text-sm font-medium text-foreground text-center">NIV, NLT, and Amplified</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Each chapter you open stays on this phone for 30 days. Open it in the reader while you are online. The whole Bible cannot be downloaded for these translations.
+        </p>
+        <div className="grid grid-cols-1 gap-2">
+          {LICENSED_VERSIONS.map(v => {
+            const cached = cachedCounts[v.id] || 0;
+            return (
+              <div
+                key={v.id}
+                className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4"
+              >
+                <div className="text-left">
+                  <p className="font-display font-bold text-sm text-card-foreground">{v.name}</p>
+                  <p className="text-xs text-muted-foreground">{v.full}</p>
+                </div>
+                <span className="text-xs text-muted-foreground text-right">
+                  {cached > 0 ? `${cached} chapter${cached === 1 ? '' : 's'} saved` : 'No chapters saved yet'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Step 2: Downloading */}
       {step === 'downloading' && progress && (
