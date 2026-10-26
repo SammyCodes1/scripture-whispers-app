@@ -13,7 +13,7 @@ const PHASE_COPY: Record<LibraryPhase, string> = {
   checking: 'Checking HolyWord…',
   saving: 'Saving to HolyWord…',
   saved: 'Saved with HolyWord.',
-  local: 'Saved on this phone. A bookmark, highlight, or note is copied to HolyWord.',
+  local: 'Saved on this phone. A bookmark, note, streak, or plan is copied to HolyWord.',
   offline: 'On this phone for now. HolyWord will catch up when you are back online.',
 };
 
@@ -66,7 +66,7 @@ export default function LibrarySyncSettings() {
       </h3>
       <div className="rounded-xl bg-card border border-border p-3 sm:p-4 space-y-3">
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          Bookmarks, highlights, and notes are saved with HolyWord. On a new phone, enter this code to bring them back. Keep the code. Without it, a cleared site cannot find them.
+          Bookmarks, highlights, notes, your reading streak, plans, and reminder are saved with HolyWord. On a new phone, sign in or enter this code. Keep the code. Without it, a cleared site cannot find them.
         </p>
         <div className="flex items-start gap-2">
           <p className="flex-1 min-w-0 font-mono text-sm text-foreground break-all leading-relaxed">{code}</p>

@@ -63,7 +63,7 @@ export default function SettingsPage() {
           ) : email ? (
             <>
               <p className="text-sm text-foreground leading-relaxed">
-                Signed in{name ? ` as ${name}` : ''}. Your library follows this Google account.
+                Signed in{name ? ` as ${name}` : ''}. Your library, reading streak, plans, and reminder follow this Google account.
               </p>
               <p className="text-xs text-muted-foreground break-all">{email}</p>
               <button
@@ -78,7 +78,7 @@ export default function SettingsPage() {
           ) : (
             <>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Sign in with Google and this library opens on the next phone, without copying a code.
+                Sign in with Google and your library, streak, plans, and reminder open on the next phone, without copying a code.
               </p>
               <Link
                 to="/sign-in"
@@ -204,7 +204,7 @@ export default function SettingsPage() {
       <section className="border-t border-border pt-5 sm:pt-6">
         <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-2">Danger Zone</h3>
         <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed">
-          Deletes bookmarks, highlights, notes, and the HolyWord library for this code, plus offline Bibles, saved map images, and community posts from this device.
+          Deletes bookmarks, highlights, notes, the reading streak, plans, the reminder, and the HolyWord library for this code, plus offline Bibles, saved map images, and community posts from this device.
         </p>
 
         {!showDeleteConfirm ? (

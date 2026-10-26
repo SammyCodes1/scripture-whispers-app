@@ -1,5 +1,11 @@
-// Bookmarks, highlights, and notes synced through the verse-library function.
+// Bookmarks, highlights, notes, and reader habits synced through the verse-library function.
 // The library code is the secret. The row is not readable by the anon key.
+import {
+  emptyHabits,
+  mergeHabits,
+  sanitizeHabits,
+  type HabitPayload,
+} from '@/lib/readerHabits';
 
 export const SAVED_VERSES_KEY = 'hw-saved-verses';
 export const VERSE_NOTES_KEY = 'hw-verse-notes';
@@ -40,10 +46,11 @@ export interface LibraryPayload {
   saved: LibraryVerse[];
   notes: LibraryNote[];
   removed: LibraryTombstone[];
+  habits?: HabitPayload;
 }
 
 export function emptyLibrary(): LibraryPayload {
-  return { saved: [], notes: [], removed: [] };
+  return { saved: [], notes: [], removed: [], habits: emptyHabits() };
 }
 
 export function generateLibraryCode(): string {
@@ -133,7 +140,12 @@ function parseRemoved(value: unknown): LibraryTombstone[] {
 export function sanitizePayload(input: unknown): LibraryPayload {
   const row = input && typeof input === 'object' ? input as Record<string, unknown> : {};
   return mergeLibraries(
-    { saved: parseSaved(row.saved), notes: parseNotes(row.notes), removed: parseRemoved(row.removed) },
+    {
+      saved: parseSaved(row.saved),
+      notes: parseNotes(row.notes),
+      removed: parseRemoved(row.removed),
+      habits: sanitizeHabits(row.habits),
+    },
     emptyLibrary(),
   );
 }
@@ -195,6 +207,7 @@ export function mergeLibraries(a: LibraryPayload, b: LibraryPayload): LibraryPay
     saved: savedList.map(([, item]) => item),
     notes: noteList.map(([, item]) => item),
     removed: removedList,
+    habits: mergeHabits(a.habits ?? emptyHabits(), b.habits ?? emptyHabits()),
   };
 }
 
@@ -206,7 +219,24 @@ export function librarySignature(payload: LibraryPayload): string {
     .map(note => `${note.ref}|${note.note}|${note.verseText}|${note.updatedAt}`)
     .sort();
   const removed = payload.removed.map(tomb => `${tomb.key}|${tomb.at}`).sort();
-  return JSON.stringify({ saved, notes, removed });
+  const habits = payload.habits ?? emptyHabits();
+  const plans = habits.plans
+    .map(plan => `${plan.planId}|${plan.startedAt}|${plan.updatedAt}|${plan.completedDays.join(',')}`)
+    .sort();
+  const removedPlans = habits.removedPlans.map(tomb => `${tomb.planId}|${tomb.at}`).sort();
+  const reminder = habits.reminder
+    ? `${habits.reminder.enabled}|${habits.reminder.hour}|${habits.reminder.minute}|${habits.reminder.updatedAt}`
+    : '';
+  return JSON.stringify({
+    saved,
+    notes,
+    removed,
+    readDates: [...habits.readDates].sort(),
+    longestStreak: habits.longestStreak,
+    plans,
+    removedPlans,
+    reminder,
+  });
 }
 
 export function describeLibrary(payload: LibraryPayload): string {
@@ -216,8 +246,26 @@ export function describeLibrary(payload: LibraryPayload): string {
   if (bookmarks) parts.push(`${bookmarks} bookmark${bookmarks === 1 ? '' : 's'}`);
   if (highlights) parts.push(`${highlights} highlight${highlights === 1 ? '' : 's'}`);
   if (payload.notes.length) parts.push(`${payload.notes.length} note${payload.notes.length === 1 ? '' : 's'}`);
-  if (parts.length === 0) return 'That library is empty.';
-  if (parts.length === 1) return `Restored ${parts[0]}.`;
-  if (parts.length === 2) return `Restored ${parts[0]} and ${parts[1]}.`;
-  return `Restored ${parts[0]}, ${parts[1]}, and ${parts[2]}.`;
+  const habitNames: string[] = [];
+  const habits = payload.habits;
+  if (habits?.readDates.length) habitNames.push('reading streak');
+  if (habits && habits.plans.length > 0) habitNames.push(habits.plans.length === 1 ? 'reading plan' : 'reading plans');
+  if (habits?.reminder) habitNames.push('reminder');
+  const habitText = habitNames.length === 0
+    ? ''
+    : habitNames.length === 1
+      ? habitNames[0]
+      : habitNames.length === 2
+        ? `${habitNames[0]} and ${habitNames[1]}`
+        : `${habitNames[0]}, ${habitNames[1]}, and ${habitNames[2]}`;
+
+  if (parts.length === 0 && !habitText) return 'That library is empty.';
+  if (parts.length === 0) return `Restored your ${habitText}.`;
+  const verseText = parts.length === 1
+    ? parts[0]
+    : parts.length === 2
+      ? `${parts[0]} and ${parts[1]}`
+      : `${parts[0]}, ${parts[1]}, and ${parts[2]}`;
+  if (!habitText) return `Restored ${verseText}.`;
+  return `Restored ${verseText}, along with your ${habitText}.`;
 }

@@ -20,7 +20,8 @@ export default function ReadingPlans() {
 
   const startPlan = (plan: ReadingPlan) => {
     if (!getPlanProgress(plan.id)) {
-      setProgress(prev => [...prev, { planId: plan.id, startedAt: Date.now(), completedDays: [] }]);
+      const now = Date.now();
+      setProgress(prev => [...prev, { planId: plan.id, startedAt: now, completedDays: [], updatedAt: now }]);
     }
     setSelectedPlan(plan);
     setView('overview');
@@ -38,7 +39,7 @@ export default function ReadingPlans() {
         const completed = p.completedDays.includes(day)
           ? p.completedDays.filter(d => d !== day)
           : [...p.completedDays, day];
-        return { ...p, completedDays: completed };
+        return { ...p, completedDays: completed, updatedAt: Date.now() };
       })
     );
   };

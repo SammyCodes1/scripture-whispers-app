@@ -1,11 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, BellOff, Clock } from 'lucide-react';
 import { useDailyReminder } from '@/hooks/useDailyReminder';
 
 export default function DailyReminderSettings() {
-  const { settings, enableReminder, disableReminder, updateTime } = useDailyReminder();
+  const { settings, enableReminder, disableReminder, updateTime, requestPermission } = useDailyReminder();
   const [hour, setHour] = useState(settings.hour);
   const [minute, setMinute] = useState(settings.minute);
+  const [permission, setPermission] = useState(() => (
+    typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
+  ));
+
+  useEffect(() => {
+    setHour(settings.hour);
+    setMinute(settings.minute);
+    if (typeof Notification !== 'undefined') setPermission(Notification.permission);
+  }, [settings.hour, settings.minute, settings.enabled]);
+
+  const allowOnThisPhone = async () => {
+    const granted = await requestPermission();
+    if (typeof Notification !== 'undefined') setPermission(granted ? 'granted' : Notification.permission);
+  };
 
   const handleToggle = () => {
     if (settings.enabled) {
@@ -71,6 +85,16 @@ export default function DailyReminderSettings() {
             ))}
           </select>
         </div>
+
+        {settings.enabled && permission !== 'granted' && (
+          <button
+            type="button"
+            onClick={() => { void allowOnThisPhone(); }}
+            className="w-full px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium active:scale-95"
+          >
+            Allow notifications on this phone
+          </button>
+        )}
 
         <p className="text-[11px] text-muted-foreground">
           {settings.enabled

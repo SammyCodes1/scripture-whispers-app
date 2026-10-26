@@ -1,8 +1,18 @@
 import { HW_STORAGE_EVENT } from '@/hooks/useLocalStorage';
 import { supabase } from '@/integrations/supabase/client';
+import { PLAN_PROGRESS_KEY } from '@/lib/planToday';
+import {
+  emptyHabits,
+  habitsFromParts,
+  hasHabits,
+  PLAN_REMOVED_KEY,
+  READING_STREAK_KEY,
+  REMINDER_KEY,
+  streakRecord,
+  type HabitPayload,
+} from '@/lib/readerHabits';
 import {
   describeLibrary,
-  emptyLibrary,
   generateLibraryCode,
   LIBRARY_CODE_KEY,
   LIBRARY_CODE_RE,
@@ -23,6 +33,7 @@ export type LibraryPhase = 'checking' | 'saving' | 'saved' | 'offline' | 'local'
 const listeners = new Set<(phase: LibraryPhase) => void>();
 let phase: LibraryPhase = 'checking';
 let knownKeys = new Set<string>();
+let knownPlanIds = new Set<string>();
 let suppress = false;
 let ready = false;
 let dirty = false;
@@ -69,20 +80,44 @@ export function ensureLibraryCode(): string {
   return code;
 }
 
+function readJson(key: string, fallback: unknown) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function readPayload(): LibraryPayload {
-  const read = (key: string) => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  };
   return sanitizePayload({
-    saved: read(SAVED_VERSES_KEY),
-    notes: read(VERSE_NOTES_KEY),
-    removed: read(LIBRARY_REMOVED_KEY),
+    saved: readJson(SAVED_VERSES_KEY, []),
+    notes: readJson(VERSE_NOTES_KEY, []),
+    removed: readJson(LIBRARY_REMOVED_KEY, []),
+    habits: habitsFromParts(
+      readJson(READING_STREAK_KEY, null),
+      readJson(PLAN_PROGRESS_KEY, []),
+      readJson(PLAN_REMOVED_KEY, []),
+      readJson(REMINDER_KEY, null),
+    ),
   });
+}
+
+function remember(payload: LibraryPayload) {
+  knownKeys = itemKeys(payload);
+  knownPlanIds = new Set((payload.habits ?? emptyHabits()).plans.map(plan => plan.planId));
+}
+
+function writeHabitStorage(habits: HabitPayload) {
+  if (habits.readDates.length === 0) localStorage.removeItem(READING_STREAK_KEY);
+  else localStorage.setItem(READING_STREAK_KEY, JSON.stringify(streakRecord(habits)));
+  localStorage.setItem(PLAN_PROGRESS_KEY, JSON.stringify(habits.plans));
+  localStorage.setItem(PLAN_REMOVED_KEY, JSON.stringify(habits.removedPlans));
+  if (habits.reminder) localStorage.setItem(REMINDER_KEY, JSON.stringify(habits.reminder));
+  else localStorage.removeItem(REMINDER_KEY);
+  window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: READING_STREAK_KEY }));
+  window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: PLAN_PROGRESS_KEY }));
+  window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: REMINDER_KEY }));
 }
 
 function itemKeys(payload: LibraryPayload) {
@@ -99,7 +134,8 @@ function writePayload(payload: LibraryPayload) {
     localStorage.setItem(SAVED_VERSES_KEY, JSON.stringify(clean.saved));
     localStorage.setItem(VERSE_NOTES_KEY, JSON.stringify(clean.notes));
     localStorage.setItem(LIBRARY_REMOVED_KEY, JSON.stringify(clean.removed));
-    knownKeys = itemKeys(clean);
+    writeHabitStorage(clean.habits ?? emptyHabits());
+    remember(clean);
     window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: SAVED_VERSES_KEY }));
     window.dispatchEvent(new CustomEvent(HW_STORAGE_EVENT, { detail: VERSE_NOTES_KEY }));
   } catch {
@@ -122,6 +158,25 @@ function recordRemovals() {
     return;
   }
   writePayload({ ...current, removed: [...current.removed, ...extra] });
+}
+
+function recordPlanRemovals() {
+  const current = readPayload();
+  const habits = current.habits ?? emptyHabits();
+  const present = new Set(habits.plans.map(plan => plan.planId));
+  const now = Date.now();
+  const extra: HabitPayload['removedPlans'] = [];
+  for (const planId of knownPlanIds) {
+    if (!present.has(planId)) extra.push({ planId, at: now });
+  }
+  if (extra.length === 0) {
+    knownPlanIds = present;
+    return;
+  }
+  writePayload({
+    ...current,
+    habits: { ...habits, removedPlans: [...habits.removedPlans, ...extra] },
+  });
 }
 
 function getRevision(): number | null {
@@ -182,7 +237,10 @@ async function pull(code: string): Promise<{ payload: LibraryPayload; revision: 
 }
 
 function hasLibrary(payload: LibraryPayload) {
-  return payload.saved.length > 0 || payload.notes.length > 0 || payload.removed.length > 0;
+  return payload.saved.length > 0
+    || payload.notes.length > 0
+    || payload.removed.length > 0
+    || hasHabits(payload.habits);
 }
 
 async function pushWithRetry() {
@@ -253,10 +311,11 @@ async function initialSync() {
     return;
   }
   recordRemovals();
+  recordPlanRemovals();
   const local = readPayload();
   const merged = remote ? mergeLibraries(local, remote.payload) : local;
   if (librarySignature(merged) !== librarySignature(local)) writePayload(merged);
-  else knownKeys = itemKeys(merged);
+  else remember(merged);
   ready = true;
   if (remote && librarySignature(readPayload()) === librarySignature(remote.payload)) {
     setRevision(remote.revision);
@@ -275,8 +334,14 @@ async function initialSync() {
 function onLocal(event: Event) {
   if (suppress) return;
   const key = (event as CustomEvent<string>).detail;
-  if (key !== SAVED_VERSES_KEY && key !== VERSE_NOTES_KEY) return;
-  recordRemovals();
+  const verseKey = key === SAVED_VERSES_KEY || key === VERSE_NOTES_KEY;
+  const habitKey = key === READING_STREAK_KEY
+    || key === PLAN_PROGRESS_KEY
+    || key === PLAN_REMOVED_KEY
+    || key === REMINDER_KEY;
+  if (!verseKey && !habitKey) return;
+  if (verseKey) recordRemovals();
+  if (key === PLAN_PROGRESS_KEY) recordPlanRemovals();
   schedulePush();
 }
 
@@ -284,9 +349,13 @@ function onNativeStorage(event: StorageEvent) {
   if (
     event.key !== SAVED_VERSES_KEY &&
     event.key !== VERSE_NOTES_KEY &&
-    event.key !== LIBRARY_REMOVED_KEY
+    event.key !== LIBRARY_REMOVED_KEY &&
+    event.key !== READING_STREAK_KEY &&
+    event.key !== PLAN_PROGRESS_KEY &&
+    event.key !== PLAN_REMOVED_KEY &&
+    event.key !== REMINDER_KEY
   ) return;
-  knownKeys = itemKeys(readPayload());
+  remember(readPayload());
 }
 
 function onOnline() {
@@ -306,7 +375,7 @@ export function startLibrarySync() {
   listening = true;
   ready = false;
   const gen = ++generation;
-  knownKeys = itemKeys(readPayload());
+  remember(readPayload());
   window.addEventListener(HW_STORAGE_EVENT, onLocal);
   window.addEventListener('storage', onNativeStorage);
   window.addEventListener('online', onOnline);

@@ -60,6 +60,7 @@ interface ReminderSettings {
   enabled: boolean;
   hour: number; // 0-23
   minute: number; // 0-59
+  updatedAt?: number;
 }
 
 const DEFAULT_SETTINGS: ReminderSettings = {
@@ -86,18 +87,18 @@ export function useDailyReminder() {
   const enableReminder = useCallback(async (hour: number, minute: number) => {
     const granted = await requestPermission();
     if (!granted) return;
-    setSettings({ enabled: true, hour, minute });
+    setSettings({ enabled: true, hour, minute, updatedAt: Date.now() });
     toast.success(`Daily reminder set for ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
   }, [requestPermission, setSettings]);
 
   const disableReminder = useCallback(() => {
-    setSettings(prev => ({ ...prev, enabled: false }));
+    setSettings(prev => ({ ...prev, enabled: false, updatedAt: Date.now() }));
     toast.info('Daily reminder disabled');
   }, [setSettings]);
 
   const updateTime = useCallback((hour: number, minute: number) => {
-    setSettings(prev => ({ ...prev, hour, minute }));
+    setSettings(prev => ({ ...prev, hour, minute, updatedAt: Date.now() }));
   }, [setSettings]);
 
-  return { settings, enableReminder, disableReminder, updateTime };
+  return { settings, enableReminder, disableReminder, updateTime, requestPermission };
 }

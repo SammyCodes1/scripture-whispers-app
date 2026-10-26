@@ -48,7 +48,7 @@ export default function SignInPage() {
     <div className="fade-in max-w-md mx-auto pt-4 sm:pt-8">
       <h2 className="font-display text-lg sm:text-xl font-bold text-foreground tracking-tight">Sign in</h2>
       <p className="text-xs sm:text-sm text-muted-foreground mt-2 mb-4 leading-relaxed">
-        Use a Google account and your bookmarks, highlights, and notes open on the next phone you sign in with.
+        Use a Google account and your bookmarks, highlights, notes, reading streak, plans, and reminder open on the next phone you sign in with.
       </p>
       <div className="rounded-xl bg-card border border-border p-3 sm:p-4 space-y-3">
         {!ready ? (
@@ -81,7 +81,7 @@ export default function SignInPage() {
               {busy ? 'Opening Google…' : 'Continue with Google'}
             </button>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              HolyWord asks Google for your name and email. The library code in Settings still works if you skip sign-in.
+              HolyWord asks Google for your name and email. The library code in Settings still brings this with you if you skip sign-in.
             </p>
           </>
         )}

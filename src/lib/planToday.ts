@@ -4,6 +4,7 @@ export interface PlanProgress {
   planId: string;
   startedAt: number;
   completedDays: number[];
+  updatedAt?: number;
 }
 
 export const PLAN_PROGRESS_KEY = 'hw-reading-plans';

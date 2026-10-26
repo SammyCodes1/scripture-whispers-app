@@ -1,4 +1,4 @@
-// Saves one reader's bookmarks, highlights, and notes.
+// Saves one reader's bookmarks, highlights, notes, streak, plans, and reminder.
 // The library code is the secret. The table has no anon policy.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -40,6 +40,133 @@ function cleanTime(value: unknown) {
   const rounded = Math.round(value);
   if (rounded < 0 || rounded > Date.now() + 86_400_000) return null;
   return rounded;
+}
+
+const PLAN_ID_RE = /^[a-z0-9-]{1,40}$/;
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const MAX_DATES = 5000;
+const MAX_PLANS = 20;
+const MAX_PLAN_DAYS = 400;
+const MAX_PLAN_TOMBS = 50;
+
+function parseDate(value: unknown) {
+  if (typeof value !== "string") return null;
+  const match = DATE_RE.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const stamp = Date.UTC(year, month - 1, day);
+  const check = new Date(stamp);
+  if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
+  if (stamp < Date.UTC(2000, 0, 1) || stamp > Date.now() + 2 * 86_400_000) return null;
+  return value;
+}
+
+function utcDay(iso: string) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
+}
+
+function longestRun(dates: string[]) {
+  let best = 0;
+  let run = 0;
+  let prev = -1;
+  for (const date of dates) {
+    const day = utcDay(date);
+    run = prev >= 0 && day === prev + 1 ? run + 1 : 1;
+    if (run > best) best = run;
+    prev = day;
+  }
+  return best;
+}
+
+function sanitizeHabits(input: unknown) {
+  const row = input && typeof input === "object" ? input as Record<string, unknown> : {};
+  const dates = new Set<string>();
+  if (Array.isArray(row.readDates)) {
+    for (const value of row.readDates) {
+      const date = parseDate(value);
+      if (date) dates.add(date);
+    }
+  }
+  let readDates = [...dates].sort();
+  if (readDates.length > MAX_DATES) readDates = readDates.slice(readDates.length - MAX_DATES);
+
+  const plans = new Map<string, Record<string, unknown>>();
+  if (Array.isArray(row.plans)) {
+    for (const item of row.plans) {
+      if (!item || typeof item !== "object") continue;
+      const plan = item as Record<string, unknown>;
+      const planId = typeof plan.planId === "string" ? plan.planId : "";
+      const startedAt = cleanTime(plan.startedAt);
+      if (!PLAN_ID_RE.test(planId) || startedAt === null || startedAt < 1_500_000_000_000) continue;
+      const stamped = cleanTime(plan.updatedAt);
+      const updatedAt = stamped === null || stamped === 0 ? startedAt : stamped;
+      const days = new Set<number>();
+      if (Array.isArray(plan.completedDays)) {
+        for (const day of plan.completedDays) {
+          if (!Number.isInteger(day) || day < 1 || day > MAX_PLAN_DAYS) continue;
+          days.add(day as number);
+          if (days.size >= MAX_PLAN_DAYS) break;
+        }
+      }
+      const current = plans.get(planId);
+      if (current && Number(current.updatedAt) > updatedAt) continue;
+      plans.set(planId, {
+        planId,
+        startedAt,
+        completedDays: [...days].sort((a, b) => a - b),
+        updatedAt,
+      });
+      if (plans.size > MAX_PLANS) break;
+    }
+  }
+
+  const removed = new Map<string, number>();
+  if (Array.isArray(row.removedPlans)) {
+    for (const item of row.removedPlans) {
+      if (!item || typeof item !== "object") continue;
+      const tomb = item as Record<string, unknown>;
+      const planId = typeof tomb.planId === "string" ? tomb.planId : "";
+      const at = cleanTime(tomb.at);
+      if (!PLAN_ID_RE.test(planId) || at === null) continue;
+      const prev = removed.get(planId);
+      if (prev === undefined || at > prev) removed.set(planId, at);
+    }
+  }
+  for (const [planId, at] of removed) {
+    const plan = plans.get(planId);
+    if (plan && at >= Number(plan.updatedAt)) plans.delete(planId);
+    const kept = plans.get(planId);
+    if (kept && Number(kept.updatedAt) > at) removed.delete(planId);
+  }
+
+  const claimed = Number.isInteger(row.longestStreak) ? Number(row.longestStreak) : 0;
+  let reminder: Record<string, unknown> | null = null;
+  if (row.reminder && typeof row.reminder === "object") {
+    const item = row.reminder as Record<string, unknown>;
+    const hour = item.hour;
+    const minute = item.minute;
+    if (
+      typeof item.enabled === "boolean" &&
+      Number.isInteger(hour) && hour >= 0 && hour <= 23 &&
+      Number.isInteger(minute) && minute >= 0 && minute <= 59
+    ) {
+      const updatedAt = cleanTime(item.updatedAt) ?? 0;
+      if (item.enabled || hour !== 8 || minute !== 0 || updatedAt !== 0) {
+        reminder = { enabled: item.enabled, hour, minute, updatedAt };
+      }
+    }
+  }
+
+  return {
+    readDates,
+    longestStreak: Math.min(MAX_DATES, Math.max(0, claimed, longestRun(readDates))),
+    plans: [...plans.values()].sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt)).slice(0, MAX_PLANS),
+    removedPlans: [...removed.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_PLAN_TOMBS).map(([planId, at]) => ({ planId, at })),
+    reminder,
+  };
 }
 
 function sanitize(input: unknown) {
@@ -130,6 +257,7 @@ function sanitize(input: unknown) {
     saved: savedList.map(([, item]) => item),
     notes: noteList.map(([, item]) => item),
     removed: [...removed.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_TOMBS).map(([key, at]) => ({ key, at })),
+    habits: sanitizeHabits(row.habits),
   };
 }
 
@@ -216,10 +344,18 @@ Deno.serve(async (req) => {
     const rawPayload = JSON.stringify(record.payload ?? null);
     if (rawPayload.length > MAX_BODY) return json({ error: "Library is too large" }, 413);
     const payload = sanitize(record.payload);
+    const sent = record.payload;
+    const sentHabits = sent && typeof sent === "object" && Object.prototype.hasOwnProperty.call(sent, "habits");
     const baseRevision = record.baseRevision;
     const base = typeof baseRevision === "number" && Number.isInteger(baseRevision) ? baseRevision : null;
 
     const existing = await libraryFor();
+    if (existing && !sentHabits) {
+      const previous = existing.payload && typeof existing.payload === "object"
+        ? (existing.payload as Record<string, unknown>).habits
+        : null;
+      payload.habits = sanitizeHabits(previous);
+    }
     if (!existing) {
       let insertCode = newCode();
       if (CODE_RE.test(code)) {
