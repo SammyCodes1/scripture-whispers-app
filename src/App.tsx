@@ -22,6 +22,7 @@ import BibleMaps from "./pages/BibleMaps";
 import NotFound from "./pages/NotFound";
 import AnnouncementModal from "./components/AnnouncementModal";
 import { DailyReminderWatcher } from "@/hooks/useDailyReminder";
+import { VerseLibrarySync } from "@/hooks/useVerseLibrarySync";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => {
         <TooltipProvider>
           <Sonner />
           <DailyReminderWatcher />
+          <VerseLibrarySync />
           <AnnouncementModal />
           {showIntro && <BibleIntro onComplete={handleIntroComplete} />}
           <BrowserRouter>

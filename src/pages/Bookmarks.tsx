@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Bookmark, Highlighter, Trash2, StickyNote, Pencil } from 'lucide-react';
 import { versePath } from '@/lib/verseRef';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { SAVED_VERSES_KEY } from '@/lib/verseLibrary';
 import { useNotes } from '@/hooks/useNotes';
 import VerseNoteModal from '@/components/VerseNoteModal';
 import type { SavedVerse } from './Reader';
@@ -12,7 +13,7 @@ type Tab = 'bookmark' | 'highlight' | 'note';
 
 export default function BookmarksPage() {
   const navigate = useNavigate();
-  const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>('hw-saved-verses', []);
+  const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>(SAVED_VERSES_KEY, []);
   const { notes, deleteNote } = useNotes();
   const [tab, setTab] = useState<Tab>('bookmark');
   const [editing, setEditing] = useState<{ ref: string; text: string } | null>(null);
@@ -38,9 +39,14 @@ export default function BookmarksPage() {
 
   return (
     <div className="fade-in">
-      <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 tracking-tight">
+      <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-2 tracking-tight">
         Bookmarks, Highlights &amp; Notes
       </h2>
+      <p className="text-xs text-muted-foreground mb-3 sm:mb-4 leading-relaxed">
+        These are saved with HolyWord. Keep the library code in{' '}
+        <Link to="/settings" className="text-primary font-medium underline">Settings</Link>
+        {' '}to open them on a new phone.
+      </p>
 
       <div className="flex gap-2 mb-3 sm:mb-4 flex-wrap">
         {tabs.map(({ id, label, icon: Icon }) => (

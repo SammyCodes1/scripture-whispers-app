@@ -1,4 +1,5 @@
 import { useLocalStorage } from './useLocalStorage';
+import { VERSE_NOTES_KEY } from '@/lib/verseLibrary';
 
 export interface VerseNote {
   id: string;
@@ -10,7 +11,7 @@ export interface VerseNote {
 }
 
 export function useNotes() {
-  const [notes, setNotes] = useLocalStorage<VerseNote[]>('hw-verse-notes', []);
+  const [notes, setNotes] = useLocalStorage<VerseNote[]>(VERSE_NOTES_KEY, []);
 
   const getNote = (ref: string) => notes.find(n => n.ref === ref);
 

@@ -8,6 +8,8 @@ import VoiceSettings from '@/components/VoiceSettings';
 import AudioSpeedSettings from '@/components/AudioSpeedSettings';
 import OfflineDownload from '@/components/OfflineDownload';
 import AdminAnnouncementPanel from '@/components/AdminAnnouncementPanel';
+import LibrarySyncSettings from '@/components/LibrarySyncSettings';
+import { deleteRemoteLibrary } from '@/lib/verseLibrarySync';
 
 function deleteDatabase(name: string) {
   return new Promise<void>((resolve) => {
@@ -23,6 +25,10 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = async () => {
+    const libraryDeleted = await deleteRemoteLibrary();
+    if (!libraryDeleted) {
+      toast.error('The library on HolyWord could not be deleted. Local data will still be cleared.');
+    }
     const deviceId = localStorage.getItem('hw-device-id');
     if (deviceId) {
       const { error } = await supabase.from('community_posts').delete().eq('device_id', deviceId);
@@ -44,6 +50,8 @@ export default function SettingsPage() {
   return (
     <div className="fade-in space-y-5 sm:space-y-6">
       <h2 className="font-display text-lg sm:text-xl font-bold text-foreground tracking-tight">Settings</h2>
+
+      <LibrarySyncSettings />
 
       {/* Theme Selection */}
       <section>
@@ -156,7 +164,7 @@ export default function SettingsPage() {
       <section className="border-t border-border pt-5 sm:pt-6">
         <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-2">Danger Zone</h3>
         <p className="text-xs sm:text-sm text-muted-foreground mb-3 leading-relaxed">
-          Deletes bookmarks, highlights, notes, offline Bibles, saved map images, and community posts from this device.
+          Deletes bookmarks, highlights, notes, and the HolyWord library for this code, plus offline Bibles, saved map images, and community posts from this device.
         </p>
 
         {!showDeleteConfirm ? (

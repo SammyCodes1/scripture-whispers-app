@@ -8,6 +8,7 @@ import { useNotes } from '@/hooks/useNotes';
 import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { SAVED_VERSES_KEY } from '@/lib/verseLibrary';
 import { type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
@@ -39,7 +40,7 @@ export default function Reader() {
   const [selectedBook, setSelectedBook] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(0);
   const [testament, setTestament] = useState<'OT' | 'NT'>('OT');
-  const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>('hw-saved-verses', []);
+  const [savedVerses, setSavedVerses] = useLocalStorage<SavedVerse[]>(SAVED_VERSES_KEY, []);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [loading, setLoading] = useState(false);
   const [shareVerse, setShareVerse] = useState<{ ref: string; text: string } | null>(null);
