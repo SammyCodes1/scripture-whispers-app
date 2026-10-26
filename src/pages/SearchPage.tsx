@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Loader2, WifiOff } from 'lucide-react';
 import { useTheme, BIBLE_VERSIONS } from '@/contexts/ThemeContext';
-import { searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
+import { isLicensedTranslation, searchBible, type SearchResult as ApiSearchResult } from '@/hooks/useBibleApi';
 import { searchCachedBible, isFullyDownloaded } from '@/hooks/useBibleCache';
 import { parseVerseRef } from '@/lib/verseRef';
 
@@ -133,7 +133,11 @@ export default function SearchPage() {
           {searchedOffline && (
             <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
               <WifiOff size={14} className="shrink-0" />
-              <span className="break-words">Searching offline downloaded Bible</span>
+              <span className="break-words">
+                {isLicensedTranslation(version)
+                  ? 'Searching chapters saved on this phone'
+                  : 'Searching offline downloaded Bible'}
+              </span>
             </div>
           )}
           <p className="text-xs text-muted-foreground mb-3">
@@ -153,7 +157,9 @@ export default function SearchPage() {
             {results.length === 0 && !loading && (
               <p className="text-center text-sm text-muted-foreground py-8 px-4 leading-relaxed">
                 {needsDownload
-                  ? `Download ${versionName} in Settings to search it. This version is searched from the chapters saved on this device.`
+                  ? isLicensedTranslation(version)
+                    ? `Open chapters in ${versionName} while you are online. Saved chapters can be searched for 30 days.`
+                    : `Download ${versionName} in Settings to search it. This version is searched from the chapters saved on this device.`
                   : 'No verses found. Try a different keyword.'}
               </p>
             )}

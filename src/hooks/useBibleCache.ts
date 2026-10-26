@@ -112,11 +112,17 @@ export async function getCachedCount(translation: string): Promise<number> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly');
       const store = tx.objectStore(STORE_NAME);
-      const req = store.getAllKeys();
+      const prefix = `${translation}::`;
+      const req = store.openCursor();
+      let count = 0;
       req.onsuccess = () => {
-        const keys = req.result as string[];
-        const count = keys.filter(k => k.startsWith(`${translation}::`)).length;
-        resolve(count);
+        const cursor = req.result;
+        if (!cursor) {
+          resolve(count);
+          return;
+        }
+        if (String(cursor.key).startsWith(prefix) && isFresh(cursor.value, translation)) count += 1;
+        cursor.continue();
       };
       req.onerror = () => reject(req.error);
     });
@@ -139,13 +145,17 @@ export interface DownloadProgress {
   error?: string;
 }
 
-/** Download all chapters for a translation, calling onProgress for each */
+/** Download all chapters for a public-domain translation. Licensed texts are not bulk-downloaded. */
 export async function downloadAllChapters(
   translation: string,
   onProgress: (p: DownloadProgress) => void,
   signal?: AbortSignal
 ): Promise<void> {
   const total = getTotalChapters();
+  if (isLicensedTranslation(translation)) {
+    onProgress({ downloaded: 0, total, currentBook: '', done: true });
+    return;
+  }
   let downloaded = 0;
   const BATCH_SIZE = 15;
 
@@ -250,7 +260,7 @@ export async function searchCachedBible(
         req2.onerror = () => reject(req2.error);
       });
 
-      if (!chapter?.verses) continue;
+      if (!chapter?.verses || !isFresh(chapter, translation)) continue;
 
       for (const verse of chapter.verses) {
         const lowerText = verse.text.toLowerCase();

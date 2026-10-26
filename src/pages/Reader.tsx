@@ -9,7 +9,7 @@ import { BIBLE_BOOKS } from '@/data/bibleData';
 import { BIBLE_VERSIONS, useTheme } from '@/contexts/ThemeContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { SAVED_VERSES_KEY } from '@/lib/verseLibrary';
-import { type BibleVerse } from '@/hooks/useBibleApi';
+import { isLicensedTranslation, type BibleVerse } from '@/hooks/useBibleApi';
 import { fetchChapterCached } from '@/hooks/useBibleCache';
 import { useChapterAudio } from '@/hooks/useChapterAudio';
 import { useReadingHistory } from '@/hooks/useReadingHistory';
@@ -180,7 +180,7 @@ export default function Reader() {
           savePosition(selectedBook, selectedChapter);
         }
       })
-      .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error('Could not load verses.'); } })
+      .catch(err => { if (!cancelled) { console.error('Bible API error:', err); toast.error(isLicensedTranslation(version) ? 'This chapter is not on this phone yet. Open it while you are online, and it stays for 30 days.' : 'Could not load verses.'); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [selectedBook, selectedChapter, version, view]);
@@ -210,7 +210,7 @@ export default function Reader() {
         if (!cancelled) {
           console.error('Comparison load error:', err);
           setCompareTexts({});
-          toast.error('Could not load the comparison.');
+          toast.error(isLicensedTranslation(compareVersion) ? 'This comparison chapter is not on this phone yet. Open it while you are online, and it stays for 30 days.' : 'Could not load the comparison.');
         }
       })
       .finally(() => { if (!cancelled) setCompareLoading(false); });

@@ -141,6 +141,9 @@ export default function InstallPage() {
               );
             })}
           </div>
+          <p className="text-xs text-muted-foreground text-left leading-relaxed">
+            NIV, NLT, and Amplified keep each chapter you open for 30 days. They are not in this download list.
+          </p>
         </div>
       )}
 
